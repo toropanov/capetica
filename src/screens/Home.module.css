@@ -24,6 +24,14 @@
   border-color: rgba(247, 162, 182, 0.55);
 }
 
+.eventPositive {
+  border-color: rgba(109, 209, 172, 0.5);
+}
+
+.eventNegative {
+  border-color: rgba(247, 162, 182, 0.55);
+}
+
 .eventHeader {
   display: flex;
   align-items: center;
@@ -54,6 +62,11 @@
   background: #ffffff;
   color: #1f2d4a;
   border: 1px solid rgba(23, 42, 76, 0.07);
+}
+
+.compactCard {
+  min-height: auto;
+  padding: 0.8rem;
 }
 
 .actionCard h3 {
@@ -177,6 +190,78 @@
   font-size: 0.95rem;
 }
 
+.detailBlock {
+  border: 1px solid rgba(26, 45, 72, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  margin: 0.5rem 0;
+  padding: 0.6rem 0.7rem;
+}
+
+.detailBlock summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: #1d2f52;
+}
+
+.detailBlock summary::-webkit-details-marker {
+  display: none;
+}
+
+.detailBlock ul {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.detailBlock li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #2a3858;
+}
+
+.stopLossBlock {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 16px;
+  border: 1px dashed rgba(207, 103, 124, 0.5);
+  background: rgba(255, 239, 242, 0.7);
+}
+
+.stopLossBlock span {
+  display: block;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(159, 53, 72, 0.9);
+  margin-bottom: 0.3rem;
+}
+
+.stopLossBlock ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: #8c2d3f;
+}
+
+.investDeltaRow {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 18px;
+  background: rgba(241, 249, 255, 0.85);
+  border: 1px solid rgba(90, 130, 192, 0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
 .lastTurn span {
   font-size: 0.85rem;
   opacity: 0.7;
@@ -271,10 +356,9 @@
 
 .sectionHeader span {
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.75rem;
-  opacity: 0.7;
-  color: rgba(62, 79, 109, 0.8);
+  letter-spacing: 0.2em;
+  font-size: 0.85rem;
+  color: rgba(25, 39, 70, 0.9);
 }
 
 .sectionHeader p {
@@ -282,8 +366,67 @@
   color: rgba(31, 45, 72, 0.75);
 }
 
-.offerGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
+.offerCarousel {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.offerItem {
+  flex: 1 1 calc(50% - 0.8rem);
+  min-width: 180px;
+}
+
+.compactCard .iconSprite {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.4rem;
+}
+.detailBlock {
+  border: 1px solid rgba(26, 45, 72, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  margin: 0.35rem 0;
+  padding: 0.5rem 0.6rem;
+}
+
+.detailBlock summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: #1d2f52;
+}
+
+.detailBlock summary::-webkit-details-marker {
+  display: none;
+}
+
+.detailBlock summary::after {
+  content: '▾';
+  font-size: 0.9rem;
+  color: rgba(27, 45, 76, 0.7);
+  transition: transform 0.2s ease;
+}
+
+.detailBlock[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.detailBlock ul {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detailBlock li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #2a3858;
 }

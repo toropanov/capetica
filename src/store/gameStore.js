@@ -190,6 +190,24 @@ const RANDOM_EVENTS = [
     chance: 0.15,
     icon: 'iconPlant',
   },
+  {
+    id: 'job_loss',
+    title: 'Сокращение отдела',
+    description: 'Направление закрыли — остаёшься без зарплаты на несколько месяцев.',
+    effect: { joblessMonths: 3 },
+    type: 'negative',
+    chance: 0.08,
+    icon: 'iconHardhat',
+  },
+  {
+    id: 'salary_cut',
+    title: 'Антикризисное снижение',
+    description: 'Компания урезает зарплату, пока рынок не стабилизируется.',
+    effect: { salaryCutMonths: 3, salaryCutAmount: 400 },
+    type: 'negative',
+    chance: 0.12,
+    icon: 'iconWallet',
+  },
 ];
 
 
@@ -213,6 +231,13 @@ function describeEffect(effect = {}) {
         Math.round(effect.recurringDelta),
       )}`,
     );
+  }
+  if (typeof effect.joblessMonths === 'number' && effect.joblessMonths > 0) {
+    parts.push(`без работы ${effect.joblessMonths} мес`);
+  }
+  if (typeof effect.salaryCutMonths === 'number' && effect.salaryCutMonths > 0) {
+    const cut = Math.abs(Math.round(effect.salaryCutAmount || 0));
+    parts.push(`зарплата -$${cut} на ${effect.salaryCutMonths} мес`);
   }
   return parts.length ? parts.join(', ') : null;
 }
@@ -246,6 +271,13 @@ function applyOutcomeToState(state, outcome = {}) {
   if (typeof outcome.debtDelta === 'number') {
     const nextDebt = Math.max(0, roundMoney(state.debt + outcome.debtDelta));
     patch.debt = nextDebt;
+  }
+  if (typeof outcome.joblessMonths === 'number') {
+    patch.joblessMonths = Math.max(0, Math.round(outcome.joblessMonths));
+  }
+  if (typeof outcome.salaryCutMonths === 'number') {
+    patch.salaryCutMonths = Math.max(0, Math.round(outcome.salaryCutMonths));
+    patch.salaryCutAmount = Math.max(0, Math.round(outcome.salaryCutAmount || 0));
   }
   return patch;
 }
@@ -366,7 +398,6 @@ function buildProfessionState(baseState, profession) {
       techShield: false,
     },
     investments: holdings,
-    dealParticipations: [],
     priceState: seededPrices,
     shockState: {},
     trackers: { win: {}, lose: {} },
@@ -379,10 +410,17 @@ function buildProfessionState(baseState, profession) {
     },
     creditLimit,
     availableCredit: creditLimit - debt,
+    creditBucket: 0,
     lastTurn: null,
     recentLog: [],
     currentEvent: null,
     availableActions: HOME_ACTIONS.slice(0, 4),
+    activeMonthlyOffers: [],
+    dealParticipations: [],
+    monthlyOfferUsed: false,
+    joblessMonths: 0,
+    salaryCutMonths: 0,
+    salaryCutAmount: 0,
   };
 }
 
@@ -507,7 +545,6 @@ const useGameStore = create(
       recurringExpenses: 0,
       protections: { healthPlan: false, legalShield: false, techShield: false },
       investments: {},
-      dealParticipations: [],
       priceState: {},
       shockState: {},
       history: { netWorth: [], cashFlow: [], passiveIncome: [] },
@@ -516,12 +553,17 @@ const useGameStore = create(
       loseCondition: null,
       creditLimit: 0,
       availableCredit: 0,
+      creditBucket: 0,
       lastTurn: null,
       recentLog: [],
       currentEvent: null,
       availableActions: HOME_ACTIONS.slice(0, 4),
       activeMonthlyOffers: [],
       dealParticipations: [],
+      monthlyOfferUsed: false,
+      joblessMonths: 0,
+      salaryCutMonths: 0,
+      salaryCutAmount: 0,
       bootstrapFromConfigs: (bundle) =>
         set((state) => {
           const rngSeed = state.rngSeed ?? ensureStoredSeed();
@@ -588,12 +630,49 @@ const useGameStore = create(
           const rngSeed = simResult.rngSeed;
           const shockState = simResult.shockState;
           const instrumentMap = getInstrumentMap(state.configs);
+          const baseInvestments = Object.entries(state.investments || {}).reduce((acc, [instrumentId, holding]) => {
+            acc[instrumentId] = { ...holding };
+            return acc;
+          }, {});
+          let autoLiquidation = 0;
+          const stopLossWarnings = [];
+          Object.entries(baseInvestments).forEach(([instrumentId, holding]) => {
+            const info = instrumentMap[instrumentId];
+            if (!info || !['stocks', 'crypto'].includes(info.type)) return;
+            const leveragedUnits = holding.leveragedUnits || 0;
+            const leveragedCost = holding.leveragedCost || 0;
+            if (leveragedUnits <= 0 || leveragedCost <= 0) return;
+            const price = priceState[instrumentId]?.price || info.initialPrice || 0;
+            const entryPrice = leveragedCost / leveragedUnits;
+            if (price <= entryPrice * 0.5) {
+              const cashGain = leveragedUnits * price;
+              autoLiquidation += cashGain;
+              const totalUnits = holding.units || 0;
+              const remainingUnits = Math.max(0, totalUnits - leveragedUnits);
+              if (remainingUnits <= 0) {
+                delete baseInvestments[instrumentId];
+              } else {
+                const totalCost = holding.costBasis * totalUnits;
+                const remainingCost = Math.max(0, totalCost - holding.costBasis * leveragedUnits);
+                baseInvestments[instrumentId] = {
+                  ...holding,
+                  units: remainingUnits,
+                  costBasis: remainingCost / remainingUnits || 0,
+                  leveragedUnits: 0,
+                  leveragedCost: 0,
+                };
+              }
+              stopLossWarnings.push(
+                `Стоп-лосс по ${info.title}: продано ${leveragedUnits.toFixed(2)} лотов.`,
+              );
+            }
+          });
           const holdingsValue = calculateHoldingsValue(
-            state.investments,
+            baseInvestments,
             priceState,
           );
           const passiveIncomeRaw = calculatePassiveIncome(
-            state.investments,
+            baseInvestments,
             priceState,
             instrumentMap,
           );
@@ -602,9 +681,23 @@ const useGameStore = create(
             return sum + (deal.monthlyPayout || 0);
           }, 0);
           const passiveIncome = roundMoney(passiveIncomeRaw + dealIncomeRaw);
-          const salary = roundMoney(
-            (state.profession.salaryMonthly || 0) + state.salaryBonus,
-          );
+          let joblessMonths = state.joblessMonths || 0;
+          let salaryCutMonths = state.salaryCutMonths || 0;
+          let salaryCutAmount = state.salaryCutAmount || 0;
+          let salaryBase = state.profession.salaryMonthly || 0;
+          let salary = 0;
+          if (joblessMonths > 0) {
+            joblessMonths -= 1;
+          } else {
+            const cut = salaryCutMonths > 0 ? salaryCutAmount : 0;
+            salary = Math.max(0, roundMoney(salaryBase + state.salaryBonus - cut));
+            if (salaryCutMonths > 0) {
+              salaryCutMonths -= 1;
+              if (salaryCutMonths === 0) {
+                salaryCutAmount = 0;
+              }
+            }
+          }
           const livingCost = Math.max(
             0,
             roundMoney((state.baseLivingCost || 0) + state.lifestyleModifier),
@@ -615,7 +708,7 @@ const useGameStore = create(
           const debtInterest = roundMoney(state.debt * monthlyRate);
           const debt = Math.max(0, roundMoney(state.debt + debtInterest));
           const cash = roundMoney(
-            state.cash + salary + passiveIncome - livingCost - recurringExpenses,
+            state.cash + salary + passiveIncome - livingCost - recurringExpenses + autoLiquidation,
           );
           const netHistoryBase = clampHistory([
             ...(state.history.netWorth || []),
@@ -691,6 +784,14 @@ const useGameStore = create(
             };
             recentLog = [entry, ...recentLog].slice(0, 5);
           }
+          stopLossWarnings.forEach((warning) => {
+            const entry = {
+              id: `stoploss-${Date.now()}-${Math.random()}`,
+              month: state.month + 1,
+              text: warning,
+            };
+            recentLog = [entry, ...recentLog].slice(0, 5);
+          });
           return {
             month: state.month + 1,
             cash: patchedCash,
@@ -720,6 +821,11 @@ const useGameStore = create(
               (offer) => offer.expiresMonth > state.month + 1,
             ),
             dealParticipations: updatedDeals,
+            joblessMonths,
+            salaryCutMonths,
+            salaryCutAmount,
+            investments: baseInvestments,
+            monthlyOfferUsed: false,
             lastTurn: {
               salary,
               passiveIncome,
@@ -727,6 +833,7 @@ const useGameStore = create(
               recurringExpenses,
               debtInterest,
               returns: simResult.returns,
+              stopLossWarnings,
             },
             recentLog,
           };
@@ -759,13 +866,29 @@ const useGameStore = create(
           const existing = nextInvestments[instrumentId] || {
             units: 0,
             costBasis: 0,
+            leveragedUnits: 0,
+            leveragedCost: 0,
           };
           const newUnits = existing.units + units;
           const totalCost =
             existing.costBasis * existing.units + spend;
+          let leveragedUnits = existing.leveragedUnits || 0;
+          let leveragedCost = existing.leveragedCost || 0;
+          let creditBucket = state.creditBucket || 0;
+          if (instrument.type && ['stocks', 'crypto'].includes(instrument.type) && creditBucket > 0) {
+            const creditUsed = Math.min(spend, creditBucket);
+            if (creditUsed > 0) {
+              const creditComprisedUnits = creditUsed / price;
+              leveragedUnits += creditComprisedUnits;
+              leveragedCost += creditUsed;
+              creditBucket = Math.max(0, creditBucket - creditUsed);
+            }
+          }
           nextInvestments[instrumentId] = {
             units: newUnits,
             costBasis: totalCost / newUnits,
+            leveragedUnits,
+            leveragedCost,
           };
           const logEntry = {
             id: `buy-${instrumentId}-${Date.now()}`,
@@ -776,6 +899,7 @@ const useGameStore = create(
           return {
             investments: nextInvestments,
             cash: state.cash - (spend + fee),
+            creditBucket,
             recentLog,
           };
         }),
@@ -797,12 +921,26 @@ const useGameStore = create(
           const netProceeds = gross - fee;
           const remainingUnits = holding.units - unitsToSell;
           const nextInvestments = { ...state.investments };
+          let leveragedUnits = holding.leveragedUnits || 0;
+          let leveragedCost = holding.leveragedCost || 0;
+          if (leveragedUnits > 0 && holding.units > 0) {
+            const leverageRatio = leveragedUnits / holding.units;
+            const leveragedSold = Math.min(leveragedUnits, unitsToSell * leverageRatio);
+            const costPerLeveragedUnit = leveragedUnits ? leveragedCost / leveragedUnits : 0;
+            leveragedUnits = Math.max(0, leveragedUnits - leveragedSold);
+            leveragedCost = Math.max(0, leveragedCost - leveragedSold * costPerLeveragedUnit);
+          }
           if (remainingUnits <= 0.0001) {
             delete nextInvestments[instrumentId];
           } else {
+            const totalCost = holding.costBasis * holding.units;
+            const remainingCost = Math.max(0, totalCost - holding.costBasis * unitsToSell);
             nextInvestments[instrumentId] = {
               ...holding,
               units: remainingUnits,
+              costBasis: remainingCost / remainingUnits || 0,
+              leveragedUnits,
+              leveragedCost,
             };
           }
           const logEntry = {
@@ -855,6 +993,7 @@ const useGameStore = create(
           return {
             cash: roundMoney(state.cash + draw),
             debt: roundMoney(state.debt + draw),
+            creditBucket: roundMoney((state.creditBucket || 0) + draw),
           };
         }),
       serviceDebt: (amount = 600) =>
@@ -862,12 +1001,13 @@ const useGameStore = create(
           if (state.debt <= 0 || state.cash <= 0) return {};
           const payment = Math.min(roundMoney(amount), state.cash, state.debt);
           if (payment <= 0) return {};
+          const fee = Math.min(state.cash - payment, Math.round(payment * 0.08));
           return {
-            cash: roundMoney(state.cash - payment),
+            cash: roundMoney(state.cash - payment - fee),
             debt: roundMoney(state.debt - payment),
           };
         }),
-      applyHomeAction: (actionId) =>
+      applyHomeAction: (actionId, options = {}) =>
         set((state) => {
           const currentSeed = state.rngSeed || ensureStoredSeed();
           const { patch, message, nextSeed } = handleHomeAction(actionId, state, currentSeed);
@@ -890,6 +1030,9 @@ const useGameStore = create(
                   expiresMonth: state.month + 12,
                 },
               ];
+            }
+            if (options.fromMonthly) {
+              updates.monthlyOfferUsed = true;
             }
           }
           if (!message) {
@@ -951,6 +1094,11 @@ const useGameStore = create(
         availableActions: state.availableActions,
         activeMonthlyOffers: state.activeMonthlyOffers,
         dealParticipations: state.dealParticipations,
+        joblessMonths: state.joblessMonths,
+        salaryCutMonths: state.salaryCutMonths,
+        salaryCutAmount: state.salaryCutAmount,
+        creditBucket: state.creditBucket,
+        monthlyOfferUsed: state.monthlyOfferUsed,
       }),
     },
   ),

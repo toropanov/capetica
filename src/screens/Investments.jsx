@@ -157,9 +157,8 @@ function Investments() {
   const serviceDebt = useGameStore((state) => state.serviceDebt);
   const debt = useGameStore((state) => state.debt);
   const availableCredit = useGameStore((state) => state.availableCredit);
-  const [leverage, setLeverage] = useState(1.5);
+  const [creditAmount, setCreditAmount] = useState(1000);
   const [feedback, setFeedback] = useState(null);
-  const creditAmount = useMemo(() => Math.round(600 * leverage), [leverage]);
   const filteredInstruments = useMemo(
     () => instruments.filter((instrument) => instrument.type !== 'bonds'),
     [instruments],
@@ -194,6 +193,13 @@ function Investments() {
       })),
     [filteredInstruments, priceState, holdings],
   );
+
+  useEffect(() => {
+    const maxDraw = Math.max(500, Math.floor(Math.max(availableCredit, 0)));
+    if (creditAmount > maxDraw) {
+      setCreditAmount(maxDraw);
+    }
+  }, [availableCredit, creditAmount]);
 
   return (
     <div className={styles.screen}>
@@ -233,18 +239,30 @@ function Investments() {
             <strong>${Math.round(Math.max(availableCredit, 0)).toLocaleString('en-US')}</strong>
           </div>
         </div>
-        <Slider
-          min={1}
-          max={4}
-          step={0.5}
-          value={leverage}
-          onChange={setLeverage}
-          label={`Плечо ×${leverage.toFixed(1)}`}
-        />
+        {availableCredit > 0 ? (
+          (() => {
+            const maxAvailable = Math.floor(Math.max(availableCredit, 0));
+            const sliderMin = Math.min(500, maxAvailable);
+            const sliderMax = Math.max(sliderMin, maxAvailable);
+            const sliderStep = Math.max(1, Math.floor(sliderMax / 6)) || 1;
+            return (
+              <Slider
+                min={sliderMin}
+                max={sliderMax}
+                step={sliderStep}
+                value={Math.min(creditAmount, sliderMax)}
+                onChange={(value) => setCreditAmount(Math.round(value))}
+                label={`Сумма $${Math.round(creditAmount).toLocaleString('en-US')}`}
+              />
+            );
+          })()
+        ) : (
+          <Slider min={0} max={0} step={1} value={0} onChange={() => {}} label="Сумма $0" />
+        )}
         <div className={styles.creditActions}>
           <Button
             variant="primary"
-            onClick={() => drawCredit(creditAmount)}
+            onClick={() => drawCredit(Math.min(creditAmount, Math.max(availableCredit, 0)))}
             disabled={availableCredit <= 0}
           >
             Взять ${creditAmount}

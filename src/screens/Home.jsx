@@ -6,7 +6,13 @@ import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/financ
 import styles from './Home.module.css';
 import { spriteStyle } from '../utils/iconSprite';
 
-function ActionCard({ action, onSelect, cash }) {
+const PASSIVE_MULTIPLIERS = {
+  bonds: 0.0022,
+  stocks: 0.0015,
+  crypto: 0.003,
+};
+
+function ActionCard({ action, onSelect, cash, compact = false }) {
   const disabled = action.cost ? cash < action.cost : false;
   const buttonLabel = action.buttonText
     ? action.buttonText
@@ -14,7 +20,7 @@ function ActionCard({ action, onSelect, cash }) {
       ? `Оплатить $${action.cost}`
       : 'Активировать';
   return (
-    <Card className={styles.actionCard}>
+    <Card className={`${styles.actionCard} ${compact ? styles.compactCard : ''}`}>
       <div className={styles.iconSprite} style={spriteStyle(action.icon)} />
       <h3>{action.title}</h3>
       <p>{action.description}</p>
@@ -26,7 +32,7 @@ function ActionCard({ action, onSelect, cash }) {
   );
 }
 
-function LastTurn({ data, showReturns, summary, investmentDelta }) {
+function LastTurn({ data, showReturns, summary, investmentDelta, passiveBreakdown = [] }) {
   const formatter = (value) => `$${Math.round(value).toLocaleString('en-US')}`;
   const passiveLabel = `${formatter(summary.passiveIncome)}/мес`;
   const renderBody = () => {
@@ -100,7 +106,53 @@ function LastTurn({ data, showReturns, summary, investmentDelta }) {
           </div>
         </div>
       </div>
+      {passiveBreakdown.length > 0 && (
+        <details className={styles.detailBlock}>
+          <summary>
+            <span>Пассивные доходы</span>
+            <strong>{`+$${Math.round(summary.passiveIncome).toLocaleString('en-US')}/мес`}</strong>
+          </summary>
+          <ul>
+            {passiveBreakdown.map((item) => (
+              <li key={item.id}>
+                <span>{item.label}</span>
+                <strong>{`+$${Math.round(item.amount).toLocaleString('en-US')}/мес`}</strong>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      {data && (
+        <details className={styles.detailBlock}>
+          <summary>
+            <span>Расходы</span>
+            <strong>
+              {`-$${Math.round(data.livingCost + (data.recurringExpenses || 0) + (data.debtInterest || 0)).toLocaleString('en-US')}/мес`}
+            </strong>
+          </summary>
+          <ul>
+            {[{ label: 'Бытовые', amount: data.livingCost }, { label: 'Фиксированные', amount: data.recurringExpenses || 0 }, { label: 'Проценты по долгу', amount: data.debtInterest || 0 }]
+              .filter((item) => item.amount > 0)
+              .map((item) => (
+                <li key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{`-$${Math.round(item.amount).toLocaleString('en-US')}`}</strong>
+                </li>
+              ))}
+          </ul>
+        </details>
+      )}
       {renderBody()}
+      {data?.stopLossWarnings?.length ? (
+        <div className={styles.stopLossBlock}>
+          <span>Авто-стоп-лосс</span>
+          <ul>
+            {data.stopLossWarnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -118,6 +170,8 @@ function Home() {
   const configs = useGameStore((state) => state.configs);
   const month = useGameStore((state) => state.month);
   const activeMonthlyOffers = useGameStore((state) => state.activeMonthlyOffers || []);
+  const monthlyOfferUsed = useGameStore((state) => state.monthlyOfferUsed);
+  const dealParticipations = useGameStore((state) => state.dealParticipations || []);
   const instrumentMap = useMemo(() => {
     const list = configs?.instruments?.instruments || [];
     return list.reduce((acc, instrument) => {
@@ -134,15 +188,42 @@ function Home() {
     [investments, priceState, instrumentMap],
   );
   const netWorth = useMemo(() => cash + holdingsValue - debt, [cash, holdingsValue, debt]);
-  const activeOfferIds = new Set(
-    (activeMonthlyOffers || [])
-      .filter((offer) => offer.expiresMonth > month)
-      .map((offer) => offer.id),
+  const activeOfferIds = useMemo(
+    () =>
+      new Set(
+        (activeMonthlyOffers || [])
+          .filter((offer) => offer.expiresMonth > month)
+          .map((offer) => offer.id),
+      ),
+    [activeMonthlyOffers, month],
   );
-  const monthlyOffers = (availableActions || [])
-    .filter((action) => !activeOfferIds.has(action.id))
-    .slice(0, 2);
+
+  const getNextSeed = (seed) => (seed * 1664525 + 1013904223) % 4294967296;
+  const monthlyOffers = useMemo(() => {
+    if (monthlyOfferUsed) return [];
+    const pool = (availableActions || []).filter((action) => !activeOfferIds.has(action.id));
+    if (!pool.length) return [];
+    let seed = (month + 1) * 9301 + 17;
+    const shuffled = [...pool];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      seed = getNextSeed(seed);
+      const j = Math.floor((seed / 4294967296) * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    seed = getNextSeed(seed);
+    const desiredCount = shuffled.length === 1 ? 1 : seed / 4294967296 < 0.5 ? 1 : 2;
+    return shuffled.slice(0, Math.min(desiredCount, shuffled.length));
+  }, [availableActions, activeOfferIds, month, monthlyOfferUsed]);
   const visibleActiveOffers = (activeMonthlyOffers || []).filter((offer) => offer.expiresMonth > month);
+  const dealIncomeVal = useMemo(
+    () =>
+      (dealParticipations || []).reduce((sum, deal) => {
+        if (deal.completed) return sum;
+        return sum + (deal.monthlyPayout || 0);
+      }, 0),
+    [dealParticipations],
+  );
+
   const positions = useMemo(() => {
     const entries = {};
     Object.entries(investments || {}).forEach(([instrumentId, holding]) => {
@@ -159,12 +240,40 @@ function Home() {
   const totalHolding = Object.values(positions).reduce((sum, pos) => sum + (pos.currentValue || 0), 0);
   const totalCostBasis = Object.values(positions).reduce((sum, pos) => sum + (pos.costBasis || 0), 0);
   const investmentDelta = totalHolding && totalCostBasis ? totalHolding - totalCostBasis : 0;
+  const passiveIncomeEffective = passiveIncomeVal + dealIncomeVal;
+
+  const passiveBreakdown = useMemo(() => {
+    const rows = [];
+    Object.entries(investments || {}).forEach(([instrumentId, holding]) => {
+      const info = instrumentMap[instrumentId];
+      if (!info) return;
+      const price = priceState[instrumentId]?.price || info.initialPrice || 0;
+      const units = holding?.units || 0;
+      const value = units * price;
+      const amount = value * (PASSIVE_MULTIPLIERS[info.type] || 0.001);
+      if (amount > 0.01) {
+        rows.push({ id: `inv-${instrumentId}`, label: info.title, amount });
+      }
+    });
+    (dealParticipations || [])
+      .filter((deal) => !deal.completed && deal.monthlyPayout > 0)
+      .forEach((deal) => {
+        rows.push({ id: deal.participationId, label: `Сделка: ${deal.title}`, amount: deal.monthlyPayout });
+      });
+    const total = rows.reduce((sum, item) => sum + item.amount, 0);
+    const diff = passiveIncomeEffective - total;
+    if (Math.abs(diff) > 0.5) {
+      rows.push({ id: 'other', label: 'Прочее', amount: diff });
+    }
+    return rows;
+  }, [investments, priceState, instrumentMap, dealParticipations, passiveIncomeEffective]);
 
   const recurringExpenses = useGameStore((state) => state.recurringExpenses || 0);
+  const showPortfolioDelta = Object.values(positions).some((pos) => (pos.currentValue || 0) > 0.01);
   const summary = {
     netWorth,
     cash,
-    passiveIncome: passiveIncomeVal,
+    passiveIncome: passiveIncomeEffective,
     debt,
     recurringExpenses,
   };
@@ -193,28 +302,32 @@ function Home() {
       <Card className={styles.card}>
         <LastTurn
           data={lastTurn}
-          showReturns={hasInvestments}
+          showReturns={showPortfolioDelta}
           summary={summary}
           investmentDelta={investmentDelta}
+          passiveBreakdown={passiveBreakdown}
         />
       </Card>
-      <section>
-        <div className={styles.sectionHeader}>
-          <span>Месячное предложение</span>
-          <p>До двух действий, которые дают буст именно сейчас.</p>
-        </div>
-        <div className={styles.offerGrid}>
-          {monthlyOffers.length ? (
-            monthlyOffers.map((action) => (
-              <ActionCard key={action.id} action={action} onSelect={applyHomeAction} cash={cash} />
-            ))
-          ) : (
-            <Card className={styles.actionPlaceholder}>
-              <p>Нет доступных предложений в этом месяце.</p>
-            </Card>
-          )}
-        </div>
-      </section>
+      {monthlyOffers.length > 0 && (
+        <section>
+          <div className={styles.sectionHeader}>
+            <span>Месячное предложение</span>
+            <p>Появляются случайно, успей выбрать одно из доступных.</p>
+          </div>
+          <div className={styles.offerCarousel}>
+            {monthlyOffers.map((action) => (
+              <div key={action.id} className={styles.offerItem}>
+                <ActionCard
+                  action={action}
+                  cash={cash}
+                  compact
+                  onSelect={(id) => applyHomeAction(id, { fromMonthly: true })}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {visibleActiveOffers.length > 0 && (
         <div className={styles.activeOffers}>
           <div className={styles.activeOffersHeader}>Активные предложения</div>
