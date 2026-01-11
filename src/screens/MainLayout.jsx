@@ -107,13 +107,13 @@ function MainLayout() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path
                 d="M5 7H19L18 21H6L5 7Z"
-                stroke="#fff"
+                stroke="#1f2d4a"
                 strokeWidth="1.8"
                 strokeLinejoin="round"
               />
-              <path d="M9 7V4H15V7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-              <path d="M10 11V18" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M14 11V18" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M9 7V4H15V7" stroke="#1f2d4a" strokeWidth="1.8" strokeLinecap="round" />
+              <path d="M10 11V18" stroke="#1f2d4a" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M14 11V18" stroke="#1f2d4a" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
         </div>

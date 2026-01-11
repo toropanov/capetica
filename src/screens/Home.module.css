@@ -7,12 +7,13 @@
 }
 
 .screen h2 {
-  color: #fefefe;
+  color: #18274a;
 }
 
 .eventCard {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fefefe;
+  background: rgba(255, 255, 255, 0.92);
+  color: #182336;
+  border: 1px solid rgba(13, 44, 87, 0.1);
 }
 
 .eventHeader {
@@ -30,19 +31,21 @@
   font-size: 0.85rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.8;
+  color: rgba(28, 46, 78, 0.7);
 }
 
 .actionPlaceholder {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.8);
+  color: rgba(21, 35, 60, 0.85);
   text-align: center;
+  border: 1px dashed rgba(21, 34, 60, 0.2);
 }
 
 .actionCard {
   min-height: 240px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #0b112e;
+  background: #ffffff;
+  color: #1f2d4a;
+  border: 1px solid rgba(23, 42, 76, 0.07);
 }
 
 .actionCard h3 {
@@ -56,13 +59,13 @@
 
 .hint {
   font-size: 0.8rem;
-  color: #c04660;
+  color: #d04b5f;
   font-weight: 600;
 }
 
 .placeholder {
   margin: 0;
-  color: rgba(9, 12, 24, 0.6);
+  color: rgba(22, 32, 59, 0.65);
 }
 
 .actionIcon {
@@ -76,14 +79,14 @@
   height: 52px;
   border-radius: 18px;
   margin-bottom: 0.8rem;
-  box-shadow: 0 8px 20px rgba(8, 12, 32, 0.3);
+  box-shadow: 0 6px 16px rgba(14, 32, 65, 0.18);
 }
 
 .card header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: rgba(9, 12, 28, 0.7);
+  color: rgba(32, 47, 77, 0.75);
   margin-bottom: 1rem;
 }
 
@@ -91,7 +94,7 @@
   font-size: 0.8rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(33, 48, 78, 0.7);
 }
 
 .lastTurn {
@@ -105,7 +108,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(13, 41, 82, 0.12);
 }
 
 .balanceBlock > div span {
@@ -116,8 +119,9 @@
 }
 
 .balanceBlock > div strong {
-  font-size: 1.4rem;
-  color: #fefefe;
+  font-size: 1.6rem;
+  color: #0d1f3b;
+  text-shadow: 0 6px 18px rgba(15, 35, 70, 0.25);
 }
 
 .balanceStats {
@@ -133,16 +137,19 @@
 .balanceStats span {
   display: block;
   font-size: 0.75rem;
-  opacity: 0.6;
+  opacity: 0.65;
+  color: #4c5a73;
 }
 
 .balanceStats strong {
   font-size: 1rem;
+  color: #1f2d4a;
 }
 
 .lastTurn span {
   font-size: 0.85rem;
-  opacity: 0.6;
+  opacity: 0.7;
+  color: #3a4a64;
 }
 
 .lastTurn strong {
@@ -154,15 +161,15 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 0.3rem;
-  border-bottom: 1px solid rgba(9, 12, 32, 0.08);
+  border-bottom: 1px solid rgba(24, 39, 70, 0.12);
 }
 
 .valuePositive {
-  color: #27cfa0;
+  color: #1fb18a;
 }
 
 .valueNegative {
-  color: #ff6c87;
+  color: #f06b86;
 }
 
 .divider {
@@ -190,7 +197,7 @@
   flex-direction: column;
   gap: 0.2rem;
   margin-bottom: 0.8rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(21, 39, 66, 0.95);
 }
 
 .sectionHeader span {
@@ -198,11 +205,12 @@
   letter-spacing: 0.18em;
   font-size: 0.75rem;
   opacity: 0.7;
+  color: rgba(62, 79, 109, 0.8);
 }
 
 .sectionHeader p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(31, 45, 72, 0.75);
 }
 
 .offerGrid {

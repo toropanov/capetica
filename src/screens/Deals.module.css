@@ -8,12 +8,12 @@
 
 .header h2 {
   margin: 0;
-  color: #fff;
+  color: #1c2f53;
 }
 
 .header p {
   margin: 0.3rem 0 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(32, 48, 80, 0.75);
 }
 
 .list {
@@ -23,8 +23,8 @@
 }
 
 .dealCard {
-  background: rgba(255, 255, 255, 0.95);
-  color: #09122c;
+  background: #ffffff;
+  color: #1d2b46;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -49,7 +49,13 @@
   width: 56px;
   height: 56px;
   border-radius: 18px;
-  box-shadow: 0 10px 20px rgba(6, 9, 20, 0.2);
+  box-shadow: 0 10px 20px rgba(36, 56, 94, 0.2);
+}
+
+.risk {
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+  color: #b45a3d;
 }
 
 .featureList {
@@ -63,4 +69,78 @@
 
 .dealCard button {
   width: 100%;
+  margin-top: 0.6rem;
+}
+
+.feedback {
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+
+.feedbackPositive {
+  background: rgba(160, 231, 199, 0.35);
+  border-color: rgba(160, 231, 199, 0.5);
+  color: #0a4c32;
+}
+
+.feedbackNegative {
+  background: rgba(255, 198, 206, 0.4);
+  border-color: rgba(255, 198, 206, 0.6);
+  color: #6e1b2a;
+}
+
+.participations {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.participations h3 {
+  margin: 0;
+  color: #1d2f51;
+}
+
+.participationCard {
+  background: #fff;
+  border-radius: 18px;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(27, 51, 96, 0.08);
+}
+
+.participationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.participationHeader span {
+  font-size: 0.8rem;
+  color: rgba(33, 48, 84, 0.7);
+}
+
+.participationCard p {
+  margin: 0.4rem 0;
+  color: rgba(24, 37, 66, 0.85);
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(26, 45, 78, 0.12);
+  overflow: hidden;
+}
+
+.progressBar div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(120deg, #8ecbff, #c3f4d6);
+}
+
+.participationCompleted {
+  border-color: rgba(28, 158, 110, 0.35);
+  box-shadow: 0 10px 25px rgba(53, 122, 96, 0.15);
 }

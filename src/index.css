@@ -2,8 +2,8 @@
   font-family: 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.4;
   font-weight: 400;
-  color: #0b1026;
-  background-color: #0b0f1f;
+  color: #1b2b47;
+  background-color: #f4f6fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -19,11 +19,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at 20% 20%, rgba(152, 117, 255, 0.5), transparent 50%),
-    radial-gradient(circle at 80% 0%, rgba(102, 205, 253, 0.4), transparent 45%),
-    radial-gradient(circle at 50% 80%, rgba(185, 249, 209, 0.5), transparent 45%),
-    #070912;
-  color: #0b1026;
+  background: linear-gradient(145deg, #f8fbff, #edf2ff 45%, #fefaff);
+  color: #0f1f3c;
   display: flex;
   justify-content: center;
   padding: 1.5rem 0;

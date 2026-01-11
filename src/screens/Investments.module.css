@@ -7,6 +7,7 @@
 
 .screen header h2 {
   margin-bottom: 0.4rem;
+  color: #1c2e4f;
 }
 
 .feedback {
@@ -17,15 +18,15 @@
 }
 
 .feedbackPositive {
-  background: rgba(47, 211, 160, 0.18);
-  color: #085237;
-  border-color: rgba(47, 211, 160, 0.4);
+  background: rgba(109, 221, 187, 0.2);
+  color: #125b43;
+  border-color: rgba(109, 221, 187, 0.4);
 }
 
 .feedbackNegative {
-  background: rgba(255, 108, 135, 0.15);
-  color: #7a1f32;
-  border-color: rgba(255, 108, 135, 0.35);
+  background: rgba(255, 166, 185, 0.2);
+  color: #7c2a3a;
+  border-color: rgba(255, 166, 185, 0.4);
 }
 
 .list {
@@ -35,8 +36,8 @@
 }
 
 .instrumentCard {
-  background: rgba(255, 255, 255, 0.9);
-  color: #0b112c;
+  background: #ffffff;
+  color: #1f2d4a;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -100,10 +101,10 @@
 
 .tradePanel {
   margin-top: 0.8rem;
-  border: 1px solid rgba(7, 13, 32, 0.08);
+  border: 1px solid rgba(31, 55, 96, 0.12);
   border-radius: 18px;
   padding: 0.8rem;
-  background: rgba(6, 9, 20, 0.04);
+  background: rgba(243, 247, 255, 0.7);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -119,7 +120,7 @@
   text-transform: uppercase;
   font-size: 0.7rem;
   letter-spacing: 0.15em;
-  opacity: 0.6;
+  color: rgba(36, 52, 84, 0.65);
 }
 
 .tradeValue strong {
@@ -137,13 +138,13 @@
 
 .tradeHint {
   font-size: 0.8rem;
-  color: rgba(6, 9, 26, 0.65);
+  color: rgba(32, 48, 85, 0.65);
 }
 
 .sellButton {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(8, 12, 32, 0.12);
-  box-shadow: 0 12px 25px rgba(8, 12, 32, 0.15);
+  border: 1px solid rgba(28, 44, 80, 0.12);
+  box-shadow: 0 12px 25px rgba(30, 47, 83, 0.15);
   flex: 1;
 }
 

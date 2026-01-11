@@ -366,6 +366,7 @@ function buildProfessionState(baseState, profession) {
       techShield: false,
     },
     investments: holdings,
+    dealParticipations: [],
     priceState: seededPrices,
     shockState: {},
     trackers: { win: {}, lose: {} },
@@ -506,6 +507,7 @@ const useGameStore = create(
       recurringExpenses: 0,
       protections: { healthPlan: false, legalShield: false, techShield: false },
       investments: {},
+      dealParticipations: [],
       priceState: {},
       shockState: {},
       history: { netWorth: [], cashFlow: [], passiveIncome: [] },
@@ -593,7 +595,11 @@ const useGameStore = create(
             priceState,
             instrumentMap,
           );
-          const passiveIncome = roundMoney(passiveIncomeRaw);
+          const dealIncomeRaw = (state.dealParticipations || []).reduce((sum, deal) => {
+            if (deal.completed) return sum;
+            return sum + (deal.monthlyPayout || 0);
+          }, 0);
+          const passiveIncome = roundMoney(passiveIncomeRaw + dealIncomeRaw);
           const salary = roundMoney(
             (state.profession.salaryMonthly || 0) + state.salaryBonus,
           );
@@ -617,6 +623,20 @@ const useGameStore = create(
             ...(state.history.passiveIncome || []),
             { month: state.month + 1, value: passiveIncome },
           ]);
+          const updatedDeals = (state.dealParticipations || []).map((deal) => {
+            if (deal.completed) {
+              return deal;
+            }
+            const nextElapsed = Math.min(deal.durationMonths || 1, (deal.elapsedMonths || 0) + 1);
+            const completed = nextElapsed >= (deal.durationMonths || 1);
+            const profitEarned = roundMoney((deal.profitEarned || 0) + (deal.monthlyPayout || 0));
+            return {
+              ...deal,
+              elapsedMonths: nextElapsed,
+              profitEarned,
+              completed,
+            };
+          });
           const eventRoll = rollRandomEvent({ ...state, cash, debt }, rngSeed);
           const actionsRoll = rollMonthlyActions(eventRoll.seed);
           const patchedCash = eventRoll.patch.cash ?? cash;
@@ -694,6 +714,7 @@ const useGameStore = create(
             trackers: goalState.trackers,
             winCondition: state.winCondition || goalState.win,
             loseCondition: state.loseCondition || goalState.lose,
+            dealParticipations: updatedDeals,
             lastTurn: {
               salary,
               passiveIncome,
@@ -791,6 +812,36 @@ const useGameStore = create(
             recentLog,
           };
         }),
+      participateInDeal: (dealMeta) => {
+        const state = get();
+        const entryCost = roundMoney(dealMeta.entryCost || 0);
+        if (!dealMeta?.id) {
+          return { error: 'Нет данных по сделке.' };
+        }
+        if (entryCost <= 0) {
+          return { error: 'Неверная стоимость входа.' };
+        }
+        if (state.cash < entryCost) {
+          return { error: `Нужно $${entryCost}` };
+        }
+        const participation = {
+          participationId: `${dealMeta.id}-${Date.now()}`,
+          dealId: dealMeta.id,
+          title: dealMeta.title,
+          invested: entryCost,
+          monthlyPayout: dealMeta.monthlyPayout || 0,
+          durationMonths: dealMeta.durationMonths || 1,
+          elapsedMonths: 0,
+          profitEarned: 0,
+          completed: false,
+          risk: dealMeta.risk,
+        };
+        set((prev) => ({
+          cash: roundMoney(prev.cash - entryCost),
+          dealParticipations: [...(prev.dealParticipations || []), participation],
+        }));
+        return { ok: true };
+      },
       drawCredit: (amount = 1200) =>
         set((state) => {
           const available = Math.max(0, state.creditLimit - state.debt);

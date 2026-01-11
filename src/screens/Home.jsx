@@ -63,12 +63,14 @@ function LastTurn({ data, showReturns, summary }) {
         </div>
         <div className={styles.lastRow}>
           <span>Доходность инвестиций</span>
-          <strong>{avgReturn !== null ? `${avgReturn}%` : '—'}</strong>
+          <strong className={avgReturn >= 0 ? styles.valuePositive : styles.valueNegative}>
+            {avgReturn !== null ? `${avgReturn}%` : '—'}
+          </strong>
         </div>
         <div className={styles.netRow}>
           <span>Итог месяца</span>
           <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
-            {formatter(net)}
+            {net >= 0 ? `+$${Math.abs(net).toLocaleString('en-US')}` : `-$${Math.abs(net).toLocaleString('en-US')}`}
           </strong>
         </div>
       </>

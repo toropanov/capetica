@@ -113,7 +113,6 @@ function InstrumentCard({ instrument, priceInfo, holding, cash, onBuy, onSell })
       <div className={styles.instrumentHeader}>
         <div className={styles.instrumentIcon} style={spriteStyle(iconKey)} />
         <div>
-          <p>{instrument.type.toUpperCase()}</p>
           <h3>{instrument.title}</h3>
         </div>
         <div className={styles.priceBlock}>

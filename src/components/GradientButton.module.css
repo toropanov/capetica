@@ -4,12 +4,12 @@
   padding: 1rem 2.4rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #05050d;
+  color: #0a1630;
   cursor: pointer;
-  background: linear-gradient(120deg, #a964ff, #64d8ff);
+  background: linear-gradient(120deg, #9fd4ff, #d7f4c7);
   box-shadow:
-    0 25px 55px rgba(74, 49, 122, 0.45),
-    inset 0 1px rgba(255, 255, 255, 0.45);
+    0 20px 40px rgba(87, 137, 177, 0.25),
+    inset 0 1px rgba(255, 255, 255, 0.7);
   position: relative;
   overflow: hidden;
   transition: transform 0.15s ease;
@@ -29,8 +29,8 @@
 }
 
 .disabled {
-  background: linear-gradient(120deg, #b0b6c3, #9ea3b1);
-  color: rgba(255, 255, 255, 0.6);
+  background: linear-gradient(120deg, #d5dbea, #c7cedd);
+  color: rgba(21, 29, 49, 0.45);
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -42,7 +42,7 @@
   width: 1.8rem;
   height: 1.8rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.45);
   margin-right: 0.6rem;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.9);
 }

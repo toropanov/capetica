@@ -7,7 +7,7 @@ const NAV_ITEMS = [
 ];
 
 function Icon({ id, active }) {
-  const stroke = active ? '#0b1024' : '#8ca2d8';
+  const stroke = active ? '#1c2f53' : '#9fb1d2';
   switch (id) {
     case 'career':
       return (

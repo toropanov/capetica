@@ -12,7 +12,7 @@
   width: 420px;
   height: 420px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(162, 114, 255, 0.9), transparent 60%);
+  background: radial-gradient(circle, rgba(173, 210, 255, 0.9), transparent 60%);
   filter: blur(40px);
   animation: pulse 6s ease-in-out infinite;
 }
@@ -21,14 +21,14 @@
   position: relative;
   padding: 2.5rem 3rem;
   border-radius: 36px;
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(165, 192, 230, 0.45);
+  background: rgba(255, 255, 255, 0.9);
   box-shadow:
-    0 25px 60px rgba(17, 27, 63, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    0 25px 60px rgba(97, 126, 176, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   font-size: 1.15rem;
-  color: #f4f7ff;
+  color: #1f2d4b;
 }
 
 .loaderSparkle {
@@ -50,18 +50,18 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  color: #fefefe;
+  color: #1f2b46;
 }
 
 .error button {
   padding: 0.8rem 1.4rem;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(120deg, #a964ff, #64d8ff);
-  color: #05050b;
+  background: linear-gradient(120deg, #9ed4ff, #caf3d6);
+  color: #0e1f36;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 30px rgba(58, 45, 114, 0.45);
+  box-shadow: 0 14px 30px rgba(98, 134, 176, 0.3);
 }
 
 @keyframes pulse {
