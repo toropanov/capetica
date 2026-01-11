@@ -3,9 +3,22 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import useGameStore from '../store/gameStore';
 import BottomNav from '../components/BottomNav';
+import GradientButton from '../components/GradientButton';
 import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/finance';
 import styles from './MainLayout.module.css';
 import { spriteStyle, getProfessionIcon } from '../utils/iconSprite';
+
+function DiceIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <rect x="4" y="4" width="16" height="16" rx="4" stroke="#05050d" strokeWidth="2" />
+      <circle cx="9" cy="9" r="1.5" fill="#05050d" />
+      <circle cx="15" cy="15" r="1.5" fill="#05050d" />
+      <circle cx="15" cy="9" r="1.5" fill="#05050d" opacity="0.6" />
+      <circle cx="9" cy="15" r="1.5" fill="#05050d" opacity="0.6" />
+    </svg>
+  );
+}
 
 function StatusRibbon({ win, lose }) {
   if (!win && !lose) return null;
@@ -24,7 +37,6 @@ function MainLayout() {
   const storeData = useGameStore(
     useShallow((state) => ({
       profession: state.profession,
-      month: state.month,
       cash: state.cash,
       debt: state.debt,
       investments: state.investments,
@@ -36,6 +48,7 @@ function MainLayout() {
       recurringExpenses: state.recurringExpenses,
     })),
   );
+  const advanceMonth = useGameStore((state) => state.advanceMonth);
 
   const instrumentMap = useMemo(() => {
     const list = storeData.configs?.instruments?.instruments || [];
@@ -72,18 +85,36 @@ function MainLayout() {
           />
           <div>
             <span>{storeData.profession?.title || 'Профиль'}</span>
-            <strong>Месяц {storeData.month}</strong>
           </div>
         </div>
         <div className={styles.headerRight}>
-          <strong>{formatMoney(netWorth)}</strong>
+          <div className={styles.headerStats}>
+            <div>
+              <span>Наличные</span>
+              <strong>{formatMoney(storeData.cash)}</strong>
+            </div>
+            <div>
+              <span>Долг</span>
+              <strong>{formatMoney(storeData.debt)}</strong>
+            </div>
+          </div>
           <button
             type="button"
             className={styles.exitButton}
             onClick={() => navigate('/choose')}
             title="Сменить роль"
           >
-            ↺
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 7H19L18 21H6L5 7Z"
+                stroke="#fff"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+              <path d="M9 7V4H15V7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+              <path d="M10 11V18" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M14 11V18" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
           </button>
         </div>
       </header>
@@ -91,6 +122,11 @@ function MainLayout() {
       <main className={styles.content}>
         <Outlet />
       </main>
+      <div className={styles.nextButton}>
+        <GradientButton onClick={advanceMonth} icon={<DiceIcon />}>
+          Завершить ход
+        </GradientButton>
+      </div>
       <BottomNav current={location.pathname} onChange={navigate} />
     </div>
   );

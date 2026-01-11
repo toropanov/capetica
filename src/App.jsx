@@ -5,7 +5,7 @@ import ProfessionSelect from './screens/ProfessionSelect';
 import MainLayout from './screens/MainLayout';
 import Home from './screens/Home';
 import Investments from './screens/Investments';
-import Stats from './screens/Stats';
+import Deals from './screens/Deals';
 import styles from './styles/AppShell.module.css';
 
 const CONFIG_FILES = [
@@ -104,8 +104,8 @@ function App() {
         <Route path="/choose" element={<ProfessionSelect />} />
         <Route path="/app" element={<GuardedLayout />}>
           <Route index element={<Home />} />
-          <Route path="invest" element={<Investments />} />
-          <Route path="stats" element={<Stats />} />
+          <Route path="bank" element={<Investments />} />
+          <Route path="deals" element={<Deals />} />
         </Route>
         <Route path="*" element={<Navigate to={initialRedirect} replace />} />
       </Routes>

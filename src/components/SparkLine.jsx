@@ -1,7 +1,7 @@
 function SparkLine({ data = [], colorStart = '#9c6bff', colorStop = '#68e1fd' }) {
   if (!data.length) return null;
   const width = 280;
-  const height = 120;
+  const height = 80;
   const values = data.map((point) => {
     if (typeof point === 'number') return point;
     if (typeof point.value === 'number') return point.value;

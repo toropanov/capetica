@@ -1,7 +1,14 @@
 import styles from './Button.module.css';
 
-function Button({ children, variant = 'secondary', disabled = false, onClick, type = 'button' }) {
-  const classes = [styles.button, styles[variant] || '', disabled ? styles.disabled : '']
+function Button({
+  children,
+  variant = 'secondary',
+  disabled = false,
+  onClick,
+  type = 'button',
+  className,
+}) {
+  const classes = [styles.button, styles[variant] || '', className, disabled ? styles.disabled : '']
     .filter(Boolean)
     .join(' ');
   return (

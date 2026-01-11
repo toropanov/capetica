@@ -1,6 +1,6 @@
 import styles from './GradientButton.module.css';
 
-function GradientButton({ children, onClick, disabled = false }) {
+function GradientButton({ children, onClick, disabled = false, icon = null }) {
   return (
     <button
       type="button"
@@ -8,6 +8,7 @@ function GradientButton({ children, onClick, disabled = false }) {
       onClick={onClick}
       disabled={disabled}
     >
+      {icon && <span className={styles.icon}>{icon}</span>}
       <span>{children}</span>
     </button>
   );

@@ -1,10 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import useGameStore, { homeActions } from '../store/gameStore';
 import Card from '../components/Card';
-import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
-import Slider from '../components/Slider';
-import TopStats from '../components/TopStats';
 import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/finance';
 import styles from './Home.module.css';
 import { spriteStyle } from '../utils/iconSprite';
@@ -29,78 +26,92 @@ function ActionCard({ action, onSelect, cash }) {
   );
 }
 
-function LastTurn({ data, showReturns }) {
-  if (!data) {
-    return (
-      <div className={styles.placeholder}>
-        <p>Совершай действия и переходи к следующему месяцу, чтобы увидеть динамику.</p>
-      </div>
-    );
-  }
+function LastTurn({ data, showReturns, summary }) {
   const formatter = (value) => `$${Math.round(value).toLocaleString('en-US')}`;
-  const recurring = data.recurringExpenses || 0;
-  const net =
-    Math.round(data.salary + data.passiveIncome - data.livingCost - recurring - (data.debtInterest || 0));
-  const entries = [
-    { label: 'Зарплата', value: data.salary, positive: true },
-    { label: 'Пассивно', value: data.passiveIncome, positive: true },
-    { label: 'Бытовые', value: data.livingCost, positive: false },
-    { label: 'Фикс.расходы', value: recurring, positive: false },
-    { label: 'Проценты долга', value: data.debtInterest || 0, positive: false },
-  ];
-  return (
-    <div className={styles.lastTurn}>
-      {entries.map((entry) => (
-        <div key={entry.label} className={styles.lastRow}>
-          <span>{entry.label}</span>
-          <strong className={entry.positive ? styles.valuePositive : styles.valueNegative}>
-            {formatter(entry.value)}
+  const passiveLabel = `${formatter(summary.passiveIncome)}/мес`;
+  const renderBody = () => {
+    if (!data) {
+      return (
+        <div className={styles.placeholder}>
+          <p>Совершай действия и переходи к следующему месяцу, чтобы увидеть динамику.</p>
+        </div>
+      );
+    }
+    const recurring = data.recurringExpenses || 0;
+    const debtInterest = data.debtInterest || 0;
+    const totalIncome = Math.round(data.salary + data.passiveIncome);
+    const totalExpenses = Math.round(data.livingCost + recurring + debtInterest);
+    const net = Math.round(totalIncome - totalExpenses);
+    const avgReturn =
+      showReturns && Object.keys(data.returns || {}).length
+        ? Math.round(
+            (Object.values(data.returns).reduce((acc, value) => acc + value, 0) /
+              Object.keys(data.returns).length) *
+              100,
+          )
+        : null;
+    return (
+      <>
+        <div className={styles.resultsLabel}>Результат хода</div>
+        <div className={styles.lastRow}>
+          <span>Доходы</span>
+          <strong className={styles.valuePositive}>{formatter(totalIncome)}</strong>
+        </div>
+        <div className={styles.lastRow}>
+          <span>Расходы</span>
+          <strong className={styles.valueNegative}>{formatter(totalExpenses)}</strong>
+        </div>
+        <div className={styles.lastRow}>
+          <span>Доходность инвестиций</span>
+          <strong>{avgReturn !== null ? `${avgReturn}%` : '—'}</strong>
+        </div>
+        <div className={styles.netRow}>
+          <span>Итог месяца</span>
+          <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
+            {formatter(net)}
           </strong>
         </div>
-      ))}
-      <div className={styles.lastRow}>
-        <span>Доходность портфеля</span>
-        <strong>
-          {showReturns && Object.keys(data.returns || {}).length
-            ? `${Math.round(
-                (Object.values(data.returns).reduce((acc, value) => acc + value, 0) /
-                  Object.keys(data.returns).length) *
-                  100,
-              )}%`
-            : '—'}
-        </strong>
+      </>
+    );
+  };
+  return (
+    <div className={styles.lastTurn}>
+      <div className={styles.balanceBlock}>
+        <div>
+          <span>Баланс</span>
+          <strong>{formatter(summary.netWorth)}</strong>
+        </div>
+        <div className={styles.balanceStats}>
+          <div>
+            <span>Наличные</span>
+            <strong>{formatter(summary.cash)}</strong>
+          </div>
+          <div>
+            <span>Пассивно</span>
+            <strong>{passiveLabel}</strong>
+          </div>
+          <div>
+            <span>Долг</span>
+            <strong>{formatter(summary.debt)}</strong>
+          </div>
+        </div>
       </div>
-      <div className={styles.netRow}>
-        <span>Итог месяца</span>
-        <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
-          {formatter(net)}
-        </strong>
-      </div>
+      {renderBody()}
     </div>
   );
 }
 
 function Home() {
   const applyHomeAction = useGameStore((state) => state.applyHomeAction);
-  const advanceMonth = useGameStore((state) => state.advanceMonth);
   const lastTurn = useGameStore((state) => state.lastTurn);
   const cash = useGameStore((state) => state.cash);
   const currentEvent = useGameStore((state) => state.currentEvent);
   const availableActions = useGameStore((state) => state.availableActions || homeActions);
   const hasInvestments = useGameStore((state) => Object.keys(state.investments || {}).length > 0);
-  const drawCredit = useGameStore((state) => state.drawCredit);
-  const serviceDebt = useGameStore((state) => state.serviceDebt);
   const debt = useGameStore((state) => state.debt);
-  const creditLimit = useGameStore((state) => state.creditLimit);
-  const availableCredit = useGameStore((state) => state.availableCredit);
-  const recurringExpenses = useGameStore((state) => state.recurringExpenses || 0);
-  const month = useGameStore((state) => state.month);
   const priceState = useGameStore((state) => state.priceState);
   const investments = useGameStore((state) => state.investments);
   const configs = useGameStore((state) => state.configs);
-  const [leverage, setLeverage] = useState(1.5);
-  const baseDraw = 600;
-  const creditAmount = useMemo(() => Math.round(baseDraw * leverage), [leverage]);
   const instrumentMap = useMemo(() => {
     const list = configs?.instruments?.instruments || [];
     return list.reduce((acc, instrument) => {
@@ -117,25 +128,21 @@ function Home() {
     [investments, priceState, instrumentMap],
   );
   const netWorth = useMemo(() => cash + holdingsValue - debt, [cash, holdingsValue, debt]);
+  const monthlyOffers = (availableActions || []).slice(0, 2);
+  const summary = {
+    netWorth,
+    cash,
+    passiveIncome: passiveIncomeVal,
+    debt,
+  };
 
   return (
     <div className={styles.screen}>
-      <div className={styles.statsCard}>
-        <TopStats
-          month={month}
-          netWorth={netWorth}
-          cash={cash}
-          passiveIncome={passiveIncomeVal}
-          debt={debt}
-          availableCredit={availableCredit}
-          recurringExpenses={recurringExpenses}
-        />
-      </div>
       <Card className={styles.card}>
         <header>
-          <h3>Результат последнего месяца</h3>
+          <h3>Последний ход</h3>
         </header>
-        <LastTurn data={lastTurn} showReturns={hasInvestments} />
+        <LastTurn data={lastTurn} showReturns={hasInvestments} summary={summary} />
       </Card>
       {currentEvent && (
         <Card className={styles.eventCard}>
@@ -148,53 +155,23 @@ function Home() {
           </div>
         </Card>
       )}
-      <Card className={styles.creditCard}>
-        <div className={styles.creditHeader}>
-          <div>
-            <span>Долг</span>
-            <strong>${Math.round(debt).toLocaleString('en-US')}</strong>
-          </div>
-          <div>
-            <span>Доступно</span>
-            <strong>${Math.round(Math.max(availableCredit, 0)).toLocaleString('en-US')}</strong>
-          </div>
-        </div>
-        <Slider
-          min={1}
-          max={4}
-          step={0.5}
-          value={leverage}
-          onChange={setLeverage}
-          label={`Плечо ×${leverage.toFixed(1)}`}
-        />
-        <div className={styles.creditActions}>
-          <Button
-            variant="primary"
-            onClick={() => drawCredit(creditAmount)}
-            disabled={availableCredit <= 0}
-          >
-            Взять ${creditAmount}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => serviceDebt(creditAmount)}
-            disabled={debt <= 0 || cash <= 0}
-          >
-            Погасить ${creditAmount}
-          </Button>
-        </div>
-      </Card>
       <section>
-        <h2 className={styles.sectionTitle}>Ходы месяца</h2>
-        <div className={styles.grid}>
-          {availableActions.map((action) => (
-            <ActionCard key={action.id} action={action} onSelect={applyHomeAction} cash={cash} />
-          ))}
+        <div className={styles.sectionHeader}>
+          <span>Месячное предложение</span>
+          <p>До двух действий, которые дают буст именно сейчас.</p>
+        </div>
+        <div className={styles.offerGrid}>
+          {monthlyOffers.length ? (
+            monthlyOffers.map((action) => (
+              <ActionCard key={action.id} action={action} onSelect={applyHomeAction} cash={cash} />
+            ))
+          ) : (
+            <Card className={styles.actionPlaceholder}>
+              <p>Нет доступных предложений в этом месяце.</p>
+            </Card>
+          )}
         </div>
       </section>
-      <div className={styles.footerActions}>
-        <GradientButton onClick={advanceMonth}>Следующий месяц</GradientButton>
-      </div>
     </div>
   );
 }

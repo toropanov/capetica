@@ -192,6 +192,7 @@ const RANDOM_EVENTS = [
   },
 ];
 
+
 const roundMoney = (value) => Math.round(value ?? 0);
 
 function describeEffect(effect = {}) {

@@ -37,12 +37,16 @@
 .instrumentCard {
   background: rgba(255, 255, 255, 0.9);
   color: #0b112c;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
 .instrumentHeader {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 1rem;
+  gap: 0.8rem;
   align-items: center;
 }
 
@@ -80,38 +84,111 @@
 }
 
 .sparkline {
-  margin: 1rem 0;
+  margin: 0.2rem 0 0.4rem;
+  overflow: hidden;
 }
 
-.position {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.2rem;
-}
-
-.position span {
-  font-size: 0.8rem;
-  opacity: 0.65;
-}
-
-.position strong {
-  font-size: 1.1rem;
+.sparkline svg {
+  height: 60px;
 }
 
 .actions {
-  margin-top: 1.2rem;
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.tradePanel {
+  margin-top: 0.8rem;
+  border: 1px solid rgba(7, 13, 32, 0.08);
+  border-radius: 18px;
+  padding: 0.8rem;
+  background: rgba(6, 9, 20, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tradeValue {
   display: flex;
   justify-content: space-between;
-  gap: 0.8rem;
+  align-items: center;
 }
 
-.modalPrice,
-.modalValue {
-  font-weight: 500;
-  color: rgba(9, 11, 28, 0.7);
+.tradeValue span {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  opacity: 0.6;
 }
 
-.blocked {
-  color: #c94162;
-  font-weight: 600;
+.tradeValue strong {
+  font-size: 1.1rem;
+}
+
+.tradePanelActions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.tradePanelActions button {
+  flex: 1;
+}
+
+.tradeHint {
+  font-size: 0.8rem;
+  color: rgba(6, 9, 26, 0.65);
+}
+
+.sellButton {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(8, 12, 32, 0.12);
+  box-shadow: 0 12px 25px rgba(8, 12, 32, 0.15);
+  flex: 1;
+}
+
+.sellPositive {
+  box-shadow: 0 15px 35px rgba(34, 207, 160, 0.35);
+}
+
+.sellPositive span {
+  color: #23c79e;
+}
+
+.sellNegative {
+  box-shadow: 0 15px 35px rgba(255, 92, 124, 0.45);
+}
+
+.sellNegative span {
+  color: #ff5c7c;
+}
+
+.creditCard {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.creditRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.creditRows span {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.6;
+}
+
+.creditRows strong {
+  font-size: 1.3rem;
+  color: #0b1128;
+}
+
+.creditActions {
+  margin-top: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
 }

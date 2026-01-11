@@ -1,0 +1,66 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  padding-bottom: 6rem;
+  margin-top: 1rem;
+}
+
+.header h2 {
+  margin: 0;
+  color: #fff;
+}
+
+.header p {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dealCard {
+  background: rgba(255, 255, 255, 0.95);
+  color: #09122c;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.dealRow {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.dealRow h3 {
+  margin: 0;
+}
+
+.dealRow p {
+  margin: 0.2rem 0 0;
+  color: rgba(8, 12, 32, 0.7);
+}
+
+.dealIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  box-shadow: 0 10px 20px rgba(6, 9, 20, 0.2);
+}
+
+.featureList {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: rgba(8, 12, 28, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dealCard button {
+  width: 100%;
+}

@@ -52,6 +52,16 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.danger {
+  background: linear-gradient(120deg, #ff6c87, #ff8b5f);
+  color: #fff;
+}
+
+.success {
+  background: linear-gradient(120deg, #2dd5a7, #9be15d);
+  color: #041c11;
+}
+
 .disabled {
   background: rgba(200, 205, 217, 0.55);
   color: rgba(12, 15, 26, 0.45);
