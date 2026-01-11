@@ -26,7 +26,7 @@ function ActionCard({ action, onSelect, cash }) {
   );
 }
 
-function LastTurn({ data, showReturns, summary }) {
+function LastTurn({ data, showReturns, summary, investmentDelta }) {
   const formatter = (value) => `$${Math.round(value).toLocaleString('en-US')}`;
   const passiveLabel = `${formatter(summary.passiveIncome)}/мес`;
   const renderBody = () => {
@@ -42,15 +42,6 @@ function LastTurn({ data, showReturns, summary }) {
     const totalIncome = Math.round(data.salary + data.passiveIncome);
     const totalExpenses = Math.round(data.livingCost + recurring + debtInterest);
     const net = Math.round(totalIncome - totalExpenses);
-    const totalHolding = Object.entries(summary.positions || {}).reduce(
-      (sum, [, pos]) => sum + (pos.currentValue || 0),
-      0,
-    );
-    const totalCost = Object.entries(summary.positions || {}).reduce(
-      (sum, [, pos]) => sum + (pos.costBasis || 0),
-      0,
-    );
-    const delta = totalHolding - totalCost;
     return (
       <>
         <div className={styles.resultsLabel}>Результат хода</div>
@@ -62,25 +53,31 @@ function LastTurn({ data, showReturns, summary }) {
           <span>Расходы</span>
           <strong className={styles.valueNegative}>{formatter(totalExpenses)}</strong>
         </div>
-        <div className={styles.lastRow}>
-          <span>Доходность инвестиций</span>
-          <strong className={delta >= 0 ? styles.valuePositive : styles.valueNegative}>
-            {totalHolding && totalCost ? (delta >= 0 ? `+$${Math.round(delta).toLocaleString('en-US')}` : `-$${Math.abs(Math.round(delta)).toLocaleString('en-US')}`) : '—'}
-          </strong>
-        </div>
         <div className={styles.netRow}>
           <span>Итог месяца</span>
           <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
             {net >= 0 ? `+$${Math.abs(net).toLocaleString('en-US')}` : `-$${Math.abs(net).toLocaleString('en-US')}`}
           </strong>
         </div>
+        {showReturns && (
+          <div className={styles.investDeltaRow}>
+            <span>Текущая доходность портфеля</span>
+            <strong className={investmentDelta >= 0 ? styles.valuePositive : styles.valueNegative}>
+              {Number.isFinite(investmentDelta)
+                ? investmentDelta >= 0
+                  ? `+$${Math.round(investmentDelta).toLocaleString('en-US')}`
+                  : `-$${Math.abs(Math.round(investmentDelta)).toLocaleString('en-US')}`
+                : '—'}
+            </strong>
+          </div>
+        )}
       </>
     );
   };
   return (
     <div className={styles.lastTurn}>
       <div className={styles.balanceBlock}>
-        <div>
+        <div className={styles.netStat}>
           <span>Баланс</span>
           <strong>{formatter(summary.netWorth)}</strong>
         </div>
@@ -90,12 +87,16 @@ function LastTurn({ data, showReturns, summary }) {
             <strong>{formatter(summary.cash)}</strong>
           </div>
           <div>
-            <span>Пассивно</span>
+            <span>Долг</span>
+            <strong>{formatter(summary.debt)}</strong>
+          </div>
+          <div>
+            <span>Пассивный доход</span>
             <strong>{passiveLabel}</strong>
           </div>
           <div>
-            <span>Долг</span>
-            <strong>{formatter(summary.debt)}</strong>
+            <span>Фикс. расходы</span>
+            <strong>{formatter(summary.recurringExpenses)}/мес</strong>
           </div>
         </div>
       </div>
@@ -155,21 +156,31 @@ function Home() {
     return entries;
   }, [investments, priceState, instrumentMap]);
 
+  const totalHolding = Object.values(positions).reduce((sum, pos) => sum + (pos.currentValue || 0), 0);
+  const totalCostBasis = Object.values(positions).reduce((sum, pos) => sum + (pos.costBasis || 0), 0);
+  const investmentDelta = totalHolding && totalCostBasis ? totalHolding - totalCostBasis : 0;
+
+  const recurringExpenses = useGameStore((state) => state.recurringExpenses || 0);
   const summary = {
     netWorth,
     cash,
     passiveIncome: passiveIncomeVal,
     debt,
-    positions,
+    recurringExpenses,
   };
 
   return (
     <div className={styles.screen}>
-      <Card className={styles.card}>
-        <LastTurn data={lastTurn} showReturns={hasInvestments} summary={summary} />
-      </Card>
       {currentEvent && (
-        <Card className={styles.eventCard}>
+        <Card
+          className={`${styles.eventCard} ${
+            currentEvent.type === 'positive'
+              ? styles.eventPositive
+              : currentEvent.type === 'negative'
+                ? styles.eventNegative
+                : ''
+          }`}
+        >
           <div className={styles.eventHeader}>
             <div className={styles.iconSprite} style={spriteStyle(currentEvent.icon || 'iconCoins')} />
             <div>
@@ -179,6 +190,14 @@ function Home() {
           </div>
         </Card>
       )}
+      <Card className={styles.card}>
+        <LastTurn
+          data={lastTurn}
+          showReturns={hasInvestments}
+          summary={summary}
+          investmentDelta={investmentDelta}
+        />
+      </Card>
       <section>
         <div className={styles.sectionHeader}>
           <span>Месячное предложение</span>

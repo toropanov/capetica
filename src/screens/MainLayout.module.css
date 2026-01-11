@@ -54,16 +54,17 @@
   box-shadow: 0 10px 20px rgba(40, 66, 111, 0.2);
 }
 
-.headerLeft span {
+.professionLabel {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.65rem;
   color: rgba(46, 61, 92, 0.7);
 }
 
-.headerLeft strong {
-  font-size: 0.95rem;
-  color: #1e2c46;
+.professionTitle {
+  display: block;
+  font-size: 1.05rem;
+  color: #0d1f36;
 }
 
 .headerRight {
@@ -81,14 +82,14 @@
 .headerStats span {
   display: block;
   font-size: 0.65rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.12ем;
   text-transform: uppercase;
-  opacity: 0.7;
+  color: rgba(86, 95, 118, 0.85);
 }
 
 .headerStats strong {
   font-size: 1rem;
-  color: #1a2c4b;
+  color: rgba(96, 108, 132, 0.95);
 }
 
 .exitButton {

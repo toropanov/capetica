@@ -84,7 +84,8 @@ function MainLayout() {
             style={spriteStyle(getProfessionIcon(storeData.profession))}
           />
           <div>
-            <span>{storeData.profession?.title || 'Профиль'}</span>
+            <span className={styles.professionLabel}>Текущая профессия</span>
+            <strong className={styles.professionTitle}>{storeData.profession?.title || 'Профиль'}</strong>
           </div>
         </div>
         <div className={styles.headerRight}>

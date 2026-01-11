@@ -16,6 +16,14 @@
   border: 1px solid rgba(13, 44, 87, 0.1);
 }
 
+.eventPositive {
+  border-color: rgba(109, 209, 172, 0.5);
+}
+
+.eventNegative {
+  border-color: rgba(247, 162, 182, 0.55);
+}
+
 .eventHeader {
   display: flex;
   align-items: center;
@@ -124,14 +132,25 @@
   text-shadow: 0 6px 18px rgba(15, 35, 70, 0.25);
 }
 
-.balanceStats {
+.netStat {
+  padding: 0.6rem 0.9rem;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #e9f3ff, #fdfbff);
+  border: 1px solid rgba(21, 52, 102, 0.15);
   display: flex;
   justify-content: space-between;
-  gap: 0.8rem;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
 }
 
-.balanceStats div {
-  flex: 1;
+.netStat span {
+  color: rgba(37, 55, 92, 0.7);
+}
+
+.balanceStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
 }
 
 .balanceStats span {
@@ -144,6 +163,18 @@
 .balanceStats strong {
   font-size: 1rem;
   color: #1f2d4a;
+}
+
+.investDeltaRow {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 18px;
+  background: rgba(241, 249, 255, 0.85);
+  border: 1px solid rgba(90, 130, 192, 0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
 }
 
 .lastTurn span {
