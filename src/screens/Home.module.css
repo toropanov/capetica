@@ -6,6 +6,10 @@
   margin-top: 1rem;
 }
 
+.screen h2 {
+  color: #fefefe;
+}
+
 .eventCard {
   background: rgba(255, 255, 255, 0.2);
   color: #fefefe;
@@ -115,9 +119,9 @@
 }
 
 .lastTurn {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
 .lastTurn span {
@@ -127,6 +131,14 @@
 
 .lastTurn strong {
   font-size: 1.2rem;
+}
+
+.lastRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid rgba(9, 12, 32, 0.08);
 }
 
 .valuePositive {
@@ -154,4 +166,17 @@
 
 .netRow strong {
   font-size: 1.3rem;
+}
+
+.sectionTitle {
+  color: #fefefe;
+}
+
+.footerActions {
+  position: fixed;
+  bottom: 5.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 2rem));
+  z-index: 8;
 }

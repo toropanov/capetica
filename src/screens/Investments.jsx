@@ -143,10 +143,16 @@ function Investments() {
     if (!trade) return;
     if (trade.mode === 'buy') {
       buyInstrument(trade.instrument.id, amount);
-      setFeedback(`Куплено ${trade.instrument.title} на $${Math.round(amount).toLocaleString('en-US')}`);
+      setFeedback({
+        text: `Потрачено $${Math.round(amount).toLocaleString('en-US')} на ${trade.instrument.title}`,
+        positive: false,
+      });
     } else {
       sellInstrument(trade.instrument.id, amount);
-      setFeedback(`Продано ${trade.instrument.title} на $${Math.round(amount).toLocaleString('en-US')}`);
+      setFeedback({
+        text: `Заработано $${Math.round(amount).toLocaleString('en-US')} c ${trade.instrument.title}`,
+        positive: true,
+      });
     }
     setTrade(null);
     setTimeout(() => setFeedback(null), 2000);
@@ -167,7 +173,15 @@ function Investments() {
       <header>
         <h2>Инвестиционный холдинг</h2>
       </header>
-      {feedback && <div className={styles.feedback}>{feedback}</div>}
+      {feedback && (
+        <div
+          className={`${styles.feedback} ${
+            feedback.positive ? styles.feedbackPositive : styles.feedbackNegative
+          }`}
+        >
+          {feedback.text}
+        </div>
+      )}
       <div className={styles.list}>
         {cards.map((card) => (
           <InstrumentCard

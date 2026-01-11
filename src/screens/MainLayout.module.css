@@ -73,7 +73,7 @@
 }
 
 .headerRight strong {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   color: #fefefe;
 }
 
@@ -89,7 +89,7 @@
 
 .content {
   flex: 1;
-  padding: 0 1.2rem 4rem;
+  padding: 0 1.2rem 8rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;

@@ -51,14 +51,14 @@ function LastTurn({ data, showReturns }) {
   return (
     <div className={styles.lastTurn}>
       {entries.map((entry) => (
-        <div key={entry.label}>
+        <div key={entry.label} className={styles.lastRow}>
           <span>{entry.label}</span>
           <strong className={entry.positive ? styles.valuePositive : styles.valueNegative}>
             {formatter(entry.value)}
           </strong>
         </div>
       ))}
-      <div>
+      <div className={styles.lastRow}>
         <span>Доходность портфеля</span>
         <strong>
           {showReturns && Object.keys(data.returns || {}).length
@@ -70,7 +70,6 @@ function LastTurn({ data, showReturns }) {
             : '—'}
         </strong>
       </div>
-      <div className={styles.divider} />
       <div className={styles.netRow}>
         <span>Итог месяца</span>
         <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
@@ -186,14 +185,16 @@ function Home() {
         </div>
       </Card>
       <section>
-        <h2>Ходы месяца</h2>
+        <h2 className={styles.sectionTitle}>Ходы месяца</h2>
         <div className={styles.grid}>
           {availableActions.map((action) => (
             <ActionCard key={action.id} action={action} onSelect={applyHomeAction} cash={cash} />
           ))}
         </div>
       </section>
-      <GradientButton onClick={advanceMonth}>Следующий месяц</GradientButton>
+      <div className={styles.footerActions}>
+        <GradientButton onClick={advanceMonth}>Следующий месяц</GradientButton>
+      </div>
     </div>
   );
 }

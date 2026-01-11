@@ -8,13 +8,14 @@
   justify-content: space-between;
   padding: 0.5rem;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(30px);
+  background: rgba(9, 12, 32, 0.92);
+  backdrop-filter: blur(28px);
   box-shadow:
-    0 25px 45px rgba(5, 8, 20, 0.35),
-    inset 0 1px rgba(255, 255, 255, 0.35);
+    0 25px 45px rgba(5, 8, 20, 0.55),
+    inset 0 1px rgba(255, 255, 255, 0.15);
   gap: 0.35rem;
   z-index: 9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .item {

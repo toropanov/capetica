@@ -12,9 +12,20 @@
 .feedback {
   padding: 0.8rem 1rem;
   border-radius: 16px;
-  background: rgba(47, 211, 160, 0.2);
-  color: #0b1128;
   font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.feedbackPositive {
+  background: rgba(47, 211, 160, 0.18);
+  color: #085237;
+  border-color: rgba(47, 211, 160, 0.4);
+}
+
+.feedbackNegative {
+  background: rgba(255, 108, 135, 0.15);
+  color: #7a1f32;
+  border-color: rgba(255, 108, 135, 0.35);
 }
 
 .list {

@@ -76,7 +76,6 @@ function MainLayout() {
           </div>
         </div>
         <div className={styles.headerRight}>
-          <span>Net worth</span>
           <strong>{formatMoney(netWorth)}</strong>
           <button
             type="button"
@@ -92,11 +91,7 @@ function MainLayout() {
       <main className={styles.content}>
         <Outlet />
       </main>
-      <BottomNav
-        current={location.pathname}
-        onChange={navigate}
-        onReset={() => navigate('/choose')}
-      />
+      <BottomNav current={location.pathname} onChange={navigate} />
     </div>
   );
 }
