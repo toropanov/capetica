@@ -1,0 +1,97 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 6rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.actionCard {
+  min-height: 240px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #0b112e;
+}
+
+.actionCard h3 {
+  margin-bottom: 0.4rem;
+}
+
+.actionCard p {
+  min-height: 54px;
+  color: rgba(8, 12, 32, 0.65);
+}
+
+.actionIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(120deg, rgba(167, 107, 255, 0.8), rgba(101, 216, 255, 0.85));
+  margin-bottom: 0.8rem;
+  position: relative;
+}
+
+.actionIcon span {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  top: 12px;
+  left: 18px;
+  filter: blur(1px);
+}
+
+.card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(9, 12, 28, 0.7);
+  margin-bottom: 1rem;
+}
+
+.lastTurn {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1.2rem;
+}
+
+.lastTurn span {
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+.lastTurn strong {
+  font-size: 1.2rem;
+}
+
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.logItem {
+  padding: 0.8rem 1rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.logItem span {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.logItem p {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.placeholder {
+  margin: 0;
+  color: rgba(9, 12, 24, 0.6);
+}

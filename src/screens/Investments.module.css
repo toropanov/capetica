@@ -1,0 +1,103 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 6rem;
+}
+
+.screen header h2 {
+  margin-bottom: 0.4rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.instrumentCard {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0b112c;
+}
+
+.instrumentHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.instrumentHeader p {
+  margin: 0;
+  color: rgba(8, 12, 30, 0.6);
+}
+
+.instrumentIcon {
+  width: 62px;
+  height: 62px;
+  border-radius: 24px;
+  background: linear-gradient(120deg, rgba(172, 113, 255, 0.9), rgba(101, 216, 255, 0.9));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.priceBlock {
+  text-align: right;
+}
+
+.priceBlock strong {
+  font-size: 1.5rem;
+}
+
+.priceBlock span {
+  display: block;
+  font-weight: 600;
+}
+
+.positive {
+  color: #27b399;
+}
+
+.negative {
+  color: #ff6c87;
+}
+
+.sparkline {
+  margin: 1rem 0;
+}
+
+.position {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+.position span {
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
+
+.position strong {
+  font-size: 1.1rem;
+}
+
+.actions {
+  margin-top: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.modalPrice,
+.modalValue {
+  font-weight: 500;
+  color: rgba(9, 11, 28, 0.7);
+}
+
+.blocked {
+  color: #c94162;
+  font-weight: 600;
+}

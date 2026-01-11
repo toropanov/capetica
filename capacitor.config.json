@@ -1,0 +1,9 @@
+{
+  "appId": "com.example.finstrategy",
+  "appName": "FinStrategy",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

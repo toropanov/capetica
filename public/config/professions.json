@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "baseCurrency": "USD",
+  "professions": [
+    {"id":"teacher","title":"Учитель","salaryMonthly":2200,"startingMoney":2500,"creditLimitBase":4500,"startingDebt":0,"startingPortfolio":{},"avatarKey":"teacher_01"},
+    {"id":"programmer","title":"Программист","salaryMonthly":5200,"startingMoney":6000,"creditLimitBase":12000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"programmer_01"},
+    {"id":"lawyer","title":"Юрист","salaryMonthly":4800,"startingMoney":4500,"creditLimitBase":11000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"lawyer_01"},
+    {"id":"dentist","title":"Стоматолог","salaryMonthly":6500,"startingMoney":7000,"creditLimitBase":18000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"dentist_01"},
+    {"id":"firefighter","title":"Пожарный","salaryMonthly":3000,"startingMoney":2500,"creditLimitBase":6500,"startingDebt":0,"startingPortfolio":{},"avatarKey":"firefighter_01"},
+    {"id":"sales_manager","title":"Менеджер по продажам","salaryMonthly":3600,"startingMoney":3000,"creditLimitBase":8000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"sales_01"}
+  ]
+}

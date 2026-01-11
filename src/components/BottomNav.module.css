@@ -1,0 +1,52 @@
+.nav {
+  position: sticky;
+  bottom: 1.5rem;
+  margin-inline: auto;
+  width: min(540px, calc(100% - 2rem));
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(24px);
+  box-shadow:
+    0 25px 50px rgba(8, 12, 32, 0.35),
+    inset 0 1px rgba(255, 255, 255, 0.45);
+  gap: 0.4rem;
+}
+
+.item {
+  flex: 1;
+  border: none;
+  border-radius: 22px;
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-weight: 600;
+}
+
+.item span:last-child {
+  font-size: 0.85rem;
+}
+
+.item:active {
+  transform: scale(0.97);
+}
+
+.active {
+  background: linear-gradient(120deg, rgba(182, 130, 255, 0.95), rgba(114, 220, 255, 0.95));
+  color: #070918;
+  box-shadow: 0 15px 35px rgba(70, 48, 119, 0.35);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

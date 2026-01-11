@@ -1,0 +1,59 @@
+.wrapper {
+  padding: 1.5rem 1.25rem 0;
+  color: #fefefe;
+}
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.primaryCard {
+  background: radial-gradient(circle at 30% 20%, rgba(179, 140, 255, 0.9), rgba(59, 75, 168, 0.9));
+  color: #fefefe;
+}
+
+.netWorthLabel {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.netWorthValue {
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  font-weight: 700;
+  margin-top: 0.3rem;
+}
+
+.metricsGrid {
+  margin-top: 1.2rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 0.8rem;
+  border-radius: 20px;
+  min-height: 80px;
+  justify-content: space-between;
+}
+
+.metric span {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.metric strong {
+  font-size: 1.1rem;
+}

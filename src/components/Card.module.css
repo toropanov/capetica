@@ -1,0 +1,46 @@
+.card {
+  position: relative;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 25px 60px rgba(9, 14, 43, 0.45),
+    inset 0 1px rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+  padding: 1.2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(22px);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 30px 70px rgba(8, 15, 40, 0.55),
+    inset 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+}
+
+.light {
+  position: absolute;
+  top: -40%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 60%);
+  transform: rotate(25deg);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.glow::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}

@@ -1,0 +1,49 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  color: #0c1024;
+  overflow: hidden;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 0%, rgba(146, 106, 255, 0.4), transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(104, 226, 255, 0.4), transparent 45%),
+    radial-gradient(circle at 30% 80%, rgba(104, 255, 197, 0.35), transparent 45%),
+    rgba(6, 9, 24, 0.95);
+  filter: blur(0px);
+  z-index: -1;
+}
+
+.content {
+  flex: 1;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem) 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ribbon {
+  margin: 0 auto;
+  margin-top: 0.8rem;
+  padding: 0.5rem 1.4rem;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  width: fit-content;
+  font-size: 0.75rem;
+}
+
+.win {
+  background: rgba(110, 233, 200, 0.9);
+  color: #032214;
+}
+
+.lose {
+  background: rgba(255, 140, 140, 0.9);
+  color: #3d0606;
+}
