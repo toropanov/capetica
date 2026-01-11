@@ -10,6 +10,7 @@ import {
   evaluateGoals,
 } from '../domain/finance';
 import { ensureSeed, uniformFromSeed } from '../domain/rng';
+import { DEAL_WINDOW_RULES } from '../domain/deals';
 
 const RNG_STORAGE_KEY = 'finstrategy_rng_seed';
 const noopStorage = {
@@ -114,6 +115,60 @@ const HOME_ACTIONS = [
   },
 ];
 
+function pickDealDuration(rule, rollValue = 0.5) {
+  if (!rule) return 3;
+  const minTurns = Math.max(1, Math.floor(rule.minTurns ?? 2));
+  const maxTurns = Math.max(minTurns, Math.floor(rule.maxTurns ?? minTurns));
+  const span = maxTurns - minTurns + 1;
+  const bucket = Math.min(span - 1, Math.max(0, Math.floor((rollValue ?? 0) * span)));
+  return minTurns + bucket;
+}
+
+function initDealWindows(seed) {
+  let cursor = ensureSeed(seed ?? Date.now());
+  const state = {};
+  Object.entries(DEAL_WINDOW_RULES).forEach(([dealId, rule]) => {
+    const roll = uniformFromSeed(cursor);
+    cursor = roll.seed;
+    const duration = pickDealDuration(rule, roll.value);
+    state[dealId] = {
+      expiresIn: duration,
+      slotsLeft: rule.slots ?? 1,
+      maxSlots: rule.slots ?? 1,
+    };
+  });
+  return state;
+}
+
+function advanceDealWindows(current = {}, seed) {
+  let cursor = ensureSeed(seed ?? Date.now());
+  const state = {};
+  Object.entries(DEAL_WINDOW_RULES).forEach(([dealId, rule]) => {
+    const existing = current[dealId];
+    let expiresIn =
+      typeof existing?.expiresIn === 'number'
+        ? existing.expiresIn - 1
+        : pickDealDuration(rule, 0.5);
+    let slotsLeft =
+      typeof existing?.slotsLeft === 'number' ? existing.slotsLeft : rule.slots ?? 1;
+    let maxSlots = existing?.maxSlots ?? rule.slots ?? 1;
+    if (expiresIn <= 0) {
+      const roll = uniformFromSeed(cursor);
+      cursor = roll.seed;
+      const duration = pickDealDuration(rule, roll.value);
+      expiresIn = duration;
+      slotsLeft = rule.slots ?? 1;
+      maxSlots = rule.slots ?? 1;
+    }
+    state[dealId] = {
+      expiresIn,
+      slotsLeft,
+      maxSlots,
+    };
+  });
+  return { state, seed: cursor };
+}
+
 const RANDOM_EVENTS = [
   {
     id: 'dividend_boost',
@@ -207,6 +262,51 @@ const RANDOM_EVENTS = [
     type: 'negative',
     chance: 0.12,
     icon: 'iconWallet',
+  },
+  {
+    id: 'rate_hike',
+    title: 'Рост ставки',
+    description: 'Обслуживание долга дорожает.',
+    effect: { recurringDelta: 110 },
+    type: 'negative',
+    chance: 0.22,
+    icon: 'iconCalculator',
+  },
+  {
+    id: 'currency_devaluation',
+    title: 'Девальвация валюты',
+    description: 'Свободный кэш обесценился.',
+    effect: { cashDelta: -400 },
+    type: 'negative',
+    chance: 0.18,
+    icon: 'iconWallet',
+  },
+  {
+    id: 'tenant_failure',
+    title: 'Сбой арендатора',
+    description: 'Один из арендаторов сорвал платёж.',
+    effect: { cashDelta: -350 },
+    type: 'negative',
+    chance: 0.2,
+    icon: 'iconHardhat',
+  },
+  {
+    id: 'career_shift',
+    title: 'Смена профессии',
+    description: 'Получаешь оффер в смежной нише — повышает доход.',
+    effect: { salaryBonusDelta: 220 },
+    type: 'positive',
+    chance: 0.12,
+    icon: 'iconBulb',
+  },
+  {
+    id: 'income_loss',
+    title: 'Потеря дохода',
+    description: 'Контракт закрыт, нужен запас прочности.',
+    effect: { joblessMonths: 2 },
+    type: 'negative',
+    chance: 0.15,
+    icon: 'iconCard',
   },
 ];
 
@@ -381,6 +481,14 @@ function buildProfessionState(baseState, profession) {
     salary,
     rules: baseState.configs?.rules,
   });
+  const dealWindows = initDealWindows(baseState.rngSeed ?? ensureStoredSeed());
+  const salaryProgression = profession.salaryProgression
+    ? {
+        ...profession.salaryProgression,
+        monthsUntilStep: profession.salaryProgression.stepMonths || 1,
+        currentBase: profession.salaryMonthly || 0,
+      }
+    : null;
   return {
     profession,
     professionId: profession.id,
@@ -421,6 +529,8 @@ function buildProfessionState(baseState, profession) {
     joblessMonths: 0,
     salaryCutMonths: 0,
     salaryCutAmount: 0,
+    dealWindows,
+    salaryProgression,
   };
 }
 
@@ -564,6 +674,8 @@ const useGameStore = create(
       joblessMonths: 0,
       salaryCutMonths: 0,
       salaryCutAmount: 0,
+      dealWindows: {},
+      salaryProgression: null,
       bootstrapFromConfigs: (bundle) =>
         set((state) => {
           const rngSeed = state.rngSeed ?? ensureStoredSeed();
@@ -684,7 +796,39 @@ const useGameStore = create(
           let joblessMonths = state.joblessMonths || 0;
           let salaryCutMonths = state.salaryCutMonths || 0;
           let salaryCutAmount = state.salaryCutAmount || 0;
+          let salaryProgression = state.salaryProgression || null;
           let salaryBase = state.profession.salaryMonthly || 0;
+          if (salaryProgression) {
+            const step = Math.max(1, Math.floor(salaryProgression.stepMonths || 1));
+            let monthsUntilStep =
+              typeof salaryProgression.monthsUntilStep === 'number'
+                ? salaryProgression.monthsUntilStep - 1
+                : step - 1;
+            let currentBase =
+              typeof salaryProgression.currentBase === 'number'
+                ? salaryProgression.currentBase
+                : salaryBase;
+            const cap =
+              typeof salaryProgression.cap === 'number'
+                ? salaryProgression.cap
+                : Number.POSITIVE_INFINITY;
+            const percent = salaryProgression.percent || 0;
+            if (monthsUntilStep <= 0) {
+              if (currentBase < cap) {
+                currentBase = Math.min(
+                  cap,
+                  Math.round(currentBase * (1 + percent)),
+                );
+              }
+              monthsUntilStep = step;
+            }
+            salaryBase = currentBase;
+            salaryProgression = {
+              ...salaryProgression,
+              monthsUntilStep,
+              currentBase,
+            };
+          }
           let salary = 0;
           if (joblessMonths > 0) {
             joblessMonths -= 1;
@@ -734,6 +878,7 @@ const useGameStore = create(
           });
           const eventRoll = rollRandomEvent({ ...state, cash, debt }, rngSeed);
           const actionsRoll = rollMonthlyActions(eventRoll.seed);
+          const dealWindowRoll = advanceDealWindows(state.dealWindows, actionsRoll.seed);
           const patchedCash = eventRoll.patch.cash ?? cash;
           const patchedDebt = eventRoll.patch.debt ?? debt;
           const patchedSalaryBonus = eventRoll.patch.salaryBonus ?? state.salaryBonus;
@@ -799,13 +944,14 @@ const useGameStore = create(
             salaryBonus: patchedSalaryBonus,
             recurringExpenses: patchedRecurring,
             priceState,
-            rngSeed: actionsRoll.seed,
+            rngSeed: dealWindowRoll.seed,
             shockState,
             livingCost,
             currentEvent: eventRoll.event
               ? { ...eventRoll.event, message: eventRoll.message }
               : null,
             availableActions: actionsRoll.actions,
+            dealWindows: dealWindowRoll.state,
             protections: patchedProtections,
             history: {
               netWorth: netHistory,
@@ -826,6 +972,7 @@ const useGameStore = create(
             salaryCutAmount,
             investments: baseInvestments,
             monthlyOfferUsed: false,
+            salaryProgression,
             lastTurn: {
               salary,
               passiveIncome,
@@ -961,6 +1108,13 @@ const useGameStore = create(
         if (!dealMeta?.id) {
           return { error: 'Нет данных по сделке.' };
         }
+        const window = state.dealWindows?.[dealMeta.id];
+        if (!window || window.expiresIn <= 0) {
+          return { error: 'Сделка закрылась.' };
+        }
+        if ((window.slotsLeft ?? 0) <= 0) {
+          return { error: 'Слоты закончились.' };
+        }
         if (entryCost <= 0) {
           return { error: 'Неверная стоимость входа.' };
         }
@@ -982,6 +1136,13 @@ const useGameStore = create(
         set((prev) => ({
           cash: roundMoney(prev.cash - entryCost),
           dealParticipations: [...(prev.dealParticipations || []), participation],
+          dealWindows: {
+            ...(prev.dealWindows || {}),
+            [dealMeta.id]: {
+              ...(prev.dealWindows?.[dealMeta.id] || {}),
+              slotsLeft: Math.max(0, (prev.dealWindows?.[dealMeta.id]?.slotsLeft ?? 1) - 1),
+            },
+          },
         }));
         return { ok: true };
       },
@@ -1094,6 +1255,8 @@ const useGameStore = create(
         availableActions: state.availableActions,
         activeMonthlyOffers: state.activeMonthlyOffers,
         dealParticipations: state.dealParticipations,
+        dealWindows: state.dealWindows,
+        salaryProgression: state.salaryProgression,
         joblessMonths: state.joblessMonths,
         salaryCutMonths: state.salaryCutMonths,
         salaryCutAmount: state.salaryCutAmount,

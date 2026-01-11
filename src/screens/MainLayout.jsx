@@ -91,11 +91,11 @@ function MainLayout() {
         <div className={styles.headerRight}>
           <div className={styles.headerStats}>
             <div>
-              <span>Наличные</span>
+              <span>Свободный кэш</span>
               <strong>{formatMoney(storeData.cash)}</strong>
             </div>
             <div>
-              <span>Долг</span>
+              <span>Обязательства</span>
               <strong>{formatMoney(storeData.debt)}</strong>
             </div>
           </div>
@@ -125,7 +125,7 @@ function MainLayout() {
       </main>
       <div className={styles.nextButton}>
         <GradientButton onClick={advanceMonth} icon={<DiceIcon />}>
-          Завершить ход
+          Перейти к следующему месяцу
         </GradientButton>
       </div>
       <BottomNav current={location.pathname} onChange={navigate} />

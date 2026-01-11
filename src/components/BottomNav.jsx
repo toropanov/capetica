@@ -2,7 +2,7 @@ import styles from './BottomNav.module.css';
 
 const NAV_ITEMS = [
   { id: 'career', label: 'Карьера', path: '/app' },
-  { id: 'bank', label: 'Банк', path: '/app/bank' },
+  { id: 'bank', label: 'Активы', path: '/app/bank' },
   { id: 'deals', label: 'Сделки', path: '/app/deals' },
 ];
 

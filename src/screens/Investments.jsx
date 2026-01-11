@@ -204,7 +204,7 @@ function Investments() {
   return (
     <div className={styles.screen}>
       <header>
-        <h2>Банк и портфель</h2>
+        <h2>Активы</h2>
       </header>
       {feedback && (
         <div
@@ -231,11 +231,11 @@ function Investments() {
       <Card className={styles.creditCard}>
         <div className={styles.creditRows}>
           <div>
-            <span>Текущий долг</span>
+            <span>Обязательства</span>
             <strong>${Math.round(debt).toLocaleString('en-US')}</strong>
           </div>
           <div>
-            <span>Доступный лимит</span>
+            <span>Лимит кредита</span>
             <strong>${Math.round(Math.max(availableCredit, 0)).toLocaleString('en-US')}</strong>
           </div>
         </div>

@@ -20,7 +20,7 @@ function ProfCard({ profession, onSelect }) {
           <strong>${profession.salaryMonthly.toLocaleString('en-US')}</strong>
         </div>
         <div>
-          <span>Наличные</span>
+          <span>Свободный кэш</span>
           <strong>${profession.startingMoney.toLocaleString('en-US')}</strong>
         </div>
       </div>

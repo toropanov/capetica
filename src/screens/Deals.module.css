@@ -51,6 +51,56 @@
   color: rgba(8, 12, 32, 0.7);
 }
 
+.dealTimer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: rgba(25, 40, 70, 0.75);
+  padding: 0.4rem 0.2rem;
+}
+
+.dealMeters {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(26, 39, 66, 0.7);
+}
+
+.meter div {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.meter i {
+  width: 14px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(26, 42, 70, 0.15);
+}
+
+.meterActive {
+  background: linear-gradient(120deg, #ff9966, #ff5e62);
+}
+
+.lockBadge {
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+  background: rgba(240, 247, 255, 0.9);
+  border: 1px solid rgba(26, 45, 78, 0.15);
+  font-size: 0.8rem;
+  color: rgba(22, 37, 68, 0.85);
+}
+
 .dealIcon {
   width: 56px;
   height: 56px;
@@ -62,6 +112,28 @@
   margin: 0.3rem 0;
   font-size: 0.85rem;
   color: #b45a3d;
+}
+
+.dealEffects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.dealEffects span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(33, 52, 86, 0.15);
+  font-size: 0.85rem;
+  color: rgba(26, 38, 66, 0.85);
+  background: rgba(248, 251, 255, 0.95);
+}
+
+.dealEffects em {
+  font-style: normal;
 }
 
 .featureList {

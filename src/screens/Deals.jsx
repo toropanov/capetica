@@ -4,55 +4,50 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import styles from './Deals.module.css';
 import { spriteStyle } from '../utils/iconSprite';
+import { DEAL_TEMPLATES } from '../domain/deals';
 
-const DEAL_TEMPLATES = [
-  {
-    id: 'venture',
-    title: 'Венчурный пул ИИ‑стартапа',
-    description: 'Минимальный взнос даёт слот в пуле вместе с лид‑инвестором.',
-    icon: 'iconGrowth',
-    entryCost: 2000,
-    monthlyPayout: 200,
-    durationMonths: 6,
-    risk: 'Высокий — при провале потеряешь всю ставку.',
-    features: ['Вход: $2 000 → берём 1 лот', 'Пассивно: +$200/мес. пока в пуле', 'Выход x3 через 6 мес.'],
-  },
-  {
-    id: 'equity',
-    title: 'Доля в частной клинике',
-    description: 'Покупаете часть прибыли и получаете фиксированный buy-back.',
-    icon: 'iconCard',
-    entryCost: 2000,
-    monthlyPayout: 180,
-    durationMonths: 12,
-    risk: 'Средний — возможна задержка выплат 1-2 месяца.',
-    features: ['Вход: $2 000', 'Дивиденд: +$180/мес.', 'Выкуп по $4 400 через 12 мес.'],
-  },
-  {
-    id: 'real_estate',
-    title: 'Дом у океана под 4,1%',
-    description: 'Взнос резервирует смарт-дом с готовым арендным потоком.',
-    icon: 'iconHardhat',
-    entryCost: 2000,
-    monthlyPayout: 250,
-    durationMonths: 18,
-    risk: 'Низкий — доход защищён контрактом, но деньги застрянут до выкупа.',
-    features: ['Вход: $2 000', 'Кеш-флоу: +$250/мес.', 'Опция продажи застройщику'],
-  },
-  {
-    id: 'auto',
-    title: 'Электрокар с дисконтом 18%',
-    description: 'Берём предзаказ на машину с обратным выкупом.',
-    icon: 'iconPiggy',
-    entryCost: 2000,
-    monthlyPayout: 120,
-    durationMonths: 8,
-    risk: 'Средний — возможен перенос выкупа на пару месяцев.',
-    features: ['Вход: $2 000', 'Экономия: +$120/мес.', 'Возврат выкупа через 8 мес.'],
-  },
-];
+function pluralizeTurns(value) {
+  const num = Math.max(0, Math.round(value));
+  const abs = Math.abs(num) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) {
+    return `${num} ходов`;
+  }
+  if (last === 1) {
+    return `${num} ход`;
+  }
+  if (last >= 2 && last <= 4) {
+    return `${num} хода`;
+  }
+  return `${num} ходов`;
+}
 
-function DealCard({ deal, onParticipate, disabled, active }) {
+function Meter({ label, value }) {
+  const total = 5;
+  const active = Math.max(0, Math.min(total, value || 0));
+  return (
+    <div className={styles.meter}>
+      <span>{label}</span>
+      <div>
+        {Array.from({ length: total }).map((_, index) => (
+          <i key={`${label}-${index}`} className={index < active ? styles.meterActive : ''} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DealCard({ deal, windowMeta, onParticipate, disabled, active }) {
+  const windowText = windowMeta
+    ? windowMeta.expiresIn > 0
+      ? `Осталось ${pluralizeTurns(windowMeta.expiresIn)}`
+      : 'Окно закрывается'
+    : 'Окно скоро появится';
+  const slotsText = windowMeta
+    ? windowMeta.slotsLeft > 0
+      ? `Слоты: ${windowMeta.slotsLeft}/${windowMeta.maxSlots}`
+      : 'Слоты закончились'
+    : '';
   return (
     <Card className={`${styles.dealCard} ${active ? styles.dealActive : ''}`}>
       <div className={styles.dealRow}>
@@ -62,18 +57,33 @@ function DealCard({ deal, onParticipate, disabled, active }) {
           <p>{deal.description}</p>
         </div>
       </div>
-      <p className={styles.risk}>Риск: {deal.risk}</p>
+      <div className={styles.dealTimer}>
+        <span>{windowText}</span>
+        {slotsText && <span>{slotsText}</span>}
+      </div>
+      <div className={styles.dealMeters}>
+        <Meter label="Риск" value={deal.riskMeter} />
+        <Meter label="Ликвидность" value={deal.liquidityMeter} />
+        <div className={styles.lockBadge}>Срок: {deal.lockMonths} мес.</div>
+      </div>
+      {deal.effects?.length > 0 && (
+        <div className={styles.dealEffects}>
+          {deal.effects.map((effect) => (
+            <span key={`${deal.id}-${effect.text}`}>
+              <em>{effect.icon}</em>
+              {effect.text}
+            </span>
+          ))}
+        </div>
+      )}
+      <p className={styles.risk}>Риск: {deal.riskNote}</p>
       <ul className={styles.featureList}>
         {deal.features.map((feature) => (
           <li key={feature}>{feature}</li>
         ))}
       </ul>
-      <Button
-        variant="primary"
-        onClick={() => onParticipate(deal)}
-        disabled={disabled}
-      >
-        {active ? 'Куплено' : 'Участвовать за $2 000'}
+      <Button variant="primary" onClick={() => onParticipate(deal)} disabled={disabled}>
+        {active ? 'Куплено' : `Участвовать за $${deal.entryCost.toLocaleString('en-US')}`}
       </Button>
     </Card>
   );
@@ -84,6 +94,7 @@ function Deals() {
   const cash = useGameStore((state) => state.cash);
   const participations = useGameStore((state) => state.dealParticipations || []);
   const participateDeal = useGameStore((state) => state.participateInDeal);
+  const dealWindows = useGameStore((state) => state.dealWindows || {});
   const [feedback, setFeedback] = useState(null);
   const cardRefs = useRef({});
 
@@ -94,7 +105,7 @@ function Deals() {
       entryCost: deal.entryCost,
       monthlyPayout: deal.monthlyPayout,
       durationMonths: deal.durationMonths,
-      risk: deal.risk,
+      risk: deal.riskNote || deal.risk,
     });
     if (result?.error) {
       setFeedback({ text: result.error, positive: false });
@@ -111,8 +122,8 @@ function Deals() {
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <h2>Сделки месяца №{month}</h2>
-        <p>Короткая подборка предложений, на которые стоит успеть откликнуться.</p>
+        <h2>Инвестиционные возможности · Месяц {month}</h2>
+        <p>У каждой сделки окно и ограниченный пул — решайся до закрытия окна.</p>
       </header>
       {feedback && (
         <div className={`${styles.feedback} ${feedback.positive ? styles.feedbackPositive : styles.feedbackNegative}`}>
@@ -124,6 +135,9 @@ function Deals() {
           const active = participations.some(
             (entry) => !entry.completed && entry.dealId === deal.id,
           );
+          const windowMeta = dealWindows[deal.id];
+          const windowClosed =
+            !windowMeta || windowMeta.expiresIn <= 0 || (windowMeta.slotsLeft ?? 0) <= 0;
           return (
             <div
               key={deal.id}
@@ -134,7 +148,8 @@ function Deals() {
               <DealCard
                 deal={deal}
                 onParticipate={handleParticipate}
-                disabled={cash < deal.entryCost || active}
+                windowMeta={windowMeta}
+                disabled={cash < deal.entryCost || active || windowClosed}
                 active={active}
               />
             </div>
@@ -160,7 +175,9 @@ function Deals() {
                   </span>
                 </div>
                 <p>
-                  Заработано: ${Math.round(deal.profitEarned).toLocaleString('en-US')} · Ежемесячно {deal.monthlyPayout > 0 ? `+$${deal.monthlyPayout}` : '0'}
+                  Заработано: ${Math.round(deal.profitEarned).toLocaleString('en-US')} · Ежемесячно{' '}
+                  {deal.monthlyPayout > 0 ? `+$${deal.monthlyPayout}` : '0'} · Срок {deal.durationMonths} мес. ·{' '}
+                  {deal.risk}
                 </p>
                 <div className={styles.progressBar}>
                   <div style={{ width: `${percent}%` }} />

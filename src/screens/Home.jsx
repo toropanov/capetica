@@ -12,6 +12,102 @@ const PASSIVE_MULTIPLIERS = {
   crypto: 0.003,
 };
 
+const FORECAST_TURNS = 6;
+
+function formatUSD(value) {
+  const rounded = Math.round(value || 0);
+  const prefix = rounded < 0 ? '-$' : '$';
+  return `${prefix}${Math.abs(rounded).toLocaleString('en-US')}`;
+}
+
+function describeGoal(rule) {
+  switch (rule.type) {
+    case 'passive_income_cover_costs':
+      return {
+        title: 'Пассивный доход > фикс. расходов',
+        detail: `Держи ${rule.requiredStreakMonths || 1} мес. подряд`,
+        mode: 'Выживание',
+      };
+    case 'net_worth_reach': {
+      const target = formatUSD(rule.target || 0);
+      const mode = (rule.target || 0) >= 500000 ? 'Империя' : 'Рост';
+      return {
+        title: `Чистый капитал > ${target}`,
+        detail: 'Догони план и удержи несколько месяцев',
+        mode,
+      };
+    }
+    default:
+      return { title: rule.id, detail: '', mode: 'Рост' };
+  }
+}
+
+function goalConditionMet(rule, metrics) {
+  switch (rule.type) {
+    case 'passive_income_cover_costs':
+      return metrics.passiveIncome >= metrics.recurringExpenses;
+    case 'net_worth_reach':
+      return metrics.netWorth >= (rule.target || 0);
+    default:
+      return false;
+  }
+}
+
+function pluralizeTurns(value) {
+  const number = Math.max(0, Math.round(value));
+  const abs = Math.abs(number) % 100;
+  const last = abs % 10;
+  let suffix = 'ходов';
+  if (abs > 10 && abs < 20) {
+    suffix = 'ходов';
+  } else if (last === 1) {
+    suffix = 'ход';
+  } else if (last >= 2 && last <= 4) {
+    suffix = 'хода';
+  }
+  return `${number} ${suffix}`;
+}
+
+function describeActionConsequences(action) {
+  const list = [];
+  if (action.id === 'debt_payment') {
+    list.push({ icon: '⚡', text: 'Снижает обязательства' });
+  }
+  switch (action.effect) {
+    case 'salary_up':
+      list.push({ icon: '📈', text: `Доход +$${action.value || 0}/мес.` });
+      break;
+    case 'expense_down':
+      list.push({ icon: '🧱', text: `Фикс. расходы -$${action.value || 0}` });
+      break;
+    case 'cost_down':
+      list.push({ icon: '💰', text: `Бытовые траты -$${action.value || 0}` });
+      break;
+    case 'protection':
+      list.push({ icon: '⚡', text: 'Добавляет защиту' });
+      break;
+    case 'take_credit':
+      list.push({ icon: '💰', text: `Свободный кэш +$${action.value || 0}` });
+      list.push({ icon: '⚡', text: 'Обязательства растут' });
+      break;
+    default:
+      break;
+  }
+  if (action.type === 'chance') {
+    list.push({ icon: '⚡', text: 'Шанс провала сделки' });
+    if (action.success?.cashDelta) {
+      list.push({ icon: '📈', text: `Удача: +$${Math.round(action.success.cashDelta)}` });
+    }
+    if (action.fail?.cashDelta) {
+      list.push({ icon: '⚡', text: `Провал: -$${Math.abs(Math.round(action.fail.cashDelta))}` });
+    }
+  }
+  if (!list.length && action.description) {
+    list.push({ icon: '💡', text: action.description });
+  }
+  return list;
+}
+
 function ActionCard({ action, onSelect, cash, compact = false }) {
   const disabled = action.cost ? cash < action.cost : false;
   const buttonLabel = action.buttonText
@@ -19,11 +115,22 @@ function ActionCard({ action, onSelect, cash, compact = false }) {
     : action.cost
       ? `Оплатить $${action.cost}`
       : 'Активировать';
+  const consequences = describeActionConsequences(action);
   return (
     <Card className={`${styles.actionCard} ${compact ? styles.compactCard : ''}`}>
       <div className={styles.iconSprite} style={spriteStyle(action.icon)} />
       <h3>{action.title}</h3>
       <p>{action.description}</p>
+      {consequences.length > 0 && (
+        <div className={styles.actionConsequences}>
+          {consequences.map((item) => (
+            <span key={`${action.id}-${item.text}`}>
+              <em>{item.icon}</em>
+              {item.text}
+            </span>
+          ))}
+        </div>
+      )}
       <Button variant="primary" onClick={() => onSelect(action.id)} disabled={disabled}>
         {buttonLabel}
       </Button>
@@ -33,8 +140,25 @@ function ActionCard({ action, onSelect, cash, compact = false }) {
 }
 
 function LastTurn({ data, showReturns, summary, investmentDelta, passiveBreakdown = [] }) {
-  const formatter = (value) => `$${Math.round(value).toLocaleString('en-US')}`;
+  const formatter = (value) => formatUSD(value);
   const passiveLabel = `${formatter(summary.passiveIncome)}/мес`;
+  const recurringActual = data?.recurringExpenses ?? summary.recurringExpenses;
+  const debtInterest = data?.debtInterest || 0;
+  const totalIncome = Math.round((data?.salary || 0) + (data?.passiveIncome || summary.passiveIncome));
+  const totalExpenses = Math.round((data?.livingCost || 0) + (recurringActual || 0) + debtInterest);
+  const net =
+    data
+      ? Math.round(
+          data.salary +
+            data.passiveIncome -
+            data.livingCost -
+            (data.recurringExpenses || 0) -
+            (data.debtInterest || 0),
+        )
+      : Math.round(summary.passiveIncome - summary.recurringExpenses);
+  const netForecast = summary.netWorth + net * FORECAST_TURNS;
+  const cashForecast = summary.cash + net * 3;
+  const passiveGap = summary.passiveIncome - summary.recurringExpenses;
   const renderBody = () => {
     if (!data) {
       return (
@@ -43,14 +167,9 @@ function LastTurn({ data, showReturns, summary, investmentDelta, passiveBreakdow
         </div>
       );
     }
-    const recurring = data.recurringExpenses || 0;
-    const debtInterest = data.debtInterest || 0;
-    const totalIncome = Math.round(data.salary + data.passiveIncome);
-    const totalExpenses = Math.round(data.livingCost + recurring + debtInterest);
-    const net = Math.round(totalIncome - totalExpenses);
     return (
       <>
-        <div className={styles.resultsLabel}>Результат хода</div>
+        <div className={styles.resultsLabel}>Итог месяца</div>
         <div className={styles.lastRow}>
           <span>Доходы</span>
           <strong className={styles.valuePositive}>{formatter(totalIncome)}</strong>
@@ -61,13 +180,16 @@ function LastTurn({ data, showReturns, summary, investmentDelta, passiveBreakdow
         </div>
         <div className={styles.netRow}>
           <span>Итог месяца</span>
-          <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
-            {net >= 0 ? `+$${Math.abs(net).toLocaleString('en-US')}` : `-$${Math.abs(net).toLocaleString('en-US')}`}
-          </strong>
+          <div className={styles.netBlock}>
+            <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
+              {net >= 0 ? `+$${Math.abs(net).toLocaleString('en-US')}` : `-$${Math.abs(net).toLocaleString('en-US')}`}
+            </strong>
+            <small>{`Прогноз через ${FORECAST_TURNS} ходов: ~${formatUSD(netForecast)}`}</small>
+          </div>
         </div>
         {showReturns && (
           <div className={styles.investDeltaRow}>
-            <span>Текущая доходность портфеля</span>
+            <span>Доход портфеля за ход</span>
             <strong className={investmentDelta >= 0 ? styles.valuePositive : styles.valueNegative}>
               {Number.isFinite(investmentDelta)
                 ? investmentDelta >= 0
@@ -84,21 +206,28 @@ function LastTurn({ data, showReturns, summary, investmentDelta, passiveBreakdow
     <div className={styles.lastTurn}>
       <div className={styles.balanceBlock}>
         <div className={styles.netStat}>
-          <span>Баланс</span>
+          <span>Чистый капитал</span>
           <strong>{formatter(summary.netWorth)}</strong>
         </div>
         <div className={styles.balanceStats}>
           <div>
-            <span>Наличные</span>
+            <span>Свободный кэш</span>
             <strong>{formatter(summary.cash)}</strong>
+            <small>{`Прогноз 3 хода: ${formatUSD(cashForecast)}`}</small>
           </div>
           <div>
-            <span>Долг</span>
+            <span>Обязательства</span>
             <strong>{formatter(summary.debt)}</strong>
+            <small>{`Лимит: ${formatter(Math.max(0, (summary.availableCredit || 0) + summary.debt))}`}</small>
           </div>
           <div>
             <span>Пассивный доход</span>
             <strong>{passiveLabel}</strong>
+            <small>
+              {passiveGap >= 0
+                ? 'Перекрывает фикс. расходы'
+                : `Нужно ещё ${formatter(Math.abs(passiveGap))}/мес`}
+            </small>
           </div>
           <div>
             <span>Фикс. расходы</span>
@@ -163,7 +292,6 @@ function Home() {
   const cash = useGameStore((state) => state.cash);
   const currentEvent = useGameStore((state) => state.currentEvent);
   const availableActions = useGameStore((state) => state.availableActions || homeActions);
-  const hasInvestments = useGameStore((state) => Object.keys(state.investments || {}).length > 0);
   const debt = useGameStore((state) => state.debt);
   const priceState = useGameStore((state) => state.priceState);
   const investments = useGameStore((state) => state.investments);
@@ -172,6 +300,11 @@ function Home() {
   const activeMonthlyOffers = useGameStore((state) => state.activeMonthlyOffers || []);
   const monthlyOfferUsed = useGameStore((state) => state.monthlyOfferUsed);
   const dealParticipations = useGameStore((state) => state.dealParticipations || []);
+  const availableCredit = useGameStore((state) => state.availableCredit || 0);
+  const trackers = useGameStore((state) => state.trackers || { win: {}, lose: {} });
+  const recentLog = useGameStore((state) => state.recentLog || []);
+  const salaryProgression = useGameStore((state) => state.salaryProgression);
+  const profession = useGameStore((state) => state.profession);
   const instrumentMap = useMemo(() => {
     const list = configs?.instruments?.instruments || [];
     return list.reduce((acc, instrument) => {
@@ -276,7 +409,33 @@ function Home() {
     passiveIncome: passiveIncomeEffective,
     debt,
     recurringExpenses,
+    availableCredit,
   };
+  const winRules = configs?.rules?.win || [];
+  const goalMetrics = useMemo(
+    () => ({
+      passiveIncome: passiveIncomeEffective,
+      recurringExpenses,
+      netWorth,
+    }),
+    [passiveIncomeEffective, recurringExpenses, netWorth],
+  );
+  const goalRows = useMemo(
+    () =>
+      winRules.map((rule) => {
+        const descriptor = describeGoal(rule);
+        const target = Math.max(1, rule.requiredStreakMonths || 1);
+        const progress = Math.min(target, trackers?.win?.[rule.id] || 0);
+        return {
+          id: rule.id,
+          ...descriptor,
+          target,
+          progress,
+          active: goalConditionMet(rule, goalMetrics),
+        };
+      }),
+    [winRules, trackers, goalMetrics],
+  );
 
   return (
     <div className={styles.screen}>
@@ -299,6 +458,33 @@ function Home() {
           </div>
         </Card>
       )}
+      {goalRows.length > 0 && (
+        <Card className={styles.goalCard}>
+          <div className={styles.goalHeader}>
+            <span>Цель партии</span>
+            <p>Выбирай стратегию под режим и держи результат подряд.</p>
+          </div>
+          <div className={styles.goalList}>
+            {goalRows.map((goal) => (
+              <div key={goal.id} className={`${styles.goalItem} ${goal.active ? styles.goalActive : ''}`}>
+                <div>
+                  <span className={styles.goalMode}>{goal.mode}</span>
+                  <strong>{goal.title}</strong>
+                  <small>{goal.detail}</small>
+                </div>
+                <div className={styles.goalMeter}>
+                  <span>
+                    {goal.progress}/{goal.target}
+                  </span>
+                  <div>
+                    <div style={{ width: `${Math.round((goal.progress / goal.target) * 100)}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
       <Card className={styles.card}>
         <LastTurn
           data={lastTurn}
@@ -307,7 +493,44 @@ function Home() {
           investmentDelta={investmentDelta}
           passiveBreakdown={passiveBreakdown}
         />
+        {salaryProgression && (
+          <div className={styles.professionGrowth}>
+            <div>
+              <span>Профессия</span>
+              <strong>{profession?.title}</strong>
+            </div>
+            <div>
+              <span>Рост дохода</span>
+              <strong>
+                {`+${Math.round((salaryProgression.percent || 0) * 100)}% каждые ${pluralizeTurns(
+                  salaryProgression.stepMonths || 1,
+                )}`}
+              </strong>
+              <small>
+                {`Следующее повышение через ${pluralizeTurns(
+                  salaryProgression.monthsUntilStep || salaryProgression.stepMonths || 1,
+                )} · Потолок ${formatUSD(salaryProgression.cap || profession?.salaryMonthly || 0)}`}
+              </small>
+            </div>
+          </div>
+        )}
       </Card>
+      {recentLog.length > 0 && (
+        <Card className={styles.logCard}>
+          <div className={styles.sectionHeader}>
+            <span>События хода</span>
+            <p>Случайные эффекты и последствия твоих действий.</p>
+          </div>
+          <ul className={styles.timeline}>
+            {recentLog.map((entry) => (
+              <li key={entry.id}>
+                <strong>M{entry.month}</strong>
+                <p>{entry.text}</p>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
       {monthlyOffers.length > 0 && (
         <section>
           <div className={styles.sectionHeader}>
