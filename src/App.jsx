@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useGameStore from './store/gameStore';
 import ProfessionSelect from './screens/ProfessionSelect';
 import MainLayout from './screens/MainLayout';
@@ -102,6 +102,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/choose" element={<ProfessionSelect />} />
         <Route path="/app" element={<GuardedLayout />}>
@@ -113,6 +114,14 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [pathname]);
+  return null;
 }
 
 export default App;

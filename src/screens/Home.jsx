@@ -162,6 +162,7 @@ function ActionCard({ action, onSelect, cash, compact = false, variant = 'defaul
 function LastTurn({ data, summary, passiveBreakdown = [] }) {
   const formatter = (value) => formatUSD(value);
   const passiveLabel = `${formatter(summary.passiveIncome)}/мес`;
+  const fixedLabel = `${formatter(summary.recurringExpenses)}/мес`;
   const recurringActual = data?.recurringExpenses ?? summary.recurringExpenses;
   const debtInterest = data?.debtInterest || 0;
   const totalIncome = Math.round((data?.salary || 0) + (data?.passiveIncome || summary.passiveIncome));
@@ -213,11 +214,12 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
   return (
     <div className={styles.lastTurn}>
       <div className={styles.balanceBlock}>
-        <div className={styles.netStat}>
-          <span>Чистый капитал</span>
-          <strong>{formatter(summary.netWorth)}</strong>
-        </div>
         <div className={styles.balanceStats}>
+          <div>
+            <span>Чистый капитал</span>
+            <strong>{formatter(summary.netWorth)}</strong>
+            <small>{`Прогноз ${FORECAST_TURNS} ходов: ~${formatUSD(netForecast)}`}</small>
+          </div>
           <div>
             <span>Свободный кэш</span>
             <strong>{formatter(summary.cash)}</strong>
@@ -228,26 +230,13 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
             <strong>{formatter(summary.debt)}</strong>
             <small>{`Лимит: ${formatter(Math.max(0, (summary.availableCredit || 0) + summary.debt))}`}</small>
           </div>
-          <div>
-            <span>Пассивный доход</span>
-            <strong>{passiveLabel}</strong>
-            <small>
-              {passiveGap >= 0
-                ? 'Перекрывает фикс. расходы'
-                : `Нужно ещё ${formatter(Math.abs(passiveGap))}/мес`}
-            </small>
-          </div>
-          <div>
-            <span>Фикс. расходы</span>
-            <strong>{formatter(summary.recurringExpenses)}/мес</strong>
-          </div>
         </div>
       </div>
       {passiveBreakdown.length > 0 && (
         <div className={`${styles.infoSection} ${styles.infoPositive}`}>
           <div className={styles.infoHeader}>
             <span>Пассивные доходы</span>
-            <strong>{`+$${Math.round(summary.passiveIncome).toLocaleString('en-US')}/мес`}</strong>
+            <strong>{`+$${Math.round(summary.passiveIncome).toLocaleString('en-US')}`}</strong>
           </div>
           <p className={styles.infoHint}>
             {passiveGap >= 0
@@ -258,7 +247,7 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
             {passiveBreakdown.map((item) => (
               <div key={item.id}>
                 <span>{item.label}</span>
-                <strong>{`+$${Math.round(item.amount).toLocaleString('en-US')}/мес`}</strong>
+                <strong>{`+$${Math.round(item.amount).toLocaleString('en-US')}`}</strong>
               </div>
             ))}
           </div>
@@ -271,7 +260,7 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
             <strong>
               {`-$${Math.round(
                 (data.livingCost || 0) + (data.recurringExpenses || 0) + (data.debtInterest || 0),
-              ).toLocaleString('en-US')}/мес`}
+              ).toLocaleString('en-US')}`}
             </strong>
           </div>
           <div className={styles.infoList}>
@@ -286,7 +275,6 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
           </div>
         </div>
       )}
-      <div className={styles.sectionDivider} />
       {renderBody()}
       {data?.stopLossWarnings?.length ? (
         <div className={styles.stopLossBlock}>

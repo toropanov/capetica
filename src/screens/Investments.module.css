@@ -196,11 +196,11 @@
   margin-top: 0.6rem;
   display: flex;
   gap: 0.5rem;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .creditActionColumn {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -208,6 +208,18 @@
 
 .creditActionColumn button {
   width: 100%;
+  padding: 0.85rem 0;
+}
+
+.creditActionColumn button span {
+  display: block;
+  white-space: normal;
+}
+
+@media (max-width: 480px) {
+  .creditActions {
+    flex-direction: column;
+  }
 }
 
 .paymentHint {
