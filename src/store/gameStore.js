@@ -671,10 +671,7 @@ const useGameStore = create(
               }
             }
           }
-          const livingCost = Math.max(
-            0,
-            roundMoney((state.baseLivingCost || 0) + state.lifestyleModifier),
-          );
+          const livingCost = 0;
           const recurringExpenses = roundMoney(state.recurringExpenses || 0);
           const monthlyRate =
             (state.configs.rules?.loans?.apr || 0) / 12;

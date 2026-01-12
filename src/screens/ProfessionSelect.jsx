@@ -52,9 +52,9 @@ function summarizeGoal(rule) {
 function ProfCard({ profession, onSelect }) {
   const stats = [
     { label: 'Зарплата', value: `${formatMoney(profession.salaryMonthly)}/мес` },
-    { label: 'Свободный кэш', value: formatMoney(profession.startingMoney) },
-    { label: 'Фикс. расходы', value: `${formatMoney(profession.monthlyExpenses || 0)}/мес` },
-    { label: 'Кред. потолок', value: formatMoney(profession.creditLimitBase || 0) },
+    { label: 'Наличные', value: formatMoney(profession.startingMoney) },
+    { label: 'Бытовые расходы', value: `${formatMoney(profession.monthlyExpenses || 0)}/мес` },
+    { label: 'Кредитный лимит', value: formatMoney(profession.creditLimitBase || 0) },
   ];
   const startingDebt = profession.startingDebt || 0;
   const avatarSrc = PROFESSION_IMAGES[profession.id];

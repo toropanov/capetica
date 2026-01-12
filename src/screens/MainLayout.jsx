@@ -55,6 +55,7 @@ function MainLayout() {
   const [turnSummaryOpen, setTurnSummaryOpen] = useState(false);
   const [turnSummary, setTurnSummary] = useState(null);
   const confirmButtonRef = useRef(null);
+  const contentRef = useRef(null);
   const diceTimerRef = useRef(null);
 
   useEffect(() => () => {
@@ -72,6 +73,12 @@ function MainLayout() {
     document.addEventListener('pointerdown', handleOutside);
     return () => document.removeEventListener('pointerdown', handleOutside);
   }, [confirmingFinish]);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+  }, [location.pathname]);
 
   const handleAdvanceRequest = () => {
     if (diceAnimating) return;
@@ -216,7 +223,7 @@ function MainLayout() {
         </button>
       </header>
       <StatusRibbon win={storeData.winCondition} lose={storeData.loseCondition} />
-      <main className={styles.content}>
+      <main className={styles.content} ref={contentRef}>
         <Outlet />
       </main>
       <BottomNav
