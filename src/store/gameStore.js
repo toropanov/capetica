@@ -461,6 +461,8 @@ const useGameStore = create(
       dealParticipations: [],
       actionsThisTurn: 0,
       lastTradeAction: null,
+      tradeLocks: {},
+      creditLockedMonth: null,
       monthlyOfferUsed: false,
       selectedGoalId: null,
       difficulty: DEFAULT_DIFFICULTY,
@@ -519,6 +521,8 @@ const useGameStore = create(
             difficulty: nextDifficulty,
             actionsThisTurn: 0,
             lastTradeAction: null,
+            tradeLocks: {},
+            creditLockedMonth: null,
           };
         }),
       randomProfession: (prefs = {}) =>
@@ -547,6 +551,8 @@ const useGameStore = create(
             difficulty: nextDifficulty,
             actionsThisTurn: 0,
             lastTradeAction: null,
+            tradeLocks: {},
+            creditLockedMonth: null,
           };
         }),
       advanceMonth: () =>
@@ -800,6 +806,8 @@ const useGameStore = create(
             salaryProgression,
             actionsThisTurn: 0,
             lastTradeAction: null,
+            tradeLocks: {},
+            creditLockedMonth: null,
             lastTurn: {
               salary,
               passiveIncome,
@@ -818,6 +826,14 @@ const useGameStore = create(
             getInstrumentMap(state.configs)[instrumentId];
           const price = state.priceState[instrumentId]?.price;
           if (!instrument || !price || desiredAmount <= 0) {
+            return {};
+          }
+          const locks = state.tradeLocks || {};
+          const isLockable =
+            instrument.type && ['stocks', 'crypto'].includes(instrument.type);
+          const lockedThisTurn =
+            isLockable && locks[instrumentId] === state.month;
+          if (lockedThisTurn) {
             return {};
           }
           const feePct = instrument.trading?.buyFeePct || 0;
@@ -870,7 +886,7 @@ const useGameStore = create(
             text: `Куплено ${instrument.title} на $${Math.round(spend).toLocaleString('en-US')}`,
           };
           const recentLog = [logEntry, ...(state.recentLog || [])].slice(0, 5);
-          return {
+          const updates = {
             investments: nextInvestments,
             cash: state.cash - (spend + fee),
             creditBucket,
@@ -882,6 +898,10 @@ const useGameStore = create(
               turn: state.month,
             },
           };
+          if (isLockable) {
+            updates.tradeLocks = { ...locks, [instrumentId]: state.month };
+          }
+          return updates;
         }),
       sellInstrument: (instrumentId, desiredAmount) =>
         set((state) => {
@@ -892,11 +912,12 @@ const useGameStore = create(
           if (!instrument || !holding || !price || desiredAmount <= 0) {
             return {};
           }
-          const buyLock =
-            state.lastTradeAction?.type === 'buy' &&
-            state.lastTradeAction.instrumentId === instrumentId &&
-            state.lastTradeAction.turn === state.month;
-          if (buyLock) {
+          const locks = state.tradeLocks || {};
+          const isLockable =
+            instrument.type && ['stocks', 'crypto'].includes(instrument.type);
+          const lockedThisTurn =
+            isLockable && locks[instrumentId] === state.month;
+          if (lockedThisTurn) {
             return {};
           }
           const maxValue = holding.units * price;
@@ -936,7 +957,7 @@ const useGameStore = create(
             text: `Продано ${instrument.title} на $${Math.round(netProceeds).toLocaleString('en-US')}`,
           };
           const recentLog = [logEntry, ...(state.recentLog || [])].slice(0, 5);
-          return {
+          const updates = {
             investments: nextInvestments,
             cash: state.cash + netProceeds,
             recentLog,
@@ -947,6 +968,10 @@ const useGameStore = create(
               turn: state.month,
             },
           };
+          if (isLockable) {
+            updates.tradeLocks = { ...locks, [instrumentId]: state.month };
+          }
+          return updates;
         }),
       participateInDeal: (dealMeta) => {
         const state = get();
@@ -995,6 +1020,9 @@ const useGameStore = create(
       },
       drawCredit: (amount = 1200) =>
         set((state) => {
+          if (state.creditLockedMonth === state.month) {
+            return {};
+          }
           const available = Math.max(0, state.creditLimit - state.debt);
           const draw = Math.min(roundMoney(amount), available);
           if (draw <= 0) return {};
@@ -1002,10 +1030,14 @@ const useGameStore = create(
             cash: roundMoney(state.cash + draw),
             debt: roundMoney(state.debt + draw),
             creditBucket: roundMoney((state.creditBucket || 0) + draw),
+            creditLockedMonth: state.month,
           };
         }),
       serviceDebt: (amount = 600) =>
         set((state) => {
+          if (state.creditLockedMonth === state.month) {
+            return {};
+          }
           if (state.debt <= 0 || state.cash <= 0) return {};
           const payment = Math.min(roundMoney(amount), state.cash, state.debt);
           if (payment <= 0) return {};
@@ -1013,6 +1045,7 @@ const useGameStore = create(
           return {
             cash: roundMoney(state.cash - payment - fee),
             debt: roundMoney(state.debt - payment),
+            creditLockedMonth: state.month,
           };
         }),
       applyHomeAction: (actionId, options = {}) =>
@@ -1078,6 +1111,8 @@ const useGameStore = create(
             difficulty: state.difficulty || DEFAULT_DIFFICULTY,
             actionsThisTurn: 0,
             lastTradeAction: null,
+            tradeLocks: {},
+            creditLockedMonth: null,
           };
         }),
     }),
@@ -1118,6 +1153,8 @@ const useGameStore = create(
         salaryProgression: state.salaryProgression,
         actionsThisTurn: state.actionsThisTurn,
         lastTradeAction: state.lastTradeAction,
+        tradeLocks: state.tradeLocks,
+        creditLockedMonth: state.creditLockedMonth,
         selectedGoalId: state.selectedGoalId,
         difficulty: state.difficulty,
         joblessMonths: state.joblessMonths,

@@ -222,61 +222,56 @@ function LastTurn({ data, showReturns, summary, investmentDelta, passiveBreakdow
             <small>{`Прогноз 3 хода: ${formatUSD(cashForecast)}`}</small>
           </div>
           <div>
-            <span>Обязательства</span>
+            <span>Кредит</span>
             <strong>{formatter(summary.debt)}</strong>
             <small>{`Лимит: ${formatter(Math.max(0, (summary.availableCredit || 0) + summary.debt))}`}</small>
-          </div>
-          <div>
-            <span>Пассивный доход</span>
-            <strong>{passiveLabel}</strong>
-            <small>
-              {passiveGap >= 0
-                ? 'Перекрывает фикс. расходы'
-                : `Нужно ещё ${formatter(Math.abs(passiveGap))}/мес`}
-            </small>
-          </div>
-          <div>
-            <span>Фикс. расходы</span>
-            <strong>{formatter(summary.recurringExpenses)}/мес</strong>
           </div>
         </div>
       </div>
       {passiveBreakdown.length > 0 && (
-        <details className={styles.detailBlock}>
-          <summary>
+        <div className={`${styles.infoSection} ${styles.infoPositive}`}>
+          <div className={styles.infoHeader}>
             <span>Пассивные доходы</span>
             <strong>{`+$${Math.round(summary.passiveIncome).toLocaleString('en-US')}/мес`}</strong>
-          </summary>
-          <ul>
+          </div>
+          <p className={styles.infoHint}>
+            {passiveGap >= 0
+              ? 'Перекрывает фикс. расходы'
+              : `Нужно ещё ${formatter(Math.abs(passiveGap))}/мес`}
+          </p>
+          <div className={styles.infoList}>
             {passiveBreakdown.map((item) => (
-              <li key={item.id}>
+              <div key={item.id}>
                 <span>{item.label}</span>
                 <strong>{`+$${Math.round(item.amount).toLocaleString('en-US')}/мес`}</strong>
-              </li>
+              </div>
             ))}
-          </ul>
-        </details>
+          </div>
+        </div>
       )}
       {data && (
-        <details className={styles.detailBlock}>
-          <summary>
-            <span>Расходы</span>
+        <div className={`${styles.infoSection} ${styles.infoNeutral}`}>
+          <div className={styles.infoHeader}>
+            <span>Фиксированные расходы</span>
             <strong>
-              {`-$${Math.round(data.livingCost + (data.recurringExpenses || 0) + (data.debtInterest || 0)).toLocaleString('en-US')}/мес`}
+              {`-$${Math.round(
+                (data.livingCost || 0) + (data.recurringExpenses || 0) + (data.debtInterest || 0),
+              ).toLocaleString('en-US')}/мес`}
             </strong>
-          </summary>
-          <ul>
+          </div>
+          <div className={styles.infoList}>
             {[{ label: 'Бытовые', amount: data.livingCost }, { label: 'Фиксированные', amount: data.recurringExpenses || 0 }, { label: 'Проценты по долгу', amount: data.debtInterest || 0 }]
               .filter((item) => item.amount > 0)
               .map((item) => (
-                <li key={item.label}>
+                <div key={item.label}>
                   <span>{item.label}</span>
                   <strong>{`-$${Math.round(item.amount).toLocaleString('en-US')}`}</strong>
-                </li>
+                </div>
               ))}
-          </ul>
-        </details>
+          </div>
+        </div>
       )}
+      <div className={styles.sectionDivider} />
       {renderBody()}
       {data?.stopLossWarnings?.length ? (
         <div className={styles.stopLossBlock}>
@@ -308,7 +303,6 @@ function Home() {
   const dealParticipations = useGameStore((state) => state.dealParticipations || []);
   const availableCredit = useGameStore((state) => state.availableCredit || 0);
   const trackers = useGameStore((state) => state.trackers || { win: {}, lose: {} });
-  const recentLog = useGameStore((state) => state.recentLog || []);
   const salaryProgression = useGameStore((state) => state.salaryProgression);
   const profession = useGameStore((state) => state.profession);
   const instrumentMap = useMemo(() => {
@@ -484,36 +478,6 @@ function Home() {
           </div>
         </Card>
       )}
-      {goalRows.length > 0 && (
-        <Card className={styles.goalCard}>
-          <div className={styles.goalHeader}>
-            <span>Цель партии</span>
-            <p>Выбирай стратегию под режим и держи результат подряд.</p>
-            <div className={styles.goalMeta}>
-              <span>Сложность: {difficultyLabels[difficulty] || difficulty}</span>
-            </div>
-          </div>
-          <div className={styles.goalList}>
-            {goalRows.map((goal) => (
-              <div key={goal.id} className={`${styles.goalItem} ${goal.active ? styles.goalActive : ''}`}>
-                <div>
-                  <span className={styles.goalMode}>{goal.mode}</span>
-                  <strong>{goal.title}</strong>
-                  <small>{goal.detail}</small>
-                </div>
-                <div className={styles.goalMeter}>
-                  <span>
-                    {goal.progress}/{goal.target}
-                  </span>
-                  <div>
-                    <div style={{ width: `${Math.round((goal.progress / goal.target) * 100)}%` }} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
       <Card className={styles.card}>
         <LastTurn
           data={lastTurn}
@@ -544,17 +508,27 @@ function Home() {
           </div>
         )}
       </Card>
-      {recentLog.length > 0 && (
-        <Card className={styles.logCard}>
-          <div className={styles.sectionHeader}>
-            <span>События хода</span>
-            <p>Случайные эффекты и последствия твоих действий.</p>
+      {goalRows.length > 0 && (
+        <Card className={styles.goalCard}>
+          <div className={styles.goalHeader}>
+            <span>Прогресс партии</span>
+            <small>Сложность: {difficultyLabels[difficulty] || difficulty}</small>
           </div>
-          <ul className={styles.timeline}>
-            {recentLog.map((entry) => (
-              <li key={entry.id}>
-                <strong>M{entry.month}</strong>
-                <p>{entry.text}</p>
+          <ul className={styles.goalList}>
+            {goalRows.map((goal) => (
+              <li key={goal.id} className={goal.active ? styles.goalItemActive : ''}>
+                <div>
+                  <strong>{goal.title}</strong>
+                  {goal.detail && <span>{goal.detail}</span>}
+                </div>
+                <div className={styles.goalMeter}>
+                  <div>
+                    <div style={{ width: `${Math.round((goal.progress / goal.target) * 100)}%` }} />
+                  </div>
+                  <small>
+                    {goal.progress}/{goal.target}
+                  </small>
+                </div>
               </li>
             ))}
           </ul>

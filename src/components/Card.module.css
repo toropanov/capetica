@@ -5,20 +5,9 @@
   box-shadow: 0 20px 40px rgba(33, 52, 95, 0.15);
   overflow: hidden;
   padding: 1.2rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 24px 48px rgba(30, 47, 85, 0.2);
 }
 
 .flat {
-  box-shadow: none;
-}
-
-.flat:hover {
-  transform: none;
   box-shadow: none;
 }
 

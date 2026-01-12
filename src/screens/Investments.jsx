@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -8,14 +8,20 @@ import AssetsSectionSwitch from '../components/AssetsSectionSwitch';
 import styles from './Investments.module.css';
 
 const LOT_STEP = 100;
+const SLIDER_STEP = 10;
+const formatUSD = (value) => `$${Math.round(value || 0).toLocaleString('en-US')}`;
+const formatPercent = (value) => {
+  if (typeof value !== 'number') return null;
+  const percent = value * 100;
+  const rounded = Math.round(percent * 10) / 10;
+  return Number.isInteger(rounded) ? `${rounded.toFixed(0)}%` : `${rounded.toFixed(1)}%`;
+};
 
 const clampAmount = (value, max) => {
-  if (max < LOT_STEP) return 0;
-  const safeMax = Math.floor(max / LOT_STEP) * LOT_STEP;
-  if (safeMax < LOT_STEP) return 0;
-  const next = Number.isFinite(value) ? value : LOT_STEP;
-  const clamped = Math.min(Math.max(next, LOT_STEP), safeMax);
-  return Math.round(clamped / LOT_STEP) * LOT_STEP;
+  if (max <= 0) return 0;
+  const limit = Math.max(LOT_STEP, Math.round(max));
+  const next = Number.isFinite(value) ? Math.round(value) : LOT_STEP;
+  return Math.min(Math.max(next, LOT_STEP), limit);
 };
 
 function InstrumentCard({
@@ -26,18 +32,21 @@ function InstrumentCard({
   onBuy,
   onSell,
   currentMonth,
-  lastTradeAction,
+  tradeLocks = {},
 }) {
   const rawPrice = priceInfo?.price || instrument.initialPrice;
   const changePct = Math.round((priceInfo?.lastReturn || 0) * 100);
   const price = Math.round(rawPrice);
   const holdingUnits = holding?.units || 0;
   const holdingValue = Math.round(holdingUnits * rawPrice);
-  const buyMax = Math.floor(Math.max(0, cash) / LOT_STEP) * LOT_STEP;
-  const sellMax = Math.floor(Math.max(0, holdingValue) / LOT_STEP) * LOT_STEP;
+  const buyMax = Math.round(Math.max(0, cash));
+  const sellMax = Math.round(Math.max(0, holdingValue));
   const [buyAmount, setBuyAmount] = useState(LOT_STEP);
   const [sellAmount, setSellAmount] = useState(LOT_STEP);
   const [panelMode, setPanelMode] = useState(null);
+  const [buyConfirmed, setBuyConfirmed] = useState(false);
+  const [lastBuyAmount, setLastBuyAmount] = useState(null);
+  const buyConfirmTimeout = useRef(null);
 
   useEffect(() => {
     setBuyAmount((prev) => clampAmount(prev, buyMax));
@@ -53,20 +62,48 @@ function InstrumentCard({
   const sellProfit = holding
     ? Math.round((rawPrice - (holding.costBasis || rawPrice)) * holdingUnits)
     : 0;
-  const sellLabel = hasPosition
+  const tradeLocked = tradeLocks[instrument.id] === currentMonth;
+  const sellLocked = tradeLocked;
+  const buyLocked = tradeLocked;
+
+  const defaultSellLabel = hasPosition
     ? `Продать $${sellValue.toLocaleString('en-US')} (${sellProfit >= 0 ? '+' : '-'}$${Math.abs(sellProfit).toLocaleString('en-US')})`
     : '';
+  const sellLabel =
+    buyLocked && lastBuyAmount
+      ? `Куплено на $${Math.round(lastBuyAmount).toLocaleString('en-US')}`
+      : defaultSellLabel;
 
-  const lotsFromAmount = (amount) => Math.max(1, Math.round(amount / LOT_STEP));
+  useEffect(
+    () => () => {
+      if (buyConfirmTimeout.current) {
+        clearTimeout(buyConfirmTimeout.current);
+      }
+    },
+    [],
+  );
 
-  const sellLocked =
-    lastTradeAction?.type === 'buy' &&
-    lastTradeAction.instrumentId === instrument.id &&
-    lastTradeAction.turn === currentMonth;
+  useEffect(() => {
+    if (!buyLocked) {
+      setLastBuyAmount(null);
+    }
+  }, [buyLocked]);
 
   const togglePanel = (mode) => {
     if (mode === 'sell' && (!hasPosition || sellLocked)) return;
+    if (mode === 'buy' && buyLocked) return;
     setPanelMode((prev) => (prev === mode ? null : mode));
+  };
+
+  const showBuyConfirmation = () => {
+    setBuyConfirmed(true);
+    if (buyConfirmTimeout.current) {
+      clearTimeout(buyConfirmTimeout.current);
+    }
+    buyConfirmTimeout.current = setTimeout(() => {
+      setBuyConfirmed(false);
+      setPanelMode(null);
+    }, 600);
   };
 
   const renderPanel = () => {
@@ -77,12 +114,12 @@ function InstrumentCard({
     const amount = isBuy ? buyAmount : sellAmount;
     const setAmount = isBuy ? setBuyAmount : setSellAmount;
     const disabled = isBuy ? buyDisabled : !hasPosition;
-    const lots = lotsFromAmount(amount || LOT_STEP);
+    const displayAmount = amount || LOT_STEP;
     return (
       <div className={styles.tradePanel}>
         <div className={styles.tradeValue}>
           <span>{isBuy ? 'Сумма покупки' : 'Сумма продажи'}</span>
-          <strong>${(amount || LOT_STEP).toLocaleString('en-US')}</strong>
+          <strong>${displayAmount.toLocaleString('en-US')}</strong>
         </div>
         {disabled ? (
           <p className={styles.tradeHint}>
@@ -92,10 +129,9 @@ function InstrumentCard({
           <Slider
             min={LOT_STEP}
             max={Math.max(LOT_STEP, max)}
-            step={LOT_STEP}
-            value={Math.min(amount || LOT_STEP, Math.max(LOT_STEP, max))}
-            onChange={(val) => setAmount(Math.round(val / LOT_STEP) * LOT_STEP)}
-            label="Шаг ×$100"
+            step={SLIDER_STEP}
+            value={Math.min(displayAmount, Math.max(LOT_STEP, max))}
+            onChange={(val) => setAmount(Math.round(val))}
           />
         )}
         <div className={styles.tradePanelActions}>
@@ -103,17 +139,29 @@ function InstrumentCard({
             variant={isBuy ? 'primary' : 'ghost'}
             onClick={() => {
               if (isBuy) {
-                onBuy(amount || LOT_STEP);
+                const spent = amount || LOT_STEP;
+                onBuy(spent);
+                setLastBuyAmount(spent);
+                showBuyConfirmation();
               } else {
                 onSell(amount || LOT_STEP);
+                setPanelMode(null);
               }
-              setPanelMode(null);
             }}
-            disabled={disabled}
+            disabled={disabled || buyConfirmed}
+            className={`${styles.tradeActionButton} ${buyConfirmed && isBuy ? styles.buyConfirming : ''}`}
           >
-            {isBuy ? 'Купить' : `Продать ${lots} лотов`}
+            {isBuy
+              ? buyConfirmed
+                ? 'Готово'
+                : 'Купить'
+              : `Продать ${formatUSD(displayAmount)}`}
           </Button>
-          <Button variant="secondary" onClick={() => setPanelMode(null)}>
+          <Button
+            variant="secondary"
+            onClick={() => setPanelMode(null)}
+            className={styles.tradeActionButton}
+          >
             Отмена
           </Button>
         </div>
@@ -149,7 +197,7 @@ function InstrumentCard({
           </Button>
         )}
         {panelMode !== 'buy' && (
-          <Button variant="primary" onClick={() => togglePanel('buy')} disabled={buyDisabled}>
+          <Button variant="primary" onClick={() => togglePanel('buy')} disabled={buyDisabled || buyLocked}>
             Купить
           </Button>
         )}
@@ -172,33 +220,28 @@ function Investments() {
   const serviceDebt = useGameStore((state) => state.serviceDebt);
   const debt = useGameStore((state) => state.debt);
   const availableCredit = useGameStore((state) => state.availableCredit);
+  const loanRules = useGameStore((state) => state.configs?.rules?.loans);
   const [creditAmount, setCreditAmount] = useState(1000);
-  const [feedback, setFeedback] = useState(null);
   const month = useGameStore((state) => state.month);
-  const lastTradeAction = useGameStore((state) => state.lastTradeAction);
+  const tradeLocks = useGameStore((state) => state.tradeLocks || {});
+  const creditLocked = useGameStore((state) => state.creditLockedMonth === state.month);
   const filteredInstruments = useMemo(
     () => instruments.filter((instrument) => instrument.type !== 'bonds'),
     [instruments],
   );
+  const aprLabel = loanRules?.apr != null ? formatPercent(loanRules.apr) : null;
+  const minTerm = loanRules?.minTermMonths || loanRules?.maxTermMonths || 0;
+  const maxTerm = loanRules?.maxTermMonths || loanRules?.minTermMonths || 0;
+  const termLabel = minTerm && maxTerm ? `${minTerm}–${maxTerm} мес.` : minTerm ? `${minTerm} мес.` : '—';
 
   const handleBuy = (instrument, amount) => {
     if (!amount || amount <= 0) return;
     buyInstrument(instrument.id, amount);
-    setFeedback({
-      text: `Покупка ${instrument.title} на $${Math.round(amount).toLocaleString('en-US')}`,
-      positive: false,
-    });
-    setTimeout(() => setFeedback(null), 2000);
   };
 
   const handleSell = (instrument, amount) => {
     if (!amount || amount <= 0) return;
     sellInstrument(instrument.id, amount);
-    setFeedback({
-      text: `Продажа ${instrument.title} на $${Math.round(amount).toLocaleString('en-US')}`,
-      positive: true,
-    });
-    setTimeout(() => setFeedback(null), 2000);
   };
 
   const cards = useMemo(
@@ -212,24 +255,30 @@ function Investments() {
   );
 
   useEffect(() => {
-    const maxDraw = Math.max(500, Math.floor(Math.max(availableCredit, 0)));
+    const maxDraw = Math.max(500, Math.round(Math.max(availableCredit, 0)));
     if (creditAmount > maxDraw) {
       setCreditAmount(maxDraw);
     }
   }, [availableCredit, creditAmount]);
 
+  const estimatedPayment = useMemo(() => {
+    if (!loanRules) return null;
+    const amount = Math.max(0, Math.round(creditAmount || 0));
+    if (amount <= 0) return null;
+    const term = loanRules.maxTermMonths || loanRules.minTermMonths || 12;
+    if (!term) return null;
+    const apr = loanRules.apr || 0;
+    const monthlyRate = apr > 0 ? apr / 12 : 0;
+    if (!monthlyRate) {
+      return amount / term;
+    }
+    const factor = Math.pow(1 + monthlyRate, -term);
+    return (amount * monthlyRate) / (1 - factor);
+  }, [creditAmount, loanRules]);
+
   return (
     <div className={styles.screen}>
       <AssetsSectionSwitch active="investments" />
-      {feedback && (
-        <div
-          className={`${styles.feedback} ${
-            feedback.positive ? styles.feedbackPositive : styles.feedbackNegative
-          }`}
-        >
-          {feedback.text}
-        </div>
-      )}
       <div className={styles.list}>
         {cards.map((card) => (
           <InstrumentCard
@@ -241,27 +290,39 @@ function Investments() {
             onBuy={(amount) => handleBuy(card.instrument, amount)}
             onSell={(amount) => handleSell(card.instrument, amount)}
             currentMonth={month}
-            lastTradeAction={lastTradeAction}
+            tradeLocks={tradeLocks}
           />
         ))}
       </div>
       <Card className={styles.creditCard}>
-        <div className={styles.creditRows}>
+        <div className={styles.creditHeader}>
+          <span>Кредитная линия</span>
+          <p>
+            {loanRules
+              ? `Выдаётся под ${aprLabel || '—'} на срок ${termLabel}. Лимит растёт вместе с чистым капиталом.`
+              : 'Условия выдачи подтягиваются из конфигурации.'}
+          </p>
+        </div>
+        <div className={styles.creditTerms}>
           <div>
-            <span>Обязательства</span>
-            <strong>${Math.round(debt).toLocaleString('en-US')}</strong>
+            <span>Ставка</span>
+            <strong>{aprLabel || '—'}</strong>
           </div>
           <div>
-            <span>Лимит кредита</span>
-            <strong>${Math.round(Math.max(availableCredit, 0)).toLocaleString('en-US')}</strong>
+            <span>Срок</span>
+            <strong>{termLabel}</strong>
+          </div>
+          <div>
+            <span>Доступно</span>
+            <strong>{formatUSD(Math.max(availableCredit, 0))}</strong>
           </div>
         </div>
         {availableCredit > 0 ? (
           (() => {
-            const maxAvailable = Math.floor(Math.max(availableCredit, 0));
+            const maxAvailable = Math.round(Math.max(availableCredit, 0));
             const sliderMin = Math.min(500, maxAvailable);
             const sliderMax = Math.max(sliderMin, maxAvailable);
-            const sliderStep = Math.max(1, Math.floor(sliderMax / 6)) || 1;
+            const sliderStep = Math.max(10, Math.round(sliderMax / 12)) || 10;
             return (
               <Slider
                 min={sliderMin}
@@ -269,28 +330,36 @@ function Investments() {
                 step={sliderStep}
                 value={Math.min(creditAmount, sliderMax)}
                 onChange={(value) => setCreditAmount(Math.round(value))}
-                label={`Сумма $${Math.round(creditAmount).toLocaleString('en-US')}`}
               />
             );
           })()
         ) : (
-          <Slider min={0} max={0} step={1} value={0} onChange={() => {}} label="Сумма $0" />
+          <Slider min={0} max={0} step={1} value={0} onChange={() => {}} />
         )}
         <div className={styles.creditActions}>
-          <Button
-            variant="primary"
-            onClick={() => drawCredit(Math.min(creditAmount, Math.max(availableCredit, 0)))}
-            disabled={availableCredit <= 0}
-          >
-            Взять ${creditAmount}
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => serviceDebt(creditAmount)}
-            disabled={debt <= 0 || cash <= 0}
-          >
-            Погасить ${creditAmount}
-          </Button>
+          <div className={styles.creditActionColumn}>
+            <Button
+              variant="primary"
+              onClick={() => drawCredit(Math.min(creditAmount, Math.max(availableCredit, 0)))}
+              disabled={availableCredit <= 0 || creditLocked}
+            >
+              Взять ${creditAmount}
+            </Button>
+            {estimatedPayment && (
+              <small className={styles.paymentHint}>
+                Платёж ≈ {formatUSD(Math.round(estimatedPayment))}/мес
+              </small>
+            )}
+          </div>
+          <div className={styles.creditActionColumn}>
+            <Button
+              variant="danger"
+              onClick={() => serviceDebt(creditAmount)}
+              disabled={debt <= 0 || cash <= 0 || creditLocked}
+            >
+              Погасить ${creditAmount}
+            </Button>
+          </div>
         </div>
       </Card>
     </div>

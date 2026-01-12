@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
@@ -11,6 +11,8 @@ const DIFFICULTY_OPTIONS = [
   { id: 'normal', label: 'Стандарт', description: 'Баланс риска и наград.' },
   { id: 'hard', label: 'Сложный', description: 'Больше стрессов и испытаний.' },
 ];
+
+const formatMoney = (value) => `$${Math.round(value || 0).toLocaleString('en-US')}`;
 
 function summarizeGoal(rule) {
   if (!rule) {
@@ -33,23 +35,35 @@ function summarizeGoal(rule) {
 }
 
 function ProfCard({ profession, onSelect }) {
+  const stats = [
+    { label: 'Зарплата', value: `${formatMoney(profession.salaryMonthly)}/мес` },
+    { label: 'Свободный кэш', value: formatMoney(profession.startingMoney) },
+    { label: 'Фикс. расходы', value: `${formatMoney(profession.monthlyExpenses || 0)}/мес` },
+    { label: 'Кред. потолок', value: formatMoney(profession.creditLimitBase || 0) },
+  ];
+  const startingDebt = profession.startingDebt || 0;
   return (
     <Card className={styles.profCard}>
-      <div className={styles.avatar}>
-        <span>{profession.title.slice(0, 1)}</span>
+      <div className={styles.summaryRow}>
+        <div className={styles.avatar}>
+          <span>{profession.title.slice(0, 1)}</span>
+        </div>
+        <div>
+          <h3>{profession.title}</h3>
+          <p className={styles.sub}>Стартовые параметры</p>
+        </div>
       </div>
-      <h3>{profession.title}</h3>
-      <p className={styles.sub}>Стартовые цифры</p>
       <div className={styles.metrics}>
-        <div>
-          <span>Зарплата</span>
-          <strong>${profession.salaryMonthly.toLocaleString('en-US')}</strong>
-        </div>
-        <div>
-          <span>Свободный кэш</span>
-          <strong>${profession.startingMoney.toLocaleString('en-US')}</strong>
-        </div>
+        {stats.map((item) => (
+          <div key={`${profession.id}-${item.label}`}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
       </div>
+      {startingDebt > 0 && (
+        <div className={styles.debtTag}>Стартовый долг {formatMoney(startingDebt)}</div>
+      )}
       <Button variant="primary" onClick={() => onSelect(profession.id)}>
         Играть
       </Button>
@@ -74,6 +88,8 @@ function ProfessionSelect() {
   );
   const [goalId, setGoalId] = useState(storedGoalId || winRules[0]?.id || null);
   const [difficulty, setDifficulty] = useState(storedDifficulty);
+  const [isRolling, setIsRolling] = useState(false);
+  const rollDelayRef = useRef(null);
 
   useEffect(() => {
     if (!goalId && winRules[0]) {
@@ -93,6 +109,15 @@ function ProfessionSelect() {
     }
   }, [storedDifficulty]);
 
+  useEffect(
+    () => () => {
+      if (rollDelayRef.current) {
+        clearTimeout(rollDelayRef.current);
+      }
+    },
+    [],
+  );
+
   const effectiveGoalId = goalId || winRules[0]?.id || null;
   const effectiveDifficulty = difficulty || 'normal';
 
@@ -102,8 +127,12 @@ function ProfessionSelect() {
   };
 
   const handleRandom = () => {
-    randomProfession({ goalId: effectiveGoalId, difficulty: effectiveDifficulty });
-    navigate('/app');
+    if (isRolling) return;
+    setIsRolling(true);
+    rollDelayRef.current = setTimeout(() => {
+      randomProfession({ goalId: effectiveGoalId, difficulty: effectiveDifficulty });
+      navigate('/app');
+    }, 650);
   };
 
   return (
@@ -116,7 +145,7 @@ function ProfessionSelect() {
       {winRules.length > 0 && (
         <div className={styles.options}>
           <section className={styles.optionGroup}>
-            <h2>Цель партии</h2>
+            <h2>Вектор партии</h2>
             <div className={styles.optionList}>
               {winRules.map((rule) => {
                 const summary = summarizeGoal(rule);
@@ -158,7 +187,15 @@ function ProfessionSelect() {
           <ProfCard key={profession.id} profession={profession} onSelect={handleSelect} />
         ))}
       </div>
-      <GradientButton onClick={handleRandom}>Случайно</GradientButton>
+      <GradientButton
+        onClick={handleRandom}
+        disabled={isRolling}
+        icon="🎲"
+        size="compact"
+        rolling={isRolling}
+      >
+        Случайно
+      </GradientButton>
       <div className={styles.sparkles}>
         <span />
         <span />

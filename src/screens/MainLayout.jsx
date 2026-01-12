@@ -6,6 +6,7 @@ import BottomNav from '../components/BottomNav';
 import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/finance';
 import styles from './MainLayout.module.css';
 import { spriteStyle, getProfessionIcon } from '../utils/iconSprite';
+import Modal from '../components/Modal';
 
 function StatusRibbon({ win, lose }) {
   if (!win && !lose) return null;
@@ -37,8 +38,16 @@ function MainLayout() {
   );
   const advanceMonth = useGameStore((state) => state.advanceMonth);
   const actionsCount = useGameStore((state) => state.actionsThisTurn || 0);
+  const month = useGameStore((state) => state.month);
+  const lastTurn = useGameStore((state) => state.lastTurn);
+  const recentLog = useGameStore((state) => state.recentLog || []);
+  const currentEvent = useGameStore((state) => state.currentEvent);
   const [confirmingFinish, setConfirmingFinish] = useState(false);
   const [diceAnimating, setDiceAnimating] = useState(false);
+  const [pendingSummary, setPendingSummary] = useState(false);
+  const [summaryReady, setSummaryReady] = useState(false);
+  const [turnSummaryOpen, setTurnSummaryOpen] = useState(false);
+  const [turnSummary, setTurnSummary] = useState(null);
   const confirmButtonRef = useRef(null);
   const diceTimerRef = useRef(null);
 
@@ -67,12 +76,12 @@ function MainLayout() {
     setConfirmingFinish(false);
     setDiceAnimating(true);
     advanceMonth();
+    setPendingSummary(true);
     if (diceTimerRef.current) {
       clearTimeout(diceTimerRef.current);
     }
     diceTimerRef.current = setTimeout(() => {
       setDiceAnimating(false);
-      navigate('/app');
     }, 1300);
   };
 
@@ -100,6 +109,52 @@ function MainLayout() {
     const rounded = Math.round(value);
     return `${rounded < 0 ? '-$' : '$'}${Math.abs(rounded).toLocaleString('en-US')}`;
   };
+
+  useEffect(() => {
+    if (!pendingSummary || !lastTurn) return;
+    const summaryMonth = month - 1;
+    if (summaryMonth < 0) {
+      setPendingSummary(false);
+      return;
+    }
+    const logs = (recentLog || []).filter((entry) => entry.month === summaryMonth);
+    const incomes = Math.round((lastTurn.salary || 0) + (lastTurn.passiveIncome || 0));
+    const expenses = Math.round(
+      (lastTurn.livingCost || 0) + (lastTurn.recurringExpenses || 0) + (lastTurn.debtInterest || 0),
+    );
+    const net = incomes - expenses;
+    const mood =
+      currentEvent?.type === 'negative' || net < 0
+        ? 'negative'
+        : currentEvent?.type === 'positive' || net >= 0
+          ? 'positive'
+          : 'neutral';
+    setTurnSummary({
+      month: summaryMonth,
+      incomes,
+      expenses,
+      net,
+      logs,
+      event: currentEvent ? { ...currentEvent } : null,
+      stopLoss: lastTurn.stopLossWarnings || [],
+      mood,
+    });
+    setSummaryReady(true);
+    setPendingSummary(false);
+  }, [pendingSummary, month, lastTurn, recentLog, currentEvent]);
+
+  useEffect(() => {
+    if (summaryReady && !diceAnimating && turnSummary) {
+      setTurnSummaryOpen(true);
+      setSummaryReady(false);
+    }
+  }, [summaryReady, diceAnimating, turnSummary]);
+
+  const handleCloseSummary = () => {
+    setTurnSummaryOpen(false);
+    setTurnSummary(null);
+  };
+
   return (
     <div className={styles.layout}>
       <div className={styles.backdrop} />
@@ -158,6 +213,75 @@ function MainLayout() {
         actionRef={confirmButtonRef}
         actionsCount={actionsCount}
       />
+      <Modal
+        open={turnSummaryOpen && Boolean(turnSummary)}
+        onClose={handleCloseSummary}
+        title={turnSummary ? `Итоги хода M${turnSummary.month}` : ''}
+        footer={
+          <button type="button" className={styles.summaryButton} onClick={handleCloseSummary}>
+            Продолжить
+          </button>
+        }
+      >
+        {turnSummary && (
+          <div className={styles.turnSummary}>
+            <div
+              className={`${styles.turnMood} ${
+                turnSummary.mood === 'negative' ? styles.turnMoodNegative : styles.turnMoodPositive
+              }`}
+            >
+              {turnSummary.mood === 'negative' ? '🙁 Невесёлый ход' : '🎉 Удачный ход'}
+            </div>
+            {turnSummary.event && (
+              <div className={styles.turnEvent}>
+                <strong>{turnSummary.event.title}</strong>
+                <p>{turnSummary.event.message || turnSummary.event.description}</p>
+              </div>
+            )}
+            <div className={styles.turnStats}>
+              <div>
+                <span>Доходы</span>
+                <strong className={styles.turnPositive}>{formatMoney(turnSummary.incomes)}</strong>
+              </div>
+              <div>
+                <span>Расходы</span>
+                <strong className={styles.turnNegative}>{formatMoney(turnSummary.expenses)}</strong>
+              </div>
+              <div>
+                <span>Итог</span>
+                <strong className={turnSummary.net >= 0 ? styles.turnPositive : styles.turnNegative}>
+                  {turnSummary.net >= 0 ? '+' : '-'}${Math.abs(turnSummary.net).toLocaleString('en-US')}
+                </strong>
+              </div>
+            </div>
+            {turnSummary.stopLoss?.length > 0 && (
+              <div className={styles.turnWarnings}>
+                <span>Авто-стоп-лосс</span>
+                <ul>
+                  {turnSummary.stopLoss.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className={styles.turnLog}>
+              <span>События хода</span>
+              <ul>
+                {turnSummary.logs.length ? (
+                  turnSummary.logs.map((entry) => (
+                    <li key={entry.id}>
+                      <strong>M{entry.month}</strong>
+                      <p>{entry.text}</p>
+                    </li>
+                  ))
+                ) : (
+                  <li className={styles.turnLogEmpty}>Ход прошёл без крупных событий.</li>
+                )}
+              </ul>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
