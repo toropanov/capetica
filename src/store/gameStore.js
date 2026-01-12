@@ -719,6 +719,22 @@ const useGameStore = create(
             salary: (state.profession.salaryMonthly || 0) + patchedSalaryBonus,
             rules: state.configs.rules,
           });
+          const dropThreshold = (state.configs.markets?.global?.significantDrop || -0.15);
+          const riseThreshold = state.configs.markets?.global?.significantRise || 0.15;
+          const marketWarnings = Object.entries(simResult.returns || {}).reduce((acc, [instrumentId, ret]) => {
+            const info = instrumentMap[instrumentId];
+            if (!info) return acc;
+            if (ret <= dropThreshold) {
+              const label = info.type === 'crypto' ? 'Криптовалюта' : 'Акции';
+              const verb = info.type === 'crypto' ? 'просела' : 'просели';
+              acc.push(`${label} ${verb} на ${Math.round(Math.abs(ret) * 100)}%`);
+            } else if (ret >= riseThreshold) {
+              const label = info.type === 'crypto' ? 'Криптовалюта' : 'Акции';
+              const verb = info.type === 'crypto' ? 'выросла' : 'выросли';
+              acc.push(`${label} ${verb} на ${Math.round(ret * 100)}%`);
+            }
+            return acc;
+          }, []);
           const cashFlowHistory = clampHistory([
             ...(state.history.cashFlow || []),
             {
@@ -754,6 +770,9 @@ const useGameStore = create(
               id: `event-${Date.now()}`,
               month: state.month + 1,
               text: eventRoll.message,
+              amount:
+                eventRoll.event?.effect?.cashDelta ??
+                Math.round(eventRoll.patch?.cashDelta ?? 0),
             };
             recentLog = [entry, ...recentLog].slice(0, 5);
           }
@@ -813,6 +832,7 @@ const useGameStore = create(
               debtInterest,
               returns: simResult.returns,
               stopLossWarnings,
+              marketWarnings,
             },
             recentLog,
           };

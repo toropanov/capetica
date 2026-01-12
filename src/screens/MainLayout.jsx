@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import useGameStore from '../store/gameStore';
 import BottomNav from '../components/BottomNav';
+import Button from '../components/Button';
 import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/finance';
 import styles from './MainLayout.module.css';
 import { spriteStyle, getProfessionIcon } from '../utils/iconSprite';
@@ -12,7 +13,19 @@ import lawyerImg from '../assets/proffesions/low.png';
 import doctorImg from '../assets/proffesions/doctor.png';
 import fireImg from '../assets/proffesions/fire.png';
 import managerImg from '../assets/proffesions/manager.png';
+import successImg from '../assets/popup_success.png';
+import failImg from '../assets/popup_fail.png';
 import Modal from '../components/Modal';
+
+function getEventMessage(event = {}) {
+  const raw = event.message || event.description || '';
+  if (!raw) return '';
+  const colon = `${event.title}:`;
+  const negativePrefix = `⚠ ${colon}`;
+  if (raw.startsWith(negativePrefix)) return raw.slice(negativePrefix.length).trim();
+  if (raw.startsWith(colon)) return raw.slice(colon.length).trim();
+  return raw;
+}
 
 function StatusRibbon({ win, lose }) {
   if (!win && !lose) return null;
@@ -151,6 +164,7 @@ function MainLayout() {
       logs,
       event: currentEvent ? { ...currentEvent } : null,
       stopLoss: lastTurn.stopLossWarnings || [],
+      marketWarnings: (lastTurn.marketWarnings || []).slice(0, 2),
       mood,
     });
     setSummaryReady(true);
@@ -222,8 +236,8 @@ function MainLayout() {
           </svg>
         </button>
       </header>
-      <StatusRibbon win={storeData.winCondition} lose={storeData.loseCondition} />
       <main className={styles.content} ref={contentRef}>
+        <StatusRibbon win={storeData.winCondition} lose={storeData.loseCondition} />
         <Outlet />
       </main>
       <BottomNav
@@ -241,70 +255,87 @@ function MainLayout() {
       <Modal
         open={turnSummaryOpen && Boolean(turnSummary)}
         onClose={handleCloseSummary}
-        title={turnSummary ? `Итоги хода M${turnSummary.month}` : ''}
         footer={
-          <button type="button" className={styles.summaryButton} onClick={handleCloseSummary}>
+          <Button variant="primary" onClick={handleCloseSummary}>
             Продолжить
-          </button>
+          </Button>
         }
       >
         {turnSummary && (
-          <div className={styles.turnSummary}>
-            <div
-              className={`${styles.turnMood} ${
-                turnSummary.mood === 'negative' ? styles.turnMoodNegative : styles.turnMoodPositive
-              }`}
-            >
-              {turnSummary.mood === 'negative' ? '🙁 Невесёлый ход' : '🎉 Удачный ход'}
+          <>
+            <div className={styles.turnIllustration}>
+              <img
+                src={turnSummary.mood === 'negative' ? failImg : successImg}
+                alt={turnSummary.mood === 'negative' ? 'Невдача хода' : 'Успех хода'}
+              />
             </div>
-            {turnSummary.event && (
-              <div className={styles.turnEvent}>
-                <strong>{turnSummary.event.title}</strong>
-                <p>{turnSummary.event.message || turnSummary.event.description}</p>
+            <div className={styles.turnSummary}>
+              <div
+                className={`${styles.turnMood} ${
+                  turnSummary.mood === 'negative' ? styles.turnMoodNegative : styles.turnMoodPositive
+                }`}
+              >
+                {turnSummary.mood === 'negative' ? '🙁 Невесёлый ход' : '🎉 Удачный ход'}
               </div>
-            )}
-            <div className={styles.turnStats}>
-              <div>
-                <span>Доходы</span>
-                <strong className={styles.turnPositive}>{formatMoney(turnSummary.incomes)}</strong>
+              {turnSummary.event && (
+                <div className={styles.turnEvent}>
+                  <strong>{turnSummary.event.title}</strong>
+                  <p>{getEventMessage(turnSummary.event)}</p>
+                  {typeof turnSummary.event.effect?.cashDelta === 'number' && (
+                    <span className={styles.turnEventAmount}>{formatMoney(turnSummary.event.effect.cashDelta)}</span>
+                  )}
+                </div>
+              )}
+              <div className={styles.turnStats}>
+                <div>
+                  <span>Доходы</span>
+                  <strong className={styles.turnPositive}>{formatMoney(turnSummary.incomes)}</strong>
+                </div>
+                <div>
+                  <span>Расходы</span>
+                  <strong className={styles.turnNegative}>{formatMoney(turnSummary.expenses)}</strong>
+                </div>
+                <div>
+                  <span>Итог</span>
+                  <strong className={turnSummary.net >= 0 ? styles.turnPositive : styles.turnNegative}>
+                    {turnSummary.net >= 0 ? '+' : '-'}${Math.abs(turnSummary.net).toLocaleString('en-US')}
+                  </strong>
+                </div>
               </div>
-              <div>
-                <span>Расходы</span>
-                <strong className={styles.turnNegative}>{formatMoney(turnSummary.expenses)}</strong>
-              </div>
-              <div>
-                <span>Итог</span>
-                <strong className={turnSummary.net >= 0 ? styles.turnPositive : styles.turnNegative}>
-                  {turnSummary.net >= 0 ? '+' : '-'}${Math.abs(turnSummary.net).toLocaleString('en-US')}
-                </strong>
-              </div>
-            </div>
-            {turnSummary.stopLoss?.length > 0 && (
-              <div className={styles.turnWarnings}>
-                <span>Авто-стоп-лосс</span>
+              {turnSummary.stopLoss?.length > 0 && (
+                <div className={styles.turnWarnings}>
+                  <span>Авто-стоп-лосс</span>
+                  <ul>
+                    {turnSummary.stopLoss.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className={styles.turnLog}>
+                <span>События хода</span>
                 <ul>
-                  {turnSummary.stopLoss.map((item) => (
-                    <li key={item}>{item}</li>
+                  {turnSummary.marketWarnings?.map((warning) => (
+                    <li key={warning} className={styles.turnLogWarning}>
+                      <p>{warning}</p>
+                    </li>
                   ))}
+                  {turnSummary.logs.length ? (
+                    turnSummary.logs.map((entry) => (
+                      <li key={entry.id}>
+                        <p>{entry.text}</p>
+                        {typeof entry.amount === 'number' && (
+                          <span className={styles.turnEventAmount}>{formatMoney(entry.amount)}</span>
+                        )}
+                      </li>
+                    ))
+                  ) : (
+                    <li className={styles.turnLogEmpty}>Ход прошёл без крупных событий.</li>
+                  )}
                 </ul>
               </div>
-            )}
-            <div className={styles.turnLog}>
-              <span>События хода</span>
-              <ul>
-                {turnSummary.logs.length ? (
-                  turnSummary.logs.map((entry) => (
-                    <li key={entry.id}>
-                      <strong>M{entry.month}</strong>
-                      <p>{entry.text}</p>
-                    </li>
-                  ))
-                ) : (
-                  <li className={styles.turnLogEmpty}>Ход прошёл без крупных событий.</li>
-                )}
-              </ul>
             </div>
-          </div>
+          </>
         )}
       </Modal>
     </div>

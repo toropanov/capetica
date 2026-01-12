@@ -488,27 +488,27 @@
 .professionGrowth {
   margin-top: 1rem;
   padding: 0.8rem 1rem;
-  border-radius: 18px;
   background: rgba(243, 247, 255, 0.9);
   border: 1px solid rgba(26, 45, 82, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
-.professionGrowth span {
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+.professionGrowthLabel {
   text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
   color: rgba(33, 52, 94, 0.7);
 }
 
-.professionGrowth strong {
+.professionGrowthValue {
   font-size: 1rem;
   color: #16274a;
+  line-height: 1.3;
 }
 
-.professionGrowth small {
+.professionGrowthHint {
   font-size: 0.8rem;
   color: rgba(31, 44, 72, 0.75);
 }

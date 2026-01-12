@@ -497,23 +497,15 @@ function Home() {
         <LastTurn data={lastTurn} summary={summary} passiveBreakdown={passiveBreakdown} />
         {salaryProgression && (
           <div className={styles.professionGrowth}>
-            <div>
-              <span>Профессия</span>
-              <strong>{profession?.title}</strong>
-            </div>
-            <div>
-              <span>Рост дохода</span>
-              <strong>
-                {`+${Math.round((salaryProgression.percent || 0) * 100)}% каждые ${pluralizeTurns(
-                  salaryProgression.stepMonths || 1,
-                )}`}
-              </strong>
-              <small>
-                {`Следующее повышение через ${pluralizeTurns(
-                  salaryProgression.monthsUntilStep || salaryProgression.stepMonths || 1,
-                )} · Потолок ${formatUSD(salaryProgression.cap || profession?.salaryMonthly || 0)}`}
-              </small>
-            </div>
+            <span className={styles.professionGrowthLabel}>Рост дохода</span>
+            <strong className={styles.professionGrowthValue}>
+              {`+${Math.round((salaryProgression.percent || 0) * 100)}% каждые ${pluralizeTurns(
+                salaryProgression.stepMonths || 1,
+              )}`}
+            </strong>
+            <small className={styles.professionGrowthHint}>
+              {`Потолок ${formatUSD(salaryProgression.cap || profession?.salaryMonthly || 0)}`}
+            </small>
           </div>
         )}
       </Card>

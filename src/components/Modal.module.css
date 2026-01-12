@@ -11,13 +11,11 @@
 }
 
 .modal {
-  width: min(480px, 100%);
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow:
-    0 30px 80px rgba(9, 13, 37, 0.65),
-    inset 0 1px rgba(255, 255, 255, 0.5);
+  width: min(520px, 100%);
+  border-radius: 0;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 24px 80px rgba(8, 12, 32, 0.3);
   padding: 1.5rem;
   color: #0b1024;
 }
@@ -53,6 +51,6 @@
 .footer {
   margin-top: 1.5rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.8rem;
 }

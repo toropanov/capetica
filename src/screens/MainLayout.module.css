@@ -166,6 +166,19 @@
   gap: 1rem;
 }
 
+.turnIllustration {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.8rem;
+}
+
+.turnIllustration img {
+  width: 170px;
+  height: 170px;
+  object-fit: contain;
+}
+
 .turnMood {
   display: inline-flex;
   align-items: center;
@@ -174,7 +187,7 @@
   padding: 0.6rem 1rem;
   border-radius: 999px;
   font-size: 1rem;
-  align-self: flex-start;
+  align-self: center;
 }
 
 .turnMoodPositive {
@@ -187,6 +200,29 @@
   background: rgba(255, 194, 194, 0.35);
   color: #6b1926;
   animation: moodShake 2s infinite;
+}
+
+.turnMarket {
+  background: rgba(255, 247, 228, 0.6);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(243, 193, 126, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.turnMarket span {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(149, 99, 19, 0.9);
+}
+
+.turnMarket p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(33, 23, 4, 0.85);
 }
 
 .turnEvent {
@@ -205,6 +241,12 @@
 .turnEvent p {
   margin: 0;
   color: rgba(23, 37, 74, 0.8);
+}
+
+.turnEventAmount {
+  margin-top: 0.4rem;
+  font-weight: 600;
+  color: rgba(32, 32, 32, 0.85);
 }
 
 .turnStats {
@@ -301,6 +343,18 @@
 .turnLogEmpty {
   font-style: italic;
   color: rgba(24, 40, 70, 0.6);
+}
+
+.turnLogWarning {
+  background: rgba(248, 229, 171, 0.75);
+  border-left: 3px solid #d89b17;
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.turnLogWarning p {
+  margin: 0;
+  color: rgba(45, 32, 7, 0.9);
 }
 
 .summaryButton {
