@@ -49,21 +49,7 @@ function DealCard({ deal, windowMeta, onParticipate, disabled, active }) {
         <span>{windowText}</span>
         {slotsText && <span>{slotsText}</span>}
       </div>
-      <div className={styles.dealStats}>
-        <div>
-          <span>Вход</span>
-          <strong>{formatMoney(deal.entryCost)}</strong>
-        </div>
-        <div>
-          <span>Доход</span>
-          <strong>{deal.monthlyPayout ? `+${formatMoney(deal.monthlyPayout)}/мес` : '—'}</strong>
-        </div>
-        <div>
-          <span>Срок</span>
-          <strong>{deal.lockMonths || deal.durationMonths} мес.</strong>
-        </div>
-      </div>
-      {deal.effects?.length > 0 && (
+      {!!deal.effects?.length && (
         <div className={styles.dealEffects}>
           {deal.effects.map((effect) => (
             <span key={`${deal.id}-${effect.text}`}>
@@ -73,15 +59,10 @@ function DealCard({ deal, windowMeta, onParticipate, disabled, active }) {
           ))}
         </div>
       )}
+     <Button variant="primary" onClick={() => onParticipate(deal)} disabled={disabled}>
+       {active ? 'Куплено' : `Участвовать за ${formatMoney(deal.entryCost)}`}
+     </Button>
       {deal.riskNote && <p className={styles.dealNote}>{deal.riskNote}</p>}
-      <ul className={styles.featureList}>
-        {deal.features.map((feature) => (
-          <li key={feature}>{feature}</li>
-        ))}
-      </ul>
-      <Button variant="primary" onClick={() => onParticipate(deal)} disabled={disabled}>
-        {active ? 'Куплено' : `Участвовать за $${deal.entryCost.toLocaleString('en-US')}`}
-      </Button>
     </Card>
   );
 }
