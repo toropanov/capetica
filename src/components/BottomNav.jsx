@@ -74,11 +74,10 @@ function BottomNav({ current, onChange, onAdvance }) {
     <nav className={styles.nav}>
       {renderNavButton(NAV_ITEMS[0])}
       <button type="button" className={styles.action} onClick={onAdvance}>
-        <DiceIcon />
-        <div>
-          <span>Завершить ход</span>
-          <small>Доходы, расходы, события</small>
-        </div>
+        <span className={styles.icon}>
+          <DiceIcon />
+        </span>
+        <span className={styles.actionLabel}>Завершить ход</span>
       </button>
       {renderNavButton(NAV_ITEMS[1])}
     </nav>

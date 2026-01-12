@@ -28,17 +28,16 @@
   align-items: center;
   padding: 0.6rem 1rem;
   position: fixed;
-  top: 0.6rem;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: min(480px, 100%);
+  width: min(500px, 100%);
   z-index: 9;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(14px);
-  border-radius: 20px;
-  box-shadow:
-    0 20px 45px rgba(41, 63, 109, 0.15),
-    inset 0 1px rgba(255, 255, 255, 0.7);
+  border-radius: 0;
+  box-shadow: 0 8px 18px rgba(32, 50, 91, 0.12);
+  border-bottom: 1px solid rgba(18, 42, 86, 0.08);
 }
 
 .headerLeft {
