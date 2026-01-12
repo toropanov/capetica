@@ -1,5 +1,7 @@
 .layout {
   min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
   width: min(100%, 500px);
   margin: 0 auto;
   display: flex;
@@ -7,7 +9,6 @@
   position: relative;
   color: #1d2b44;
   overflow: hidden;
-  padding-top: 5rem;
 }
 
 .backdrop {
@@ -29,23 +30,19 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.45rem 0.8rem;
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(500px, 100%);
-  z-index: 9;
+  min-height: var(--header-height);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(14px);
-  border-radius: 0;
-  box-shadow: 0 8px 18px rgba(32, 50, 91, 0.12);
   border-bottom: 1px solid rgba(18, 42, 86, 0.08);
+  box-shadow: 0 8px 20px rgba(32, 50, 91, 0.08);
+  z-index: 2;
 }
 
 .headerInfo {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
   flex: 1;
 }
 
@@ -72,14 +69,14 @@
 
 .professionTitle {
   display: block;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #0d1f36;
 }
 
 .headerStats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
 }
 
 .headerStats span {
@@ -103,101 +100,19 @@
   width: 36px;
   height: 36px;
   cursor: pointer;
+  margin-left: 0.8rem;
 }
 
 .content {
   flex: 1;
   padding: 0;
+  max-height: calc(100svh - var(--header-height) - var(--footer-height));
+  height: calc(100svh - var(--header-height) - var(--footer-height));
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-}
-
-.finishOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(5, 10, 20, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  z-index: 10;
-}
-
-.finishCard {
-  width: 100%;
-  max-width: 420px;
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(18, 42, 86, 0.1);
-  box-shadow: 0 30px 60px rgba(23, 40, 82, 0.4);
-  padding: 1.5rem;
-  color: #152344;
-}
-
-.finishCard h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.3rem;
-  color: #0f1f3a;
-}
-
-.finishCard p {
-  margin: 0 0 0.9rem;
-  color: rgba(12, 24, 48, 0.75);
-}
-
-.finishCard ul {
-  list-style: none;
-  margin: 0 0 1.2rem;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.finishCard li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  font-size: 0.95rem;
-}
-
-.finishCard li strong {
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(18, 36, 70, 0.8);
-}
-
-.finishCard li span {
-  color: rgba(12, 24, 48, 0.85);
-}
-
-.finishActions {
-  display: flex;
-  gap: 0.8rem;
-}
-
-.finishActions button {
-  flex: 1;
-  border-radius: 16px;
-  padding: 0.75rem 1rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border: none;
-  cursor: pointer;
-}
-
-.finishCancel {
-  background: rgba(243, 246, 255, 0.85);
-  color: #1f2b4a;
-  border: 1px solid rgba(28, 48, 90, 0.15);
-}
-
-.finishConfirm {
-  background: linear-gradient(120deg, #7de0b0, #4ac2fd);
-  color: #061527;
-  box-shadow: 0 14px 30px rgba(91, 186, 219, 0.35);
 }
 
 .ribbon {

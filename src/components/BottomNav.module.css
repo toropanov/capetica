@@ -1,19 +1,13 @@
 .nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(500px, 100%);
+  width: 100%;
   display: flex;
   justify-content: space-between;
-  padding: 0.4rem 0.6rem 0.55rem;
-  border-radius: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 -4px 18px rgba(33, 52, 95, 0.12);
-  gap: 0.3rem;
-  z-index: 9;
+  gap: 0.4rem;
   border-top: 1px solid rgba(18, 42, 86, 0.08);
+  margin-top: auto;
+  padding: 0.2rem 0.2rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+  min-height: var(--footer-height);
+  background: #ffffff;
 }
 
 
@@ -21,7 +15,7 @@
   flex: 1;
   border: none;
   border-radius: 12px;
-  padding: 0.15rem 0.15rem 0.35rem;
+  padding: 0.1rem 0.1rem 0.3rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,14 +47,14 @@
   flex: 1.6;
   border: none;
   border-radius: 16px;
-  padding: 0.35rem 0.6rem 0.6rem;
+  padding: 0.2rem 0.4rem;
   background: linear-gradient(120deg, #ffe498, #ffc877);
   color: #06060c;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: 0;
   font-weight: 600;
   box-shadow: 0 12px 28px rgba(254, 196, 74, 0.35);
   cursor: pointer;
@@ -68,8 +62,36 @@
 
 .actionLabel {
   font-size: 0.95rem;
+  margin-top: -5px;
+  margin-bottom: 5px;
 }
 
 .action:active {
   transform: scale(0.97);
+}
+
+.actionIcon {
+  width: 32px;
+  height: 32px;
+}
+
+.actionConfirm {
+  background: linear-gradient(120deg, #ffe4dc, #ffc2b5);
+  box-shadow: 0 10px 20px rgba(255, 141, 99, 0.32);
+}
+
+.actionRolling .actionIcon svg {
+  animation: diceSpin 0.9s ease-in-out infinite;
+}
+
+@keyframes diceSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

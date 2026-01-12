@@ -54,7 +54,7 @@ function DiceIcon() {
   );
 }
 
-function BottomNav({ current, onChange, onAdvance }) {
+function BottomNav({ current, onChange, onAdvance, confirmingFinish = false, diceAnimating = false, actionRef }) {
   const renderNavButton = (item) => (
     <button
       key={item.id}
@@ -73,11 +73,18 @@ function BottomNav({ current, onChange, onAdvance }) {
   return (
     <nav className={styles.nav}>
       {renderNavButton(NAV_ITEMS[0])}
-      <button type="button" className={styles.action} onClick={onAdvance}>
-        <span className={styles.icon}>
+      <button
+        type="button"
+        ref={actionRef}
+        className={`${styles.action} ${confirmingFinish ? styles.actionConfirm : ''} ${diceAnimating ? styles.actionRolling : ''}`}
+        onClick={onAdvance}
+      >
+        <span className={`${styles.icon} ${styles.actionIcon}`}>
           <DiceIcon />
         </span>
-        <span className={styles.actionLabel}>Завершить ход</span>
+        <span className={styles.actionLabel}>
+          {confirmingFinish ? 'Подтвердить ход' : 'Завершить ход'}
+        </span>
       </button>
       {renderNavButton(NAV_ITEMS[1])}
     </nav>

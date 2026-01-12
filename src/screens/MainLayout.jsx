@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import useGameStore from '../store/gameStore';
@@ -36,13 +36,43 @@ function MainLayout() {
     })),
   );
   const advanceMonth = useGameStore((state) => state.advanceMonth);
-  const [finishPromptOpen, setFinishPromptOpen] = useState(false);
+  const [confirmingFinish, setConfirmingFinish] = useState(false);
+  const [diceAnimating, setDiceAnimating] = useState(false);
+  const confirmButtonRef = useRef(null);
+  const diceTimerRef = useRef(null);
 
-  const openFinishPrompt = () => setFinishPromptOpen(true);
-  const handleFinishCancel = () => setFinishPromptOpen(false);
-  const handleFinishConfirm = () => {
-    setFinishPromptOpen(false);
+  useEffect(() => () => {
+    if (diceTimerRef.current) {
+      clearTimeout(diceTimerRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!confirmingFinish) return undefined;
+    const handleOutside = (event) => {
+      if (confirmButtonRef.current?.contains(event.target)) return;
+      setConfirmingFinish(false);
+    };
+    document.addEventListener('pointerdown', handleOutside);
+    return () => document.removeEventListener('pointerdown', handleOutside);
+  }, [confirmingFinish]);
+
+  const handleAdvanceRequest = () => {
+    if (diceAnimating) return;
+    if (!confirmingFinish) {
+      setConfirmingFinish(true);
+      return;
+    }
+    setConfirmingFinish(false);
+    setDiceAnimating(true);
     advanceMonth();
+    if (diceTimerRef.current) {
+      clearTimeout(diceTimerRef.current);
+    }
+    diceTimerRef.current = setTimeout(() => {
+      setDiceAnimating(false);
+      navigate('/app');
+    }, 1300);
   };
 
   const instrumentMap = useMemo(() => {
@@ -77,18 +107,18 @@ function MainLayout() {
           <div className={styles.headerTitle}>
             <div className={styles.avatar} style={spriteStyle(getProfessionIcon(storeData.profession))} />
             <div>
-              <span className={styles.professionLabel}>Текущая профессия</span>
+              <span className={styles.professionLabel}>Профессия</span>
               <strong className={styles.professionTitle}>{storeData.profession?.title || 'Профиль'}</strong>
             </div>
           </div>
           <div className={styles.headerStats}>
             <div>
-              <span>Свободный кэш</span>
+              <span>Наличные</span>
               <strong>{formatMoney(storeData.cash)}</strong>
             </div>
             <div>
-              <span>Обязательства</span>
-              <strong>{formatMoney(storeData.debt)}</strong>
+              <span>Расходы</span>
+              <strong>{formatMoney(storeData.recurringExpenses)}</strong>
             </div>
           </div>
         </div>
@@ -115,41 +145,17 @@ function MainLayout() {
       <main className={styles.content}>
         <Outlet />
       </main>
-      {finishPromptOpen && (
-        <div className={styles.finishOverlay}>
-          <div className={styles.finishCard}>
-            <h3>Завершить ход?</h3>
-            <p>После подтверждения мы применим все эффекты месяца:</p>
-            <ul>
-              <li>
-                <strong>Финансы.</strong>
-                <span>Начислим зарплату и пассивный доход, удержим расходы и проценты по долгам.</span>
-              </li>
-              <li>
-                <strong>Активы.</strong>
-                <span>Пересчитаем стоимости портфеля, кредитный лимит и прочие показатели.</span>
-              </li>
-              <li>
-                <strong>Сделки.</strong>
-                <span>Продвинутся активные сделки и предложения, могут закрыться окна.</span>
-              </li>
-              <li>
-                <strong>События.</strong>
-                <span>Может произойти случайное событие месяца со своими эффектами.</span>
-              </li>
-            </ul>
-            <div className={styles.finishActions}>
-              <button type="button" onClick={handleFinishCancel} className={styles.finishCancel}>
-                Остаться в месяце
-              </button>
-              <button type="button" onClick={handleFinishConfirm} className={styles.finishConfirm}>
-                Подтвердить ход
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      <BottomNav current={location.pathname} onChange={navigate} onAdvance={openFinishPrompt} />
+      <BottomNav
+        current={location.pathname}
+        onChange={(path) => {
+          setConfirmingFinish(false);
+          navigate(path);
+        }}
+        onAdvance={handleAdvanceRequest}
+        confirmingFinish={confirmingFinish}
+        diceAnimating={diceAnimating}
+        actionRef={confirmButtonRef}
+      />
     </div>
   );
 }
