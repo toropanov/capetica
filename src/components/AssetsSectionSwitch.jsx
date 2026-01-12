@@ -27,11 +27,8 @@ function AssetsSectionSwitch({ active }) {
           className={`${styles.card} ${active === section.id ? styles.cardActive : ''}`}
           onClick={() => navigate(section.path)}
         >
-          <div>
-            <span>{section.label}</span>
-            <p>{section.description}</p>
-          </div>
-          <i aria-hidden="true">&gt;</i>
+          <span className={styles.cardLabel}>{section.label}</span>
+          <p>{section.description}</p>
         </button>
       ))}
     </div>

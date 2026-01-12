@@ -562,7 +562,7 @@
 }
 
 .monthlyActionCard {
-  border-radius: 22px;
+  border-radius: 0;
   padding: 1rem;
   background: #ffffff;
 }
