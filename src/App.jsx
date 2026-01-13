@@ -2,8 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useGameStore from './store/gameStore';
 import ProfessionSelect from './screens/ProfessionSelect';
-import StrategySelect from './screens/StrategySelect';
-import DifficultySelect from './screens/DifficultySelect';
 import CharacterSelect from './screens/CharacterSelect';
 import MainLayout from './screens/MainLayout';
 import Home from './screens/Home';
@@ -107,8 +105,6 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<ProfessionSelect />} />
-        <Route path="/strategy" element={<StrategySelect />} />
-        <Route path="/difficulty" element={<DifficultySelect />} />
         <Route path="/character" element={<CharacterSelect />} />
         <Route path="/app" element={<GuardedLayout />}>
           <Route index element={<Home />} />

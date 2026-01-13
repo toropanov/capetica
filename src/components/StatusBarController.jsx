@@ -25,7 +25,7 @@ function StatusBarController() {
 
     const syncStatusBar = async () => {
       try {
-        const choosePaths = ['/', '/strategy', '/difficulty', '/character'];
+        const choosePaths = ['/', '/character'];
         const isChooseScreen = choosePaths.some((path) =>
           path === '/' ? pathname === '/' : pathname.startsWith(path),
         );

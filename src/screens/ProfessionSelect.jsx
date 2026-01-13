@@ -1,46 +1,51 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
+import GradientButton from '../components/GradientButton';
 import styles from './ProfessionSelect.module.css';
 import introImg from '../assets/intro_ru.png';
-import { DIFFICULTY_OPTIONS, summarizeGoal } from '../utils/goals';
 
 const HERO_BUTTONS = [
-  { key: 'continue', label: 'Продолжить', target: '/app', variant: 'primary', summaryKey: null, requiresActive: true },
-  { key: 'newGame', label: 'Новая игра', target: '/character', variant: 'secondary', summaryKey: null },
-  { key: 'strategy', label: 'Стратегия партии', target: '/strategy', variant: 'secondary', summaryKey: 'strategy' },
-  { key: 'difficulty', label: 'Сложность', target: '/difficulty', variant: 'secondary', summaryKey: 'difficulty' },
-  { key: 'character', label: 'Персонаж', target: '/character', variant: 'secondary', summaryKey: 'character' },
+  { key: 'continue', label: 'Продолжить', action: 'continue', variant: 'primary', requiresActive: true },
+  { key: 'newGame', label: 'Новая игра', action: 'newGame', variant: 'secondary' },
+  { key: 'settings', label: 'Настройки', action: 'settings', variant: 'secondary' },
 ];
 
 function ProfessionSelect() {
   const navigate = useNavigate();
-  const profession = useGameStore((state) => state.profession);
   const professionId = useGameStore((state) => state.professionId);
-  const selectedGoalId = useGameStore((state) => state.selectedGoalId);
-  const difficulty = useGameStore((state) => state.difficulty);
-  const winRules = useGameStore((state) => state.configs?.rules?.win || []);
+  const resetGame = useGameStore((state) => state.resetGame);
+  const randomProfession = useGameStore((state) => state.randomProfession);
+  const [rolling, setRolling] = useState(false);
 
-  const selectedGoal = useMemo(
-    () => winRules.find((rule) => rule.id === selectedGoalId),
-    [winRules, selectedGoalId],
-  );
-  const strategyLabel = selectedGoal ? summarizeGoal(selectedGoal).title : 'Не выбрано';
-  const difficultyLabel =
-    DIFFICULTY_OPTIONS.find((option) => option.id === difficulty)?.label || 'Стандарт';
-  const characterLabel = profession?.title || 'Не выбран';
-  const summaryTexts = {
-    strategy: strategyLabel,
-    difficulty: difficultyLabel,
-    character: characterLabel,
+  const availableButtons = HERO_BUTTONS.filter((button) => !button.requiresActive || Boolean(professionId));
+
+  const handleAction = (action) => {
+    switch (action) {
+      case 'continue':
+        navigate('/app');
+        break;
+      case 'newGame':
+        resetGame();
+        navigate('/app');
+        break;
+      case 'settings':
+        navigate('/character');
+        break;
+      default:
+        break;
+    }
   };
 
-  const buttons = HERO_BUTTONS.filter(
-    (button) => !button.requiresActive || Boolean(professionId),
-  ).map((button) => ({
-    ...button,
-    summary: button.summaryKey ? summaryTexts[button.summaryKey] : null,
-  }));
+  const handleRandom = () => {
+    if (rolling) return;
+    setRolling(true);
+    randomProfession();
+    navigate('/app');
+    setTimeout(() => {
+      setRolling(false);
+    }, 750);
+  };
 
   return (
     <div className={styles.screen}>
@@ -51,38 +56,33 @@ function ProfessionSelect() {
         aria-label="Кем ты стартуешь в Capetica?"
       />
       <div className={styles.hero}>
-        <p>Выбери роль</p>
-        <h1>С чего начнётся твоя история?</h1>
+        <p className={styles.heroTag}>Стартуем</p>
+        <h1>
+          С чего начнётся
+          <br />
+          твоя история
+        </h1>
         <span>Каждая профессия — своя динамика кэша, расходов и кредитного лайна.</span>
       </div>
       <div className={styles.heroActions}>
-        {buttons.map((button) => (
+        {availableButtons.map((button) => (
           <button
             key={button.key}
             type="button"
             className={`${styles.heroButton} ${
               button.variant === 'primary' ? styles.heroPrimary : styles.heroSecondary
             }`}
-            onClick={() => navigate(button.target)}
+            onClick={() => handleAction(button.action)}
           >
-            <span>{button.label}</span>
-            {button.summary && <small className={styles.heroSummary}>{button.summary}</small>}
+            {button.label}
           </button>
         ))}
       </div>
-      <div className={styles.selectionSummary}>
-        <div className={styles.selectionSummaryItem}>
-          <strong>Стратегия партии</strong>
-          <span>{strategyLabel}</span>
-        </div>
-        <div className={styles.selectionSummaryItem}>
-          <strong>Сложность</strong>
-          <span>{difficultyLabel}</span>
-        </div>
-        <div className={styles.selectionSummaryItem}>
-          <strong>Персонаж</strong>
-          <span>{characterLabel}</span>
-        </div>
+      <div className={styles.heroDice}>
+        <GradientButton icon="🎲" rolling={rolling} onClick={handleRandom} size="compact" ariaLabel="Случайный выбор">
+          Случайный выбор
+        </GradientButton>
+        <p className={styles.heroDiceHint}>Генерируй случайную профессию и стартуй моментально.</p>
       </div>
     </div>
   );

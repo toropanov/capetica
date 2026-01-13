@@ -29,12 +29,16 @@
   padding-inline: 1rem;
 }
 
-.hero p {
+.heroTag {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   font-size: 0.8rem;
   color: rgba(32, 48, 74, 0.7);
+}
+
+.hero p {
+  margin: 0;
 }
 
 .hero h1 {
@@ -89,34 +93,88 @@
   border: 1px solid rgba(18, 36, 66, 0.15);
 }
 
-.heroSummary {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(10, 24, 53, 0.7);
-}
-
-.selectionSummary {
+.heroDice {
+  margin-top: auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.4rem;
-  padding: 0 1rem 1rem;
-  border-radius: 0 0 32px 32px;
-  border-top: 1px solid rgba(22, 37, 68, 0.08);
+  padding-bottom: calc(var(--safe-area-bottom, 0) + 1rem);
+}
+
+.heroDiceHint {
+  font-size: 0.8rem;
+  color: rgba(20, 35, 63, 0.75);
   text-align: center;
 }
 
-.selectionSummaryItem {
-  font-size: 0.9rem;
-  color: rgba(25, 35, 61, 0.9);
+.selectionPage {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--safe-area-top) 1.2rem calc(4rem + var(--safe-area-bottom, 0));
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  color: #1f2c48;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
 }
 
-.selectionSummaryItem strong {
+.selectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.selectionHero {
+  text-align: left;
+  padding-right: 0.5rem;
+}
+
+.selectionHero h1 {
+  margin: 0.3rem 0 0.3rem;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.2;
+  color: #131c33;
+}
+
+.selectionHero span {
+  color: rgba(20, 30, 57, 0.7);
+  font-size: 0.95rem;
   display: block;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: rgba(25, 37, 67, 0.65);
+  margin-top: 0.2rem;
+}
+
+.selectionDescription {
+  margin: 0.2rem 0 0;
+  color: rgba(33, 49, 85, 0.7);
+}
+
+.selectionBack {
+  border: none;
+  background: rgba(31, 45, 78, 0.08);
+  color: #1b2a45;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backIcon {
+  display: inline-flex;
+  width: 1.2rem;
+  height: 1.2rem;
+  align-items: center;
+  justify-content: center;
+  background: rgba(38, 61, 119, 0.08);
+  border-radius: 50%;
+  font-size: 1.1rem;
 }
 
 .panelCard {
@@ -126,14 +184,14 @@
   margin: 0 auto;
 }
 
-.panelHeader {
+.sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-.panelHeader h2 {
+.sectionHeader h2 {
   margin: 0;
   font-size: 1.25rem;
   letter-spacing: 0.05em;
@@ -141,45 +199,17 @@
   color: #1f2c48;
 }
 
-.panelClose {
-  border: none;
-  background: rgba(31, 45, 78, 0.08);
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  font-size: 1.3rem;
-  cursor: pointer;
-}
-
-.panelBody {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-}
-
-.optionsPanel {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.optionGroupHeader p {
-  margin: 0;
-  font-size: 0.85rem;
-  opacity: 0.7;
+.currentBadge {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  color: rgba(18, 32, 60, 0.65);
 }
 
-.optionGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.optionList {
+.optionListCenter {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.6rem;
   margin-inline: -0.2rem;
 }
@@ -213,66 +243,20 @@
   background: rgba(236, 244, 255, 0.95);
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
-}
-
-.characterPanel {
-  padding: 0.4rem 0;
-}
-
-.selectionPage {
-  min-height: 100vh;
-  min-height: 100svh;
-  min-height: 100dvh;
-  padding: var(--safe-area-top) 1.2rem calc(4rem + var(--safe-area-bottom, 0));
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  position: relative;
-  color: #1f2c48;
-  overflow-x: hidden;
-  overscroll-behavior-y: contain;
-}
-
-.selectionHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.selectionDescription {
-  margin: 0.2rem 0 0;
-  color: rgba(33, 49, 85, 0.7);
-}
-
-.selectionBack {
-  border: none;
-  background: rgba(31, 45, 78, 0.08);
-  color: #1b2a45;
-  font-weight: 600;
-  border-radius: 999px;
-  padding: 0.6rem 1.2rem;
-  cursor: pointer;
-}
-
-.optionListCenter {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-inline: -0.2rem;
-}
-
 .characterGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
 }
 
+.diceSection {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding-bottom: calc(var(--safe-area-bottom, 0) + 1rem);
+}
 
 .profCard {
   color: #070a17;
@@ -345,40 +329,4 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-
-.sparkles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.sparkles span {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 65%);
-  animation: float 8s ease-in-out infinite;
-}
-
-.sparkles span:nth-child(1) {
-  top: 15%;
-  right: 10%;
-}
-
-.sparkles span:nth-child(2) {
-  bottom: 10%;
-  left: 5%;
-  animation-delay: 2s;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) scale(0.9);
-  }
-  50% {
-    transform: translateY(-12px) scale(1.05);
-  }
 }
