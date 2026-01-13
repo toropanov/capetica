@@ -181,7 +181,7 @@ function MainLayout() {
   };
   const handleNewParty = () => {
     handleCloseSummary();
-    navigate('/choose');
+    navigate('/');
   };
 
   const hasWin = Boolean(storeData.winCondition);
@@ -271,7 +271,7 @@ function MainLayout() {
         <button
           type="button"
           className={styles.exitButton}
-          onClick={() => navigate('/choose')}
+          onClick={() => navigate('/')}
           title="Сменить роль"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

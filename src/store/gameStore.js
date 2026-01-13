@@ -556,6 +556,9 @@ const useGameStore = create(
             creditLockedMonth: null,
           };
         }),
+      setSelectedGoal: (goalId) => set(() => ({ selectedGoalId: goalId })),
+      setDifficulty: (level = DEFAULT_DIFFICULTY) =>
+        set(() => ({ difficulty: level || DEFAULT_DIFFICULTY })),
       advanceMonth: () =>
         set((state) => {
           if (!state.profession || !state.configsReady) return {};

@@ -1,7 +1,10 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useGameStore from './store/gameStore';
 import ProfessionSelect from './screens/ProfessionSelect';
+import StrategySelect from './screens/StrategySelect';
+import DifficultySelect from './screens/DifficultySelect';
+import CharacterSelect from './screens/CharacterSelect';
 import MainLayout from './screens/MainLayout';
 import Home from './screens/Home';
 import Investments from './screens/Investments';
@@ -21,7 +24,7 @@ const CONFIG_FILES = [
 function GuardedLayout() {
   const professionId = useGameStore((state) => state.professionId);
   if (!professionId) {
-    return <Navigate to="/choose" replace />;
+    return <Navigate to="/" replace />;
   }
   return <MainLayout />;
 }
@@ -81,10 +84,7 @@ function App() {
     };
   }, []);
 
-  const initialRedirect = useMemo(() => {
-    if (professionId) return '/app';
-    return '/choose';
-  }, [professionId]);
+  const initialRedirect = '/';
 
   if (loading || !configsReady) {
     return <Loader message="Загружаем неоморфные карты..." />;
@@ -106,7 +106,10 @@ function App() {
       <StatusBarController />
       <ScrollToTop />
       <Routes>
-        <Route path="/choose" element={<ProfessionSelect />} />
+        <Route path="/" element={<ProfessionSelect />} />
+        <Route path="/strategy" element={<StrategySelect />} />
+        <Route path="/difficulty" element={<DifficultySelect />} />
+        <Route path="/character" element={<CharacterSelect />} />
         <Route path="/app" element={<GuardedLayout />}>
           <Route index element={<Home />} />
           <Route path="bank" element={<Investments />} />

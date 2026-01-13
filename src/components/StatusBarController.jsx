@@ -25,7 +25,11 @@ function StatusBarController() {
 
     const syncStatusBar = async () => {
       try {
-        if (pathname === '/choose') {
+        const choosePaths = ['/', '/strategy', '/difficulty', '/character'];
+        const isChooseScreen = choosePaths.some((path) =>
+          path === '/' ? pathname === '/' : pathname.startsWith(path),
+        );
+        if (isChooseScreen) {
           await StatusBar.setOverlaysWebView({ overlay: true });
           await StatusBar.show();
           await StatusBar.setStyle({ style: Style.Light });
