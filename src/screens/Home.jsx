@@ -209,7 +209,6 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
             <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
               {net >= 0 ? `+$${Math.abs(net).toLocaleString('en-US')}` : `-$${Math.abs(net).toLocaleString('en-US')}`}
             </strong>
-            <small>{`Прогноз через ${FORECAST_TURNS} ходов: ~${formatUSD(netForecast)}`}</small>
           </div>
         </div>
       </>
@@ -232,7 +231,6 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
           <div>
             <span>Кредитный лимит</span>
             <strong>{formatter(creditLimit)}</strong>
-            <small>{`Доступно: ${formatter(Math.max(0, summary.availableCredit || 0))}`}</small>
           </div>
         </div>
       </div>
@@ -241,11 +239,7 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
           <span>Месячные доходы</span>
           <strong>{`+$${Math.round(totalMonthlyIncome).toLocaleString('en-US')}`}</strong>
         </div>
-        <p className={styles.infoHint}>
-          {passiveGap >= 0
-            ? 'Перекрывает фикс. расходы'
-            : `Нужно ещё ${formatter(Math.abs(passiveGap))}/мес`}
-        </p>
+        {passiveGap >= 0 && <p className={styles.infoHint}>Перекрывает фикс. расходы</p>}
         <div className={styles.infoList}>
           {incomeRows.map((item) => {
             const amount = Math.round(item.amount || 0);
