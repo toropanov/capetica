@@ -65,4 +65,9 @@ img {
 
 button {
   font-family: inherit;
+  outline: none;
+}
+
+button:focus-visible {
+  outline: none;
 }
