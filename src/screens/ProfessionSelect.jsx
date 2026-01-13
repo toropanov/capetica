@@ -88,7 +88,6 @@ function ProfessionSelect() {
         aria-label="Кем ты стартуешь в Capetica?"
       />
       <div className={styles.hero}>
-        <p className={styles.heroTag}>Инвестор,</p>
         <h1>
           С чего начнётся
           <br />
