@@ -9,6 +9,8 @@ import Investments from './screens/Investments';
 import Deals from './screens/Deals';
 import styles from './styles/AppShell.module.css';
 import StatusBarController from './components/StatusBarController';
+import { isNativeAndroid } from './utils/platform';
+import { App as CapacitorApp } from '@capacitor/app';
 
 const CONFIG_FILES = [
   { key: 'professions', path: '/config/professions.json' },
@@ -128,18 +130,40 @@ function ScrollToTop() {
 
 function BackButtonHandler() {
   const { pathname } = useLocation();
+
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
+    const android = isNativeAndroid();
+    const pushCurrent = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+    const pushHome = () => {
+      window.history.pushState(null, '', '/');
+    };
     const handlePop = () => {
-      if (pathname === '/') {
-        window.history.pushState(null, '', '/');
+      if (window.location.pathname === '/') {
+        pushHome();
       }
     };
     if (pathname === '/') {
-      window.history.pushState(null, '', '/');
+      pushCurrent();
     }
     window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
+    let appListener;
+    if (android) {
+      appListener = CapacitorApp.addListener('backButton', (event) => {
+        event?.preventDefault?.();
+        if (window.location.pathname === '/') {
+          pushHome();
+          return;
+        }
+        window.history.back();
+      });
+    }
+    return () => {
+      window.removeEventListener('popstate', handlePop);
+      appListener?.remove?.();
+    };
   }, [pathname]);
   return null;
 }

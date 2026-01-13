@@ -1,21 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
-
-const isNativeAndroid = () => {
-  if (typeof Capacitor === 'undefined' || typeof Capacitor.getPlatform !== 'function') {
-    return false;
-  }
-  const platform = Capacitor.getPlatform();
-  if (platform !== 'android') {
-    return false;
-  }
-  if (typeof Capacitor.isNativePlatform === 'function') {
-    return Capacitor.isNativePlatform();
-  }
-  return true;
-};
+import { isNativeAndroid } from '../utils/platform';
 
 function StatusBarController() {
   const { pathname } = useLocation();
