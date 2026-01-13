@@ -12,6 +12,11 @@
   --footer-height: 72px;
 }
 
+html {
+  height: 100%;
+  overscroll-behavior-y: none;
+}
+
 *,
 *::before,
 *::after {
@@ -27,6 +32,7 @@ body {
   color: #0f1f3c;
   display: flex;
   justify-content: center;
+  overscroll-behavior-y: none;
 }
 
 #root {

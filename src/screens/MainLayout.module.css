@@ -136,6 +136,7 @@
   flex-direction: column;
   gap: 1.25rem;
   min-height: 0;
+  overscroll-behavior: none;
 }
 
 .ribbon {

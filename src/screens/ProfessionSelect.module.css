@@ -1,6 +1,8 @@
 .screen {
   min-height: 100vh;
-  padding: 2rem 1.2rem 4rem;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--safe-area-top) 1.2rem 4rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -10,7 +12,7 @@
 
 .heroPoster {
   width: calc(100% + 2.4rem);
-  margin: -2rem -1.2rem 1.5rem;
+  margin: calc(-1 * var(--safe-area-top)) -1.2rem 1.5rem;
   aspect-ratio: 1024 / 1200;
   background-position: center;
   background-size: cover;

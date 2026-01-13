@@ -7,6 +7,7 @@ import Home from './screens/Home';
 import Investments from './screens/Investments';
 import Deals from './screens/Deals';
 import styles from './styles/AppShell.module.css';
+import StatusBarController from './components/StatusBarController';
 
 const CONFIG_FILES = [
   { key: 'professions', path: '/config/professions.json' },
@@ -102,6 +103,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <StatusBarController />
       <ScrollToTop />
       <Routes>
         <Route path="/choose" element={<ProfessionSelect />} />
