@@ -111,6 +111,7 @@ function CharacterSelect() {
         >
           Случайный выбор
         </GradientButton>
+        <div className={styles.diceBottomGap} />
       </div>
     </div>
   );

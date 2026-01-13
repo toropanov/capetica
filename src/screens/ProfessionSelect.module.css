@@ -196,8 +196,12 @@
   margin: 0 auto;
 }
 
-.strategyCard {
+.panelCard.strategyCard {
   padding-top: 2.2rem;
+}
+
+.diceBottomGap {
+  height: 1rem;
 }
 
 .sectionHeader {
