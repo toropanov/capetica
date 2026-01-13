@@ -103,24 +103,19 @@
   padding-bottom: calc(var(--safe-area-bottom, 0) + 1rem);
 }
 
-.heroDiceHint {
-  font-size: 0.8rem;
-  color: rgba(20, 35, 63, 0.75);
-  text-align: center;
-}
-
 .heroDiceButton {
   background: linear-gradient(120deg, #ffe498, #ffc877);
   color: #06060c;
   box-shadow: 0 15px 30px #eacf9b4d;
   border: 1px solid #12244226;
+  margin-bottom: 1rem;
 }
 
 .selectionPage {
   min-height: 100vh;
   min-height: 100svh;
   min-height: 100dvh;
-  padding: var(--safe-area-top) 1.2rem calc(4rem + var(--safe-area-bottom, 0));
+  padding: calc(var(--safe-area-top) + 1.5rem) 1.2rem calc(4rem + var(--safe-area-bottom, 0));
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

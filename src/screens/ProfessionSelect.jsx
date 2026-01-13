@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import GradientButton from '../components/GradientButton';
@@ -48,6 +48,37 @@ function ProfessionSelect() {
     }, 750);
   };
 
+  useLayoutEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const updateScrollLock = () => {
+      const fits = document.documentElement.scrollHeight <= window.innerHeight;
+      document.body.style.overflowY = fits ? 'hidden' : 'auto';
+      document.body.style.overscrollBehavior = fits ? 'none' : 'contain';
+    };
+    updateScrollLock();
+    window.addEventListener('resize', updateScrollLock);
+    return () => {
+      document.body.style.overflowY = 'auto';
+      document.body.style.overscrollBehavior = 'contain';
+      window.removeEventListener('resize', updateScrollLock);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handlePop = (event) => {
+      if (window.location.pathname === '/') {
+        event.preventDefault();
+        window.history.pushState(null, '', '/');
+      }
+    };
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', handlePop);
+    return () => {
+      window.removeEventListener('popstate', handlePop);
+    };
+  }, []);
+
   return (
     <div className={styles.screen}>
       <div
@@ -93,7 +124,6 @@ function ProfessionSelect() {
         >
           Случайный выбор
         </GradientButton>
-        <p className={styles.heroDiceHint}>Генерируй случайную профессию и стартуй моментально.</p>
       </div>
     </div>
   );
