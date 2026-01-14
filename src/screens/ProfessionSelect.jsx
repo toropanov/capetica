@@ -61,9 +61,9 @@ function ProfessionSelect() {
   };
 
   const handleRandom = () => {
-    if (rolling || transitionState !== 'idle') return;
-    setRolling(true);
-    beginTransition('Выбираем профессию...');
+        if (rolling || transitionState !== 'idle') return;
+        setRolling(true);
+        beginTransition('Выбираем профессию...');
     transitionTimerRef.current = setTimeout(() => {
       randomProfession();
       navigate('/app');
@@ -134,7 +134,7 @@ function ProfessionSelect() {
           const variantClass = shouldAccent ? styles.heroContinue : styles.heroSecondary;
           const isBusy = transitionState !== 'idle';
           const disabled = isBusy || (isContinue && settingsDirty);
-          const className = `${styles.heroButton} ${variantClass} ${isBusy ? styles.heroButtonPulse : ''}`;
+          const className = `${styles.heroButton} ${variantClass}`;
           return (
             <button
               key={button.key}
