@@ -103,7 +103,7 @@ function InstrumentCard({
     buyConfirmTimeout.current = setTimeout(() => {
       setBuyConfirmed(false);
       setPanelMode(null);
-    }, 600);
+    }, 300);
   };
 
   const renderPanel = () => {
@@ -185,7 +185,7 @@ function InstrumentCard({
       <div className={styles.sparkline}>
         <SparkLine data={priceInfo?.history || []} />
       </div>
-      <div className={styles.actions}>
+      <div className={`${styles.actions} ${buyConfirmed ? styles.actionsHidden : ''}`}>
         {hasPosition && panelMode !== 'sell' && (
           <Button
             variant="secondary"

@@ -76,6 +76,13 @@
   margin-top: 0.8rem;
   display: flex;
   gap: 0.6rem;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.actionsHidden {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
 }
 
 .tradePanel {
