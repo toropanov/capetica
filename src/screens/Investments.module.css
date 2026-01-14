@@ -164,7 +164,7 @@
 
 .creditCard {
   background: rgba(255, 255, 255, 0.88);
-  margin-bottom: var(--asset-section-gap);
+  margin-bottom: 0;
 }
 
 .creditCard :global(.inner) {
