@@ -389,11 +389,6 @@
   .outcomeFooterSingle {
     flex-direction: column;
   }
-
-  .headerStats {
-    width: 100%;
-    justify-content: space-between;
-  }
 }
 
 @keyframes moodPulse {
