@@ -137,7 +137,6 @@ function ActionCard({ action, onSelect, cash, compact = false, variant = 'defaul
       glow={!isMonthly}
       flat={isMonthly}
     >
-      {isMonthly && <span className={styles.monthlyBadge}>Месячное предложение</span>}
       {!hideIcon && <div className={styles.iconSprite} style={spriteStyle(action.icon)} />}
       <h3>{action.title}</h3>
       <p>{action.description}</p>
@@ -151,7 +150,12 @@ function ActionCard({ action, onSelect, cash, compact = false, variant = 'defaul
           ))}
         </div>
       )}
-      <Button variant="primary" onClick={() => onSelect(action.id)} disabled={disabled}>
+      <Button
+        variant="primary"
+        onClick={() => onSelect(action.id)}
+        disabled={disabled}
+        className={isMonthly ? styles.monthlyButton : ''}
+      >
         {buttonLabel}
       </Button>
       {disabled && <span className={styles.hint}>Нужно ${action.cost}</span>}

@@ -570,22 +570,27 @@
 }
 
 .monthlyActionCard {
+  position: relative;
   border-radius: 0;
-  padding: 1rem;
+  padding: 1.2rem;
   background: #ffffff;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .monthlyActionCard .iconSprite {
   display: none;
 }
 
-.monthlyBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(25, 41, 75, 0.7);
-  margin-bottom: 0.4rem;
+.monthlyActionCard h3 {
+  margin-top: 0;
+}
+
+.monthlyButton {
+  margin-top: 0.7rem;
+  padding: 0.55rem 1.25rem;
+  font-size: 0.85rem;
+  align-self: flex-start;
 }
