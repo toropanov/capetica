@@ -29,7 +29,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 0.8rem 0;
+  padding: 5px 0 0;
   min-height: var(--header-height);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(14px);
@@ -44,14 +44,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8rem;
+  gap: 1.2rem;
   flex: 1;
 }
 
 .headerInfo {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1.2rem;
   flex: 1;
   flex-wrap: wrap;
 }
@@ -65,8 +65,9 @@
 .headerTitle {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
   min-width: 0;
+  margin-right: 7px;
 }
 
 .professionImage {

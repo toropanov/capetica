@@ -274,31 +274,6 @@ function MainLayout() {
             </div>
           </div>
         </div>
-        <button
-          type="button"
-          className={styles.exitButton}
-          onClick={() => {
-            if (transitionState !== 'idle') return;
-            beginTransition('Сохраняем прогресс');
-            homeTimerRef.current = setTimeout(() => {
-              navigate('/');
-              homeTimerRef.current = null;
-            }, 650);
-          }}
-          disabled={transitionState !== 'idle'}
-          title="Дом"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M4 11L12 4L20 11V20H14V14H10V20H4V11Z"
-              stroke="#1f2d4a"
-              strokeWidth="1.8"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-            <path d="M9 20V14H15V20" stroke="#1f2d4a" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </button>
       </header>
       <main className={styles.content} ref={contentRef}>
         <Outlet />
