@@ -363,6 +363,60 @@
   border: 1px solid #12244226;
 }
 
+.nextMoveOverlay {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1250;
+  pointer-events: none;
+}
+
+.nextMoveLoader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.nextMoveProgress {
+  width: 220px;
+  height: 0.4rem;
+  background: #f0f2f8;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.nextMoveProgress span {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: #ffcd7d;
+  animation: progressSlide 1.2s ease-in-out infinite;
+}
+
+.nextMoveMessage {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2b4a;
+}
+
+@keyframes progressSlide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .summaryButton {
   border: none;
   background: linear-gradient(120deg, #95d8ff, #bfffd9);
@@ -377,6 +431,13 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+.outcomePrimary {
+  background: linear-gradient(120deg, #ffe498, #ffc877);
+  color: #06060c;
+  box-shadow: 0 15px 30px rgba(234, 207, 155, 0.308);
+  border: 1px solid #12244226;
 }
 
 .outcomeFooter,

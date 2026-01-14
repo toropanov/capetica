@@ -72,6 +72,8 @@ function MainLayout() {
   const contentRef = useRef(null);
   const diceTimerRef = useRef(null);
   const homeTimerRef = useRef(null);
+  const nextMoveTimerRef = useRef(null);
+  const [nextMoveLoading, setNextMoveLoading] = useState(false);
   const transitionState = useGameStore((state) => state.transitionState);
   const beginTransition = useGameStore((state) => state.beginTransition);
 
@@ -81,6 +83,9 @@ function MainLayout() {
     }
     if (homeTimerRef.current) {
       clearTimeout(homeTimerRef.current);
+    }
+    if (nextMoveTimerRef.current) {
+      clearTimeout(nextMoveTimerRef.current);
     }
   }, []);
 
@@ -181,15 +186,6 @@ function MainLayout() {
     setTurnSummary(null);
   };
   const acknowledgeOutcome = useGameStore((state) => state.acknowledgeOutcome);
-  const handleContinue = () => {
-    handleCloseSummary();
-    acknowledgeOutcome();
-  };
-  const handleNewParty = () => {
-    handleCloseSummary();
-    navigate('/');
-  };
-
   const hasWin = Boolean(storeData.winCondition);
   const hasLose = Boolean(storeData.loseCondition);
   const outcomeState = hasWin ? 'win' : hasLose ? 'lose' : null;
@@ -212,23 +208,52 @@ function MainLayout() {
       ? LOSE_OUTCOME_MESSAGES[storeData.loseCondition?.id] ||
         'Финансовый план провалился. Начни новую партию, чтобы попробовать снова.'
       : null;
+  const startNextMoveLoader = () => {
+    setNextMoveLoading(true);
+    if (nextMoveTimerRef.current) {
+      clearTimeout(nextMoveTimerRef.current);
+    }
+    nextMoveTimerRef.current = setTimeout(() => {
+      setNextMoveLoading(false);
+      nextMoveTimerRef.current = null;
+    }, 600);
+  };
+  const handleContinue = () => {
+    if (!outcomeState) {
+      startNextMoveLoader();
+    }
+    handleCloseSummary();
+    acknowledgeOutcome();
+  };
+  const handleNewParty = () => {
+    handleCloseSummary();
+    navigate('/');
+  };
   const modalFooter =
     outcomeState === 'win' ? (
       <div className={styles.outcomeFooter}>
         <Button
           variant="secondary"
           onClick={handleContinue}
-          className={styles.summaryButton}
+          className={`${styles.summaryButton} ${styles.outcomePrimary}`}
         >
           Продолжить
         </Button>
-        <Button variant="primary" onClick={handleNewParty} className={styles.summaryButton}>
+        <Button
+          variant="primary"
+          onClick={handleNewParty}
+          className={`${styles.summaryButton} ${styles.outcomePrimary}`}
+        >
           Новая партия
         </Button>
       </div>
     ) : outcomeState === 'lose' ? (
       <div className={styles.outcomeFooterSingle}>
-        <Button variant="primary" onClick={handleNewParty} className={styles.summaryButton}>
+        <Button
+          variant="primary"
+          onClick={handleNewParty}
+          className={`${styles.summaryButton} ${styles.outcomePrimary}`}
+        >
           Новая партия
         </Button>
       </div>
@@ -397,6 +422,16 @@ function MainLayout() {
           </>
         )}
       </Modal>
+      {nextMoveLoading && (
+        <div className={styles.nextMoveOverlay}>
+          <div className={styles.nextMoveLoader}>
+            <div className={styles.nextMoveProgress}>
+              <span />
+            </div>
+            <p className={styles.nextMoveMessage}>Готовим следующий ход...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
