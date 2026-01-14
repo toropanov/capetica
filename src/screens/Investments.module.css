@@ -134,6 +134,12 @@
   color: #0f2b28;
 }
 
+.buyComplete {
+  background: #fff;
+  color: #23c79e;
+  box-shadow: 0 15px 35px rgba(34, 207, 160, 0.35);
+}
+
 .tradeHint {
   font-size: 0.8rem;
   color: rgba(32, 48, 85, 0.65);

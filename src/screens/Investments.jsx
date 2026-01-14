@@ -34,6 +34,7 @@ function InstrumentCard({
   currentMonth,
   tradeLocks = {},
   saleData,
+  purchaseData,
 }) {
   const rawPrice = priceInfo?.price || instrument.initialPrice;
   const changePct = Math.round((priceInfo?.lastReturn || 0) * 100);
@@ -70,16 +71,18 @@ function InstrumentCard({
   const defaultSellLabel = hasPosition
     ? `Продать $${sellValue.toLocaleString('en-US')} (${sellProfit >= 0 ? '+' : '-'}$${Math.abs(sellProfit).toLocaleString('en-US')})`
     : '';
+  const purchaseAmount = purchaseData?.turn === currentMonth ? purchaseData.amount : null;
+  const displayedPurchaseAmount = lastBuyAmount || purchaseAmount;
+  const showingPurchaseLabel = buyLocked && displayedPurchaseAmount;
   const sellLabel =
-    buyLocked && lastBuyAmount
-      ? `Куплено на $${Math.round(lastBuyAmount).toLocaleString('en-US')}`
+    showingPurchaseLabel
+      ? `Куплено на $${Math.round(displayedPurchaseAmount).toLocaleString('en-US')}`
       : defaultSellLabel;
-  const sellClassName =
-    buyLocked && lastBuyAmount
+  const sellClassName = showingPurchaseLabel
+    ? styles.sellPositive
+    : sellProfit >= 0
       ? styles.sellPositive
-      : sellProfit >= 0
-        ? styles.sellPositive
-        : styles.sellNegative;
+      : styles.sellNegative;
   const hasSaleNotice = saleData?.turn === currentMonth;
   useEffect(
     () => () => {
@@ -158,7 +161,7 @@ function InstrumentCard({
               }
             }}
             disabled={disabled || buyConfirmed}
-            className={`${styles.tradeActionButton} ${buyConfirmed && isBuy ? styles.buyConfirming : ''} ${!isBuy ? styles.tradeSellConfirm : ''}`}
+            className={`${styles.tradeActionButton} ${buyConfirmed && isBuy ? styles.buyComplete : ''} ${!isBuy ? styles.tradeSellConfirm : ''}`}
           >
             {isBuy
               ? buyConfirmed
@@ -275,6 +278,7 @@ function Investments() {
   };
 
   const lastSales = useGameStore((state) => state.lastSales || {});
+  const lastPurchases = useGameStore((state) => state.lastPurchases || {});
   const cards = useMemo(
     () =>
       filteredInstruments.map((instrument) => ({
@@ -354,6 +358,7 @@ function Investments() {
             currentMonth={month}
             tradeLocks={tradeLocks}
             saleData={lastSales[card.instrument.id]}
+            purchaseData={lastPurchases[card.instrument.id]}
           />
         ))}
       </div>

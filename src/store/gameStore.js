@@ -461,6 +461,7 @@ const useGameStore = create(
       dealParticipations: [],
       actionsThisTurn: 0,
       lastTradeAction: null,
+      lastPurchases: {},
       lastSales: {},
       tradeLocks: {},
       creditLockedMonth: null,
@@ -531,6 +532,7 @@ const useGameStore = create(
             difficulty: nextDifficulty,
             actionsThisTurn: 0,
             lastTradeAction: null,
+            lastPurchases: {},
             lastSales: {},
             tradeLocks: {},
             creditLockedMonth: null,
@@ -565,6 +567,7 @@ const useGameStore = create(
             difficulty: nextDifficulty,
             actionsThisTurn: 0,
             lastTradeAction: null,
+            lastPurchases: {},
             lastSales: {},
             tradeLocks: {},
             creditLockedMonth: null,
@@ -860,6 +863,7 @@ const useGameStore = create(
             actionsThisTurn: 0,
             lastTradeAction: null,
             lastSales: {},
+            lastPurchases: {},
             tradeLocks: {},
             creditLockedMonth: null,
             lastTurn: {
@@ -950,6 +954,13 @@ const useGameStore = create(
               type: 'buy',
               instrumentId,
               turn: state.month,
+            },
+            lastPurchases: {
+              ...(state.lastPurchases || {}),
+              [instrumentId]: {
+                turn: state.month,
+                amount: Math.round(spend),
+              },
             },
           };
           if (isLockable) {
@@ -1243,6 +1254,7 @@ const useGameStore = create(
         actionsThisTurn: state.actionsThisTurn,
         lastTradeAction: state.lastTradeAction,
         lastSales: state.lastSales,
+        lastPurchases: state.lastPurchases,
         tradeLocks: state.tradeLocks,
         creditLockedMonth: state.creditLockedMonth,
         selectedGoalId: state.selectedGoalId,
