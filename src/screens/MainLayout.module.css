@@ -417,6 +417,12 @@
   }
 }
 
+.pendingResultsOverlay {
+  z-index: 90;
+  pointer-events: auto;
+  background: #ffffff;
+}
+
 .summaryButton {
   border: none;
   background: linear-gradient(120deg, #95d8ff, #bfffd9);

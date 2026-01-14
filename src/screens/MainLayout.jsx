@@ -68,6 +68,7 @@ function MainLayout() {
   const [summaryReady, setSummaryReady] = useState(false);
   const [turnSummaryOpen, setTurnSummaryOpen] = useState(false);
   const [turnSummary, setTurnSummary] = useState(null);
+  const [maskTurnResults, setMaskTurnResults] = useState(false);
   const confirmButtonRef = useRef(null);
   const contentRef = useRef(null);
   const diceTimerRef = useRef(null);
@@ -116,6 +117,7 @@ function MainLayout() {
     }
     setConfirmingFinish(false);
     setDiceAnimating(true);
+    setMaskTurnResults(true);
     advanceMonth();
     setPendingSummary(true);
     if (diceTimerRef.current) {
@@ -184,9 +186,16 @@ function MainLayout() {
     }
   }, [summaryReady, diceAnimating, turnSummary]);
 
+  useEffect(() => {
+    if (turnSummaryOpen) {
+      setMaskTurnResults(false);
+    }
+  }, [turnSummaryOpen]);
+
   const handleCloseSummary = () => {
     setTurnSummaryOpen(false);
     setTurnSummary(null);
+    setMaskTurnResults(false);
   };
   const acknowledgeOutcome = useGameStore((state) => state.acknowledgeOutcome);
   const hasWin = Boolean(storeData.winCondition);
@@ -437,6 +446,16 @@ function MainLayout() {
           </>
         )}
       </Modal>
+      {maskTurnResults && (
+        <div className={`${styles.nextMoveOverlay} ${styles.pendingResultsOverlay}`} aria-hidden="true">
+          <div className={styles.nextMoveLoader}>
+            <div className={styles.nextMoveProgress}>
+              <span />
+            </div>
+            <p className={styles.nextMoveMessage}>Готовим итоги хода...</p>
+          </div>
+        </div>
+      )}
       {nextMoveLoading && (
         <div className={styles.nextMoveOverlay}>
           <div className={styles.nextMoveLoader}>
