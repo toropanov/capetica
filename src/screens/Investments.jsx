@@ -184,7 +184,7 @@ function Investments() {
                 onClick={handleRepay}
                 disabled={cash <= 0 || creditLocked}
               >
-                {creditConfirm === 'repay' ? 'Готово' : `Погасить ${formatUSD(creditAmount)}`}
+                {creditConfirm === 'repay' ? 'Готово' : 'Погасить'}
               </Button>
             </div>
           )}
@@ -195,7 +195,7 @@ function Investments() {
         <Card className={styles.blockCard}>
           <header className={styles.sectionHeader}>
             <h2>Акции и криптовалюта</h2>
-            <p>Все акции и криптовалюты в портфеле</p>
+            <p>Текущие инструменты в портфеле</p>
           </header>
           {holdingsList.length ? (
             holdingsList.map((item) => (
@@ -203,7 +203,7 @@ function Investments() {
                 <div className={styles.instrumentHeader}>
                   <div>
                     <span>{item.instrument.title}</span>
-                    <p>{item.instrument.type === 'crypto' ? 'Криптовалюта' : 'Акции'}</p>
+                    <p>{item.instrument.type === 'crypto' ? 'Криптовалюта' : 'Акция'}</p>
                   </div>
                   <div className={styles.priceBlock}>
                     <strong>{formatUSD(item.price)}</strong>
@@ -233,8 +233,8 @@ function Investments() {
       <div className={styles.listWithBottom}>
         <Card className={styles.blockCard}>
           <header className={styles.sectionHeader}>
-            <h2>Сделки</h2>
-            <p>Активные участия и выплаты</p>
+            <h2>Контракты</h2>
+            <p>Текущие участия и выплаты</p>
           </header>
           {activeDeals.length ? (
             activeDeals.map((deal) => {
@@ -244,7 +244,7 @@ function Investments() {
                   <div className={styles.dealHeader}>
                     <div>
                       <span>{deal.title}</span>
-                      <p>Активная сделка</p>
+                      <p>В работе</p>
                     </div>
                     <strong>{formatUSD(deal.invested)}</strong>
                   </div>
@@ -266,7 +266,7 @@ function Investments() {
               );
             })
           ) : (
-            <p className={styles.emptyHint}>Активных сделок пока нет.</p>
+            <p className={styles.emptyHint}>Активных контрактов пока нет.</p>
           )}
         </Card>
       </div>

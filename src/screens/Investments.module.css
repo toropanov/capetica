@@ -32,15 +32,17 @@
 }
 
 .sectionHeader h2 {
-  margin: 0 0 0.3rem;
-  font-size: 1.1rem;
-  color: #1c2e4f;
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1b2b47;
 }
 
 .sectionHeader p {
-  margin: 0;
-  font-size: 0.85rem;
-  color: rgba(16, 30, 60, 0.65);
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  color: rgba(16, 30, 60, 0.6);
 }
 
 .instrumentCard {
@@ -54,38 +56,68 @@
 }
 
 .blockCard {
-  background: #ffffff;
+  background: #f7faff;
   color: #1f2d4a;
-  padding: 1rem;
+  padding: 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.7rem;
   border-radius: 0;
+  border: 1px solid rgba(24, 53, 98, 0.06);
+  box-shadow: 0 8px 18px rgba(29, 56, 102, 0.08);
 }
 
 .instrumentRow {
-  padding-top: 0.8rem;
-  border-top: 1px solid rgba(18, 42, 86, 0.08);
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(18, 42, 86, 0.08);
+  border-radius: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
+  background: #ffffff;
+  box-shadow: 0 6px 12px rgba(31, 58, 107, 0.08);
 }
 
-.instrumentRow:first-of-type {
-  border-top: none;
-  padding-top: 0;
+.instrumentRow + .instrumentRow {
+  margin-top: 0.45rem;
 }
 
 .instrumentHeader {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 0.8rem;
+  gap: 0.6rem;
   align-items: center;
 }
 
+.instrumentHeader span {
+  display: block;
+}
+
 .instrumentHeader p {
-  margin: 0;
-  color: rgba(8, 12, 30, 0.6);
+  margin: 0.08rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border-radius: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  background: transparent;
+  color: rgba(40, 58, 96, 0.75);
+  position: relative;
+}
+
+.instrumentHeader p::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b7da6;
+  transform: translateY(-50%);
 }
 
 .priceBlock {
@@ -93,7 +125,7 @@
 }
 
 .priceBlock strong {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
 }
 
 .priceBlock span {
@@ -103,12 +135,12 @@
 
 .assetStats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 0.4rem;
 }
 
 .assetStats span {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: rgba(16, 30, 60, 0.55);
@@ -117,19 +149,40 @@
 .assetStats strong {
   display: block;
   margin-top: 0.2rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .dealHeader {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 0.6rem;
+  gap: 0.5rem;
   align-items: center;
 }
 
 .dealHeader p {
-  margin: 0;
-  color: rgba(8, 12, 30, 0.6);
+  margin: 0.2rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border-radius: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  background: transparent;
+  color: rgba(40, 58, 96, 0.75);
+  position: relative;
+}
+
+.dealHeader p::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4e8bb2;
+  transform: translateY(-50%);
 }
 
 .emptyHint {
@@ -330,7 +383,8 @@
 
 .creditActionColumn button {
   width: 100%;
-  padding: 0.85rem 0;
+  padding: 0.6rem 0;
+  font-size: 0.85rem;
 }
 
 .creditTakenButton {
@@ -346,7 +400,7 @@
 
 @media (max-width: 480px) {
   .creditActions {
-    flex-direction: column;
+    flex-direction: row;
   }
 }
 
