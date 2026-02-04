@@ -725,18 +725,59 @@ function MainLayout() {
             {rollCardData.type === 'event' ? (
               (() => {
                 const message = getEventMessage(rollCardData.event);
+                const cleanedMessage = (message || rollCardData.event?.description || '')
+                  .replace(/\s*\([^)]*\)\s*/g, ' ')
+                  .replace(/\s{2,}/g, ' ')
+                  .trim();
                 const delta = rollCardData.event?.effect?.cashDelta;
                 const isPositive = typeof delta === 'number' ? delta >= 0 : rollCardData.event?.type === 'positive';
+                const effect = rollCardData.event?.effect || {};
+                const effectEntries = [
+                  typeof effect.cashDelta === 'number'
+                    ? { label: 'Наличные', value: effect.cashDelta }
+                    : null,
+                  typeof effect.salaryBonusDelta === 'number'
+                    ? { label: 'Зарплата', value: effect.salaryBonusDelta }
+                    : null,
+                  typeof effect.recurringDelta === 'number'
+                    ? { label: 'Фикс. расходы', value: effect.recurringDelta }
+                    : null,
+                  typeof effect.debtDelta === 'number'
+                    ? { label: 'Долг', value: effect.debtDelta }
+                    : null,
+                ].filter(Boolean);
                 return (
                   <>
-                    <p className={styles.rollCardDesc}>{message || rollCardData.event?.description}</p>
-                    {typeof delta === 'number' && (
-                      <div className={`${styles.rollCardAmount} ${isPositive ? styles.rollCardPositive : styles.rollCardNegative}`}>
-                        {isPositive ? '+' : '-'}{formatUSD(Math.abs(delta))}
+                    <p className={styles.rollCardDesc}>{cleanedMessage}</p>
+                    {effectEntries.length > 0 ? (
+                      <div className={styles.rollEventStats}>
+                        {effectEntries.map((entry) => (
+                          <div
+                            key={entry.label}
+                            className={`${styles.rollEventBadge} ${
+                              entry.value >= 0 ? styles.rollEventPositive : styles.rollEventNegative
+                            }`}
+                          >
+                            <span>{entry.label}</span>
+                            <strong>
+                              {entry.value >= 0 ? '+' : '-'}{formatUSD(Math.abs(entry.value))}
+                            </strong>
+                          </div>
+                        ))}
                       </div>
+                    ) : (
+                      typeof delta === 'number' && (
+                        <div className={`${styles.rollCardAmount} ${isPositive ? styles.rollCardPositive : styles.rollCardNegative}`}>
+                          {isPositive ? '+' : '-'}{formatUSD(Math.abs(delta))}
+                        </div>
+                      )
                     )}
                     <div className={styles.rollCardActions}>
-                      <Button variant="primary" onClick={closeRollCard}>
+                      <Button
+                        variant="primary"
+                        onClick={closeRollCard}
+                        className={styles.rollCardPrimaryButton}
+                      >
                         Ок
                       </Button>
                     </div>

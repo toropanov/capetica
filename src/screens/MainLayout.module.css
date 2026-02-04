@@ -375,6 +375,8 @@
 }
 
 .rollOverlay {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(3px);
   pointer-events: auto;
 }
 
@@ -645,6 +647,57 @@
   color: #c0435e;
 }
 
+.rollEventStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rollEventBadge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(132, 90, 18, 0.25);
+  background: #fff7e6;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  position: relative;
+}
+
+.rollEventBadge::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 6px 0 0 6px;
+  background: #c9a159;
+}
+
+.rollEventBadge span {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.62rem;
+  color: rgba(59, 42, 16, 0.6);
+  padding-left: 0.4rem;
+}
+
+.rollEventBadge strong {
+  font-size: 0.95rem;
+  color: #3b2a10;
+}
+
+.rollEventPositive strong {
+  color: #1f7b3a;
+}
+
+.rollEventNegative strong {
+  color: #b33e2b;
+}
+
 .rollCardFacts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -721,6 +774,7 @@
   color: #b33e2b;
   text-align: center;
 }
+
 
 .summaryButton {
   border: none;

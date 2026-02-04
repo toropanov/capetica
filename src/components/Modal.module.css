@@ -1,8 +1,8 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 6, 16, 0.55);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,10 +18,10 @@
 .modal {
   width: min(100%, 500px);
   border-radius: 0;
-  background: #ffffff;
+  background: transparent;
   border: none;
   box-shadow: none;
-  padding: 1.5rem;
+  padding: 0;
   color: #0b1024;
 }
 
