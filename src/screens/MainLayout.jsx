@@ -246,7 +246,9 @@ function MainLayout() {
   const homeTimerRef = useRef(null);
   const newGameTimerRef = useRef(null);
   const nextMoveTimerRef = useRef(null);
+  const rollCloseTimerRef = useRef(null);
   const [nextMoveLoading, setNextMoveLoading] = useState(false);
+  const [rollCloseLoading, setRollCloseLoading] = useState(false);
   const [hideProgressCard, setHideProgressCard] = useState(false);
   const transitionState = useGameStore((state) => state.transitionState);
   const beginTransition = useGameStore((state) => state.beginTransition);
@@ -264,6 +266,9 @@ function MainLayout() {
     }
     if (nextMoveTimerRef.current) {
       clearTimeout(nextMoveTimerRef.current);
+    }
+    if (rollCloseTimerRef.current) {
+      clearTimeout(rollCloseTimerRef.current);
     }
     if (newGameTimerRef.current) {
       clearTimeout(newGameTimerRef.current);
@@ -439,6 +444,14 @@ function MainLayout() {
     setRollCardOpen(false);
     setRollCard(null);
     setRollFeedback('');
+    setRollCloseLoading(true);
+    if (rollCloseTimerRef.current) {
+      clearTimeout(rollCloseTimerRef.current);
+    }
+    rollCloseTimerRef.current = setTimeout(() => {
+      setRollCloseLoading(false);
+      rollCloseTimerRef.current = null;
+    }, 450);
   };
   const handleRollBuy = () => {
     if (!rollCardData || !rollCardData.instrument) return;
@@ -894,6 +907,15 @@ function MainLayout() {
       {rollOverlay && (
         <div className={`${styles.nextMoveOverlay} ${styles.rollOverlay}`} aria-hidden="true">
           <TurnLoader message="Кидаю кубик..." previousValue={lastTurn?.diceRoll || 1} size="roll" />
+        </div>
+      )}
+      {rollCloseLoading && (
+        <div className={`${styles.nextMoveOverlay} ${styles.rollOverlay}`} aria-hidden="true">
+          <div className={styles.nextMoveLoader}>
+            <div className={styles.nextMoveProgress}>
+              <span />
+            </div>
+          </div>
         </div>
       )}
       {nextMoveLoading && (
