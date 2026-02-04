@@ -39,6 +39,102 @@ const LOSE_OUTCOME_MESSAGES = {
   debt_over_networth: 'Долг превысил чистый капитал, игра закончена.',
 };
 
+const TURN_LOADER_PREVIEW_DELAY = 260;
+const TURN_LOADER_ROLL_DURATION = 1400;
+const TURN_LOADER_RESULT_DELAY = 900;
+const TURN_LOADER_TOTAL_DELAY =
+  TURN_LOADER_PREVIEW_DELAY + TURN_LOADER_ROLL_DURATION + TURN_LOADER_RESULT_DELAY;
+const DICE_PIP_KEYS = ['tl', 'tr', 'ml', 'mr', 'bl', 'br', 'center'];
+const DICE_FACE_MAP = {
+  1: ['center'],
+  2: ['tl', 'br'],
+  3: ['tl', 'center', 'br'],
+  4: ['tl', 'tr', 'bl', 'br'],
+  5: ['tl', 'tr', 'center', 'bl', 'br'],
+  6: ['tl', 'tr', 'ml', 'mr', 'bl', 'br'],
+};
+
+const clampDiceValue = (val) => {
+  if (typeof val !== 'number' || Number.isNaN(val)) return 1;
+  const normalized = Math.round(val);
+  return Math.min(Math.max(normalized, 1), 6);
+};
+
+function TurnLoader({ message, previousValue }) {
+  const initialValue = clampDiceValue(previousValue);
+  const [value, setValue] = useState(initialValue);
+  const [rolling, setRolling] = useState(false);
+  const [finalValue, setFinalValue] = useState(initialValue);
+
+  useEffect(() => {
+    const baseValue = clampDiceValue(previousValue);
+    setValue(baseValue);
+    setFinalValue(baseValue);
+    setRolling(false);
+    let startTimer;
+    let rollInterval;
+    let stopTimer;
+
+    startTimer = setTimeout(() => {
+      setRolling(true);
+      rollInterval = setInterval(() => {
+        setValue((prev) => {
+          let next = Math.floor(Math.random() * 6) + 1;
+          if (next === prev) {
+            next = (next % 6) + 1;
+          }
+          return next;
+        });
+      }, 180);
+    }, TURN_LOADER_PREVIEW_DELAY);
+
+    stopTimer = setTimeout(() => {
+      if (rollInterval) {
+        clearInterval(rollInterval);
+      }
+      const target = Math.floor(Math.random() * 6) + 1;
+      setFinalValue(target);
+      setValue(target);
+      setRolling(false);
+    }, TURN_LOADER_PREVIEW_DELAY + TURN_LOADER_ROLL_DURATION);
+
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(stopTimer);
+      if (rollInterval) {
+        clearInterval(rollInterval);
+      }
+    };
+  }, [previousValue]);
+
+  const displayValue = rolling ? value : finalValue;
+  const activeDots = DICE_FACE_MAP[displayValue] || DICE_FACE_MAP[1];
+
+  return (
+    <div className={styles.nextMoveLoader}>
+      <div
+        className={`${styles.nextMoveDice} ${
+          rolling ? styles.nextMoveDiceRolling : styles.nextMoveDiceResult
+        }`}
+        role="img"
+        aria-label={`Выбираем число ${displayValue}`}
+      >
+        {DICE_PIP_KEYS.map((key) => {
+          const classKey = `diceDot${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+          const positionClass = styles[classKey] || '';
+          const active = activeDots.includes(key);
+          const dotClassName = `${styles.diceDot} ${positionClass} ${active ? styles.diceDotVisible : ''}`;
+          return <span key={key} className={dotClassName} />;
+        })}
+      </div>
+      <div className={styles.nextMoveProgress}>
+        <span />
+      </div>
+      <p className={styles.nextMoveMessage}>{message}</p>
+    </div>
+  );
+}
+
 function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -129,7 +225,7 @@ function MainLayout() {
     }
     diceTimerRef.current = setTimeout(() => {
       setDiceAnimating(false);
-    }, 900);
+    }, TURN_LOADER_TOTAL_DELAY);
   };
 
   const instrumentMap = useMemo(() => {
@@ -466,22 +562,12 @@ function MainLayout() {
       </Modal>
       {maskTurnResults && (
         <div className={`${styles.nextMoveOverlay} ${styles.pendingResultsOverlay}`} aria-hidden="true">
-          <div className={styles.nextMoveLoader}>
-            <div className={styles.nextMoveProgress}>
-              <span />
-            </div>
-            <p className={styles.nextMoveMessage}>Готовим итоги хода...</p>
-          </div>
+          <TurnLoader message="Ход завершён! Кидаем кубик..." previousValue={lastTurn?.diceRoll || 1} />
         </div>
       )}
       {nextMoveLoading && (
-        <div className={styles.nextMoveOverlay}>
-          <div className={styles.nextMoveLoader}>
-            <div className={styles.nextMoveProgress}>
-              <span />
-            </div>
-            <p className={styles.nextMoveMessage}>Готовим следующий ход...</p>
-          </div>
+        <div className={styles.nextMoveOverlay} aria-hidden="true">
+          <TurnLoader message="Готовим следующий ход..." previousValue={lastTurn?.diceRoll || 1} />
         </div>
       )}
     </div>
