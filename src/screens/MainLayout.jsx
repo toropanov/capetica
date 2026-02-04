@@ -703,24 +703,25 @@ function MainLayout() {
       <Modal open={rollCardOpen && Boolean(rollCardData)} onClose={closeRollCard}>
         {rollCardData && (
           <Card className={styles.rollCard} glow={false}>
-            <div className={styles.rollCardHeader}>
-              <span className={styles.rollCardBadge}>
+            <div className={styles.rollCardFrame}>
+              <div className={styles.rollCardHeader}>
+                <span className={styles.rollCardBadge}>
                 {rollCardData.type === 'event'
                   ? 'Событие'
                   : rollCardData.type === 'deal'
-                  ? 'Сделка'
-                  : rollCardData.type === 'crypto'
-                    ? 'Криптовалюта'
-                    : 'Акции'}
-              </span>
-              <strong className={styles.rollCardTitle}>
+                    ? 'Сделка'
+                    : rollCardData.type === 'crypto'
+                      ? 'Криптовалюта'
+                      : 'Акции'}
+                </span>
+                <strong className={styles.rollCardTitle}>
                 {rollCardData.type === 'event'
                   ? rollCardData.event?.title || 'Событие'
                   : rollCardData.type === 'deal'
-                  ? rollCardData.deal.title
-                  : rollCardData.instrument.title}
-              </strong>
-            </div>
+                    ? rollCardData.deal.title
+                    : rollCardData.instrument.title}
+                </strong>
+              </div>
             {rollCardData.type === 'event' ? (
               (() => {
                 const message = getEventMessage(rollCardData.event);
@@ -816,6 +817,7 @@ function MainLayout() {
                 </div>
               </>
             )}
+            </div>
           </Card>
         )}
       </Modal>
