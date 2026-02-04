@@ -772,10 +772,15 @@ function MainLayout() {
                       (rollCardData.window.slotsLeft ?? 0) <= 0 ||
                       storeData.cash < rollCardData.deal.entryCost
                     }
+                    className={styles.rollCardPrimaryButton}
                   >
                     Участвовать
                   </Button>
-                  <Button variant="secondary" onClick={closeRollCard}>
+                  <Button
+                    variant="secondary"
+                    onClick={closeRollCard}
+                    className={styles.rollCardSecondaryButton}
+                  >
                     Отказаться
                   </Button>
                 </div>
@@ -808,10 +813,15 @@ function MainLayout() {
                     variant="primary"
                     onClick={handleRollBuy}
                     disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
+                    className={styles.rollCardPrimaryButton}
                   >
                     Купить на {formatUSD(rollBuyAmount)}
                   </Button>
-                  <Button variant="secondary" onClick={closeRollCard}>
+                  <Button
+                    variant="secondary"
+                    onClick={closeRollCard}
+                    className={styles.rollCardSecondaryButton}
+                  >
                     Отказаться
                   </Button>
                 </div>
