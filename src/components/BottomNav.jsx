@@ -81,7 +81,7 @@ function BottomNav({
           <DiceIcon />
         </span>
         <span className={styles.actionLabel}>
-          {confirmingFinish ? 'Подтвердить ход' : 'Завершить ход'}
+          {confirmingFinish ? 'Подтвердить' : 'Кинуть кубик'}
         </span>
       </button>
       {renderNavButton(NAV_ITEMS[1])}

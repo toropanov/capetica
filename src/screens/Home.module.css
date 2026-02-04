@@ -562,6 +562,14 @@
   margin: 0;
 }
 
+.monthlyOfferHeader {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(16, 30, 60, 0.6);
+  margin-bottom: 0.6rem;
+}
+
 .monthlySection {
   display: flex;
   flex-direction: column;

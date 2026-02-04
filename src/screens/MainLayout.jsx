@@ -4,7 +4,10 @@ import { useShallow } from 'zustand/react/shallow';
 import useGameStore from '../store/gameStore';
 import BottomNav from '../components/BottomNav';
 import Button from '../components/Button';
+import Card from '../components/Card';
+import Slider from '../components/Slider';
 import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/finance';
+import { DEAL_TEMPLATES } from '../domain/deals';
 import styles from './MainLayout.module.css';
 import { spriteStyle, getProfessionIcon } from '../utils/iconSprite';
 import teacherImg from '../assets/proffesions/teacher.png';
@@ -39,11 +42,11 @@ const LOSE_OUTCOME_MESSAGES = {
   debt_over_networth: 'Долг превысил чистый капитал, игра закончена.',
 };
 
-const TURN_LOADER_PREVIEW_DELAY = 260;
-const TURN_LOADER_ROLL_DURATION = 1400;
-const TURN_LOADER_RESULT_DELAY = 900;
-const TURN_LOADER_TOTAL_DELAY =
-  TURN_LOADER_PREVIEW_DELAY + TURN_LOADER_ROLL_DURATION + TURN_LOADER_RESULT_DELAY;
+const ROLL_LOADER_PREVIEW_DELAY = 260;
+const ROLL_LOADER_ROLL_DURATION = 1800;
+const ROLL_LOADER_RESULT_DELAY = 1000;
+const ROLL_LOADER_TOTAL_DELAY =
+  ROLL_LOADER_PREVIEW_DELAY + ROLL_LOADER_ROLL_DURATION + ROLL_LOADER_RESULT_DELAY;
 const DICE_PIP_KEYS = ['tl', 'tr', 'ml', 'mr', 'bl', 'br', 'center'];
 const DICE_FACE_MAP = {
   1: ['center'],
@@ -60,11 +63,18 @@ const clampDiceValue = (val) => {
   return Math.min(Math.max(normalized, 1), 6);
 };
 
-function TurnLoader({ message, previousValue }) {
+function TurnLoader({ message, previousValue, size = 'normal' }) {
   const initialValue = clampDiceValue(previousValue);
   const [value, setValue] = useState(initialValue);
   const [rolling, setRolling] = useState(false);
   const [finalValue, setFinalValue] = useState(initialValue);
+  const timing =
+    size === 'roll'
+      ? {
+          preview: ROLL_LOADER_PREVIEW_DELAY,
+          roll: ROLL_LOADER_ROLL_DURATION,
+        }
+      : { preview: 160, roll: 800 };
 
   useEffect(() => {
     const baseValue = clampDiceValue(previousValue);
@@ -86,7 +96,7 @@ function TurnLoader({ message, previousValue }) {
           return next;
         });
       }, 180);
-    }, TURN_LOADER_PREVIEW_DELAY);
+    }, timing.preview);
 
     stopTimer = setTimeout(() => {
       if (rollInterval) {
@@ -96,7 +106,7 @@ function TurnLoader({ message, previousValue }) {
       setFinalValue(target);
       setValue(target);
       setRolling(false);
-    }, TURN_LOADER_PREVIEW_DELAY + TURN_LOADER_ROLL_DURATION);
+    }, timing.preview + timing.roll);
 
     return () => {
       clearTimeout(startTimer);
@@ -113,7 +123,7 @@ function TurnLoader({ message, previousValue }) {
   return (
     <div className={styles.nextMoveLoader}>
       <div
-        className={`${styles.nextMoveDice} ${
+        className={`${styles.nextMoveDice} ${size === 'roll' ? styles.rollDice : ''} ${
           rolling ? styles.nextMoveDiceRolling : styles.nextMoveDiceResult
         }`}
         role="img"
@@ -135,6 +145,66 @@ function TurnLoader({ message, previousValue }) {
   );
 }
 
+function SimpleLoader({ message }) {
+  return (
+    <div className={styles.nextMoveLoader}>
+      <div className={styles.nextMoveProgress}>
+        <span />
+      </div>
+      <p className={styles.nextMoveMessage}>{message}</p>
+    </div>
+  );
+}
+
+const formatUSD = (value) => `$${Math.round(value || 0).toLocaleString('en-US')}`;
+
+const pickFromList = (list, roll) => {
+  if (!list.length) return null;
+  const index = Math.min(list.length - 1, Math.floor(roll * list.length));
+  return list[index];
+};
+
+function buildRollCard(state) {
+  if (!state?.configs) return null;
+  if (state.currentEvent) {
+    return { type: 'event', event: state.currentEvent };
+  }
+  const instruments = state.configs.instruments?.instruments || [];
+  const stockOptions = instruments.filter((item) => item.type === 'stocks').slice(0, 3);
+  const cryptoOptions = instruments.filter((item) => item.type === 'crypto').slice(0, 2);
+  const dealOptions = DEAL_TEMPLATES.filter((deal) => {
+    const window = state.dealWindows?.[deal.id];
+    return window && window.expiresIn > 0 && (window.slotsLeft ?? 0) > 0;
+  });
+  const categories = [];
+  if (stockOptions.length) categories.push('stocks');
+  if (cryptoOptions.length) categories.push('crypto');
+  if (dealOptions.length) categories.push('deal');
+  if (!categories.length) return null;
+  const category = pickFromList(categories, Math.random());
+  if (category === 'deal') {
+    const deal = pickFromList(dealOptions, Math.random());
+    if (!deal) return null;
+    return {
+      type: 'deal',
+      dealId: deal.id,
+    };
+  }
+  const list = category === 'stocks' ? stockOptions : cryptoOptions;
+  const instrument = pickFromList(list, Math.random());
+  if (!instrument) return null;
+  const range =
+    instrument.ui?.range || {
+      min: Math.max(5, Math.round((instrument.initialPrice || 100) * 0.1)),
+      max: Math.max(10, Math.round((instrument.initialPrice || 100) * 0.3)),
+    };
+  return {
+    type: category,
+    instrumentId: instrument.id,
+    range,
+  };
+}
+
 function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -150,9 +220,12 @@ function MainLayout() {
       winCondition: state.winCondition,
       loseCondition: state.loseCondition,
       recurringExpenses: state.recurringExpenses,
+      dealWindows: state.dealWindows,
     })),
   );
   const advanceMonth = useGameStore((state) => state.advanceMonth);
+  const buyInstrument = useGameStore((state) => state.buyInstrument);
+  const participateInDeal = useGameStore((state) => state.participateInDeal);
   const actionsCount = useGameStore((state) => state.actionsThisTurn || 0);
   const month = useGameStore((state) => state.month);
   const lastTurn = useGameStore((state) => state.lastTurn);
@@ -164,7 +237,9 @@ function MainLayout() {
   const [summaryReady, setSummaryReady] = useState(false);
   const [turnSummaryOpen, setTurnSummaryOpen] = useState(false);
   const [turnSummary, setTurnSummary] = useState(null);
-  const [maskTurnResults, setMaskTurnResults] = useState(false);
+  const [rollOverlay, setRollOverlay] = useState(false);
+  const [rollCard, setRollCard] = useState(null);
+  const [rollCardOpen, setRollCardOpen] = useState(false);
   const confirmButtonRef = useRef(null);
   const contentRef = useRef(null);
   const diceTimerRef = useRef(null);
@@ -177,6 +252,8 @@ function MainLayout() {
   const beginTransition = useGameStore((state) => state.beginTransition);
   const completeTransition = useGameStore((state) => state.completeTransition);
   const resetGame = useGameStore((state) => state.resetGame);
+  const [rollBuyAmount, setRollBuyAmount] = useState(0);
+  const [rollFeedback, setRollFeedback] = useState('');
 
   useEffect(() => () => {
     if (diceTimerRef.current) {
@@ -217,15 +294,23 @@ function MainLayout() {
     }
     setConfirmingFinish(false);
     setDiceAnimating(true);
-    setMaskTurnResults(true);
+    setRollOverlay(true);
+    setRollCard(null);
+    setRollCardOpen(false);
     advanceMonth();
     setPendingSummary(true);
     if (diceTimerRef.current) {
       clearTimeout(diceTimerRef.current);
     }
+    const nextCard = buildRollCard(useGameStore.getState());
+    setRollCard(nextCard);
     diceTimerRef.current = setTimeout(() => {
+      const latestState = useGameStore.getState();
+      const hasOutcome = Boolean(latestState.winCondition || latestState.loseCondition);
       setDiceAnimating(false);
-    }, TURN_LOADER_TOTAL_DELAY);
+      setRollOverlay(false);
+      setRollCardOpen(Boolean(nextCard) && !hasOutcome);
+    }, ROLL_LOADER_TOTAL_DELAY);
   };
 
   const instrumentMap = useMemo(() => {
@@ -253,6 +338,64 @@ function MainLayout() {
     const rounded = Math.round(value);
     return `${rounded < 0 ? '-$' : '$'}${Math.abs(rounded).toLocaleString('en-US')}`;
   };
+  const acknowledgeOutcome = useGameStore((state) => state.acknowledgeOutcome);
+  const hasWin = Boolean(storeData.winCondition);
+  const hasLose = Boolean(storeData.loseCondition);
+  const outcomeState = hasWin ? 'win' : hasLose ? 'lose' : null;
+  const outcomeImage =
+    outcomeState === 'win'
+      ? winImage
+      : outcomeState === 'lose'
+        ? failImage
+        : neutralImg;
+  const outcomeAlt =
+    outcomeState === 'win'
+      ? 'Победа'
+      : outcomeState === 'lose'
+        ? 'Поражение'
+        : 'Ход завершён';
+  const outcomeMessage = outcomeState === 'win'
+    ? WIN_OUTCOME_MESSAGES[storeData.winCondition?.id] ||
+      'Цель достигнута! Можешь продолжать играть или начать заново.'
+    : outcomeState === 'lose'
+      ? LOSE_OUTCOME_MESSAGES[storeData.loseCondition?.id] ||
+        'Финансовый план провалился. Начни новую партию, чтобы попробовать снова.'
+      : null;
+
+  const rollCardData = useMemo(() => {
+    if (!rollCard || !storeData.configs) return null;
+    if (rollCard.type === 'event') {
+      return { type: 'event', event: rollCard.event };
+    }
+    if (rollCard.type === 'deal') {
+      const deal = DEAL_TEMPLATES.find((item) => item.id === rollCard.dealId);
+      if (!deal) return null;
+      const window = storeData.dealWindows?.[deal.id];
+      return { type: 'deal', deal, window };
+    }
+    const instruments = storeData.configs.instruments?.instruments || [];
+    const instrument = instruments.find((item) => item.id === rollCard.instrumentId);
+    if (!instrument) return null;
+    const price = storeData.priceState?.[instrument.id]?.price ?? instrument.initialPrice;
+    return {
+      type: rollCard.type,
+      instrument,
+      price,
+      range: rollCard.range,
+    };
+  }, [rollCard, storeData.configs, storeData.priceState, storeData.dealWindows]);
+
+  useEffect(() => {
+    setRollFeedback('');
+    if (!rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event') {
+      setRollBuyAmount(0);
+      return;
+    }
+    const minOrder = rollCardData.instrument.trading?.minOrder || 10;
+    const maxSpend = Math.max(minOrder, Math.round(storeData.cash || 0));
+    const initial = Math.min(maxSpend, Math.max(minOrder, Math.round(maxSpend * 0.35)));
+    setRollBuyAmount(initial);
+  }, [rollCardData, storeData.cash]);
 
   useEffect(() => {
     if (!pendingSummary || !lastTurn) return;
@@ -281,21 +424,41 @@ function MainLayout() {
 
   useEffect(() => {
     if (summaryReady && !diceAnimating && turnSummary) {
-      setTurnSummaryOpen(true);
+      if (outcomeState) {
+        setTurnSummaryOpen(true);
+      }
       setSummaryReady(false);
     }
-  }, [summaryReady, diceAnimating, turnSummary]);
-
-  useEffect(() => {
-    if (turnSummaryOpen) {
-      setMaskTurnResults(false);
-    }
-  }, [turnSummaryOpen]);
+  }, [summaryReady, diceAnimating, turnSummary, outcomeState]);
 
   const handleCloseSummary = () => {
     setTurnSummaryOpen(false);
     setTurnSummary(null);
-    setMaskTurnResults(false);
+  };
+  const closeRollCard = () => {
+    setRollCardOpen(false);
+    setRollCard(null);
+    setRollFeedback('');
+  };
+  const handleRollBuy = () => {
+    if (!rollCardData || !rollCardData.instrument) return;
+    const minOrder = rollCardData.instrument.trading?.minOrder || 10;
+    const amount = Math.min(Math.round(rollBuyAmount || 0), Math.round(storeData.cash || 0));
+    if (amount < minOrder) {
+      setRollFeedback('Недостаточно средств для покупки.');
+      return;
+    }
+    buyInstrument(rollCardData.instrument.id, amount);
+    closeRollCard();
+  };
+  const handleRollDeal = () => {
+    if (!rollCardData || rollCardData.type !== 'deal') return;
+    const result = participateInDeal(rollCardData.deal);
+    if (result?.error) {
+      setRollFeedback(result.error);
+      return;
+    }
+    closeRollCard();
   };
   const handleNewGameFromVictory = () => {
     if (transitionState !== 'idle') return;
@@ -311,29 +474,6 @@ function MainLayout() {
       newGameTimerRef.current = null;
     }, 650);
   };
-  const acknowledgeOutcome = useGameStore((state) => state.acknowledgeOutcome);
-  const hasWin = Boolean(storeData.winCondition);
-  const hasLose = Boolean(storeData.loseCondition);
-  const outcomeState = hasWin ? 'win' : hasLose ? 'lose' : null;
-  const outcomeImage =
-    outcomeState === 'win'
-      ? winImage
-      : outcomeState === 'lose'
-        ? failImage
-        : neutralImg;
-  const outcomeAlt =
-    outcomeState === 'win'
-      ? 'Победа'
-      : outcomeState === 'lose'
-        ? 'Поражение'
-        : 'Ход завершён';
-  const outcomeMessage = outcomeState === 'win'
-    ? WIN_OUTCOME_MESSAGES[storeData.winCondition?.id] ||
-      'Цель достигнута! Можешь продолжать играть или начать заново.'
-    : outcomeState === 'lose'
-      ? LOSE_OUTCOME_MESSAGES[storeData.loseCondition?.id] ||
-        'Финансовый план провалился. Начни новую партию, чтобы попробовать снова.'
-      : null;
   const startNextMoveLoader = (onFinish) => {
     setNextMoveLoading(true);
     if (nextMoveTimerRef.current) {
@@ -397,7 +537,7 @@ function MainLayout() {
       </div>
     ) : (
       <Button variant="primary" onClick={handleContinue} className={styles.nextMoveButton}>
-        Следующий ход
+        Кинуть кубик
       </Button>
     );
   const modalCloseHandler =
@@ -560,14 +700,133 @@ function MainLayout() {
           </>
         )}
       </Modal>
-      {maskTurnResults && (
-        <div className={`${styles.nextMoveOverlay} ${styles.pendingResultsOverlay}`} aria-hidden="true">
-          <TurnLoader message="Ход завершён! Кидаем кубик..." previousValue={lastTurn?.diceRoll || 1} />
+      <Modal open={rollCardOpen && Boolean(rollCardData)} onClose={closeRollCard}>
+        {rollCardData && (
+          <Card className={styles.rollCard} glow={false}>
+            <div className={styles.rollCardHeader}>
+              <span className={styles.rollCardBadge}>
+                {rollCardData.type === 'event'
+                  ? 'Событие'
+                  : rollCardData.type === 'deal'
+                  ? 'Сделка'
+                  : rollCardData.type === 'crypto'
+                    ? 'Криптовалюта'
+                    : 'Акции'}
+              </span>
+              <strong className={styles.rollCardTitle}>
+                {rollCardData.type === 'event'
+                  ? rollCardData.event?.title || 'Событие'
+                  : rollCardData.type === 'deal'
+                  ? rollCardData.deal.title
+                  : rollCardData.instrument.title}
+              </strong>
+            </div>
+            {rollCardData.type === 'event' ? (
+              (() => {
+                const message = getEventMessage(rollCardData.event);
+                const delta = rollCardData.event?.effect?.cashDelta;
+                const isPositive = typeof delta === 'number' ? delta >= 0 : rollCardData.event?.type === 'positive';
+                return (
+                  <>
+                    <p className={styles.rollCardDesc}>{message || rollCardData.event?.description}</p>
+                    {typeof delta === 'number' && (
+                      <div className={`${styles.rollCardAmount} ${isPositive ? styles.rollCardPositive : styles.rollCardNegative}`}>
+                        {isPositive ? '+' : '-'}{formatUSD(Math.abs(delta))}
+                      </div>
+                    )}
+                    <div className={styles.rollCardActions}>
+                      <Button variant="primary" onClick={closeRollCard}>
+                        Ок
+                      </Button>
+                    </div>
+                  </>
+                );
+              })()
+            ) : rollCardData.type === 'deal' ? (
+              <>
+                <p className={styles.rollCardDesc}>{rollCardData.deal.description}</p>
+                <div className={styles.rollCardFacts}>
+                  <div>
+                    <span>Вход</span>
+                    <strong>{formatUSD(rollCardData.deal.entryCost)}</strong>
+                  </div>
+                  <div>
+                    <span>Пассивно</span>
+                    <strong>{formatUSD(rollCardData.deal.monthlyPayout)}/мес</strong>
+                  </div>
+                  <div>
+                    <span>Срок</span>
+                    <strong>{rollCardData.deal.durationMonths} мес.</strong>
+                  </div>
+                </div>
+                <p className={styles.rollCardHint}>{rollCardData.deal.riskNote}</p>
+                {rollFeedback && <p className={styles.rollCardFeedback}>{rollFeedback}</p>}
+                <div className={styles.rollCardActions}>
+                  <Button
+                    variant="primary"
+                    onClick={handleRollDeal}
+                    disabled={
+                      !rollCardData.window ||
+                      rollCardData.window.expiresIn <= 0 ||
+                      (rollCardData.window.slotsLeft ?? 0) <= 0 ||
+                      storeData.cash < rollCardData.deal.entryCost
+                    }
+                  >
+                    Участвовать
+                  </Button>
+                  <Button variant="secondary" onClick={closeRollCard}>
+                    Отказаться
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className={styles.rollCardDesc}>
+                  Средний диапазон: {formatUSD(rollCardData.range?.min)}–{formatUSD(rollCardData.range?.max)}
+                </p>
+                <div className={styles.rollCardPrice}>
+                  Сейчас стоят <strong>{formatUSD(rollCardData.price)}</strong>
+                </div>
+                <div className={styles.rollCardSlider}>
+                  <div>
+                    <span>Сумма покупки</span>
+                    <strong>{formatUSD(rollBuyAmount)}</strong>
+                  </div>
+                  <Slider
+                    min={rollCardData.instrument.trading?.minOrder || 10}
+                    max={Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0))}
+                    step={10}
+                    value={Math.min(rollBuyAmount, Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0)))}
+                    onChange={(value) => setRollBuyAmount(Math.round(value))}
+                    disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
+                  />
+                </div>
+                {rollFeedback && <p className={styles.rollCardFeedback}>{rollFeedback}</p>}
+                <div className={styles.rollCardActions}>
+                  <Button
+                    variant="primary"
+                    onClick={handleRollBuy}
+                    disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
+                  >
+                    Купить на {formatUSD(rollBuyAmount)}
+                  </Button>
+                  <Button variant="secondary" onClick={closeRollCard}>
+                    Отказаться
+                  </Button>
+                </div>
+              </>
+            )}
+          </Card>
+        )}
+      </Modal>
+      {rollOverlay && (
+        <div className={`${styles.nextMoveOverlay} ${styles.rollOverlay}`} aria-hidden="true">
+          <TurnLoader message="Кидаю кубик..." previousValue={lastTurn?.diceRoll || 1} size="roll" />
         </div>
       )}
       {nextMoveLoading && (
         <div className={styles.nextMoveOverlay} aria-hidden="true">
-          <TurnLoader message="Готовим следующий ход..." previousValue={lastTurn?.diceRoll || 1} />
+          <SimpleLoader message="Готовим следующий ход..." />
         </div>
       )}
     </div>

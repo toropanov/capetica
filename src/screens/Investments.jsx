@@ -3,12 +3,8 @@ import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Slider from '../components/Slider';
-import SparkLine from '../components/SparkLine';
-import AssetsSectionSwitch from '../components/AssetsSectionSwitch';
 import styles from './Investments.module.css';
 
-const LOT_STEP = 100;
-const SLIDER_STEP = 10;
 const formatUSD = (value) => `$${Math.round(value || 0).toLocaleString('en-US')}`;
 const formatPercent = (value) => {
   if (typeof value !== 'number') return null;
@@ -17,235 +13,12 @@ const formatPercent = (value) => {
   return Number.isInteger(rounded) ? `${rounded.toFixed(0)}%` : `${rounded.toFixed(1)}%`;
 };
 
-const clampAmount = (value, max) => {
-  if (max <= 0) return 0;
-  const limit = Math.max(LOT_STEP, Math.round(max));
-  const next = Number.isFinite(value) ? Math.round(value) : LOT_STEP;
-  return Math.min(Math.max(next, LOT_STEP), limit);
-};
-
-function InstrumentCard({
-  instrument,
-  priceInfo,
-  holding,
-  cash,
-  onBuy,
-  onSell,
-  currentMonth,
-  tradeLocks = {},
-  saleData,
-  purchaseData,
-}) {
-  const rawPrice = priceInfo?.price || instrument.initialPrice;
-  const changePct = Math.round((priceInfo?.lastReturn || 0) * 100);
-  const price = Math.round(rawPrice);
-  const holdingUnits = holding?.units || 0;
-  const holdingValue = Math.round(holdingUnits * rawPrice);
-  const buyMax = Math.round(Math.max(0, cash));
-  const sellMax = Math.round(Math.max(0, holdingValue));
-  const [buyAmount, setBuyAmount] = useState(LOT_STEP);
-  const [sellAmount, setSellAmount] = useState(LOT_STEP);
-  const [panelMode, setPanelMode] = useState(null);
-  const [buyConfirmed, setBuyConfirmed] = useState(false);
-  const [lastBuyAmount, setLastBuyAmount] = useState(null);
-  const buyConfirmTimeout = useRef(null);
-
-  useEffect(() => {
-    setBuyAmount((prev) => clampAmount(prev, buyMax));
-  }, [buyMax]);
-
-  useEffect(() => {
-    setSellAmount((prev) => clampAmount(prev, sellMax));
-  }, [sellMax]);
-
-  const buyDisabled = buyMax < LOT_STEP;
-  const hasPosition = sellMax >= LOT_STEP;
-  const sellValue = Math.round(holdingUnits * rawPrice);
-  const sellProfit = holding
-    ? Math.round((rawPrice - (holding.costBasis || rawPrice)) * holdingUnits)
-    : 0;
-  const tradeLocked = tradeLocks[instrument.id] === currentMonth;
-  const sellLocked = tradeLocked;
-  const buyLocked = tradeLocked;
-
-  const defaultSellLabel = hasPosition
-    ? `Продать $${sellValue.toLocaleString('en-US')} (${sellProfit >= 0 ? '+' : '-'}$${Math.abs(sellProfit).toLocaleString('en-US')})`
-    : '';
-  const purchaseAmount = purchaseData?.turn === currentMonth ? purchaseData.amount : null;
-  const displayedPurchaseAmount = lastBuyAmount || purchaseAmount;
-  const showingPurchaseLabel = buyLocked && displayedPurchaseAmount;
-  const sellLabel =
-    showingPurchaseLabel
-      ? `Куплено на $${Math.round(displayedPurchaseAmount).toLocaleString('en-US')}`
-      : defaultSellLabel;
-  const sellClassName = showingPurchaseLabel
-    ? styles.sellPositive
-    : sellProfit >= 0
-      ? styles.sellPositive
-      : styles.sellNegative;
-  const hasSaleNotice = saleData?.turn === currentMonth;
-  useEffect(
-    () => () => {
-      if (buyConfirmTimeout.current) {
-        clearTimeout(buyConfirmTimeout.current);
-      }
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (!buyLocked) {
-      setLastBuyAmount(null);
-    }
-  }, [buyLocked]);
-
-  const togglePanel = (mode) => {
-    if (mode === 'sell' && (!hasPosition || sellLocked)) return;
-    if (mode === 'buy' && buyLocked) return;
-    setPanelMode((prev) => (prev === mode ? null : mode));
-  };
-
-  const showBuyConfirmation = () => {
-    setBuyConfirmed(true);
-    if (buyConfirmTimeout.current) {
-      clearTimeout(buyConfirmTimeout.current);
-    }
-    buyConfirmTimeout.current = setTimeout(() => {
-      setBuyConfirmed(false);
-      setPanelMode(null);
-    }, 300);
-  };
-
-  const formatProfitLabel = (value) => `${value >= 0 ? '+' : '-'}$${Math.abs(value).toLocaleString('en-US')}`;
-
-  const renderPanel = () => {
-    if (!panelMode) return null;
-    const isBuy = panelMode === 'buy';
-    if (!isBuy && !hasPosition) return null;
-    const max = isBuy ? buyMax : sellMax;
-    const amount = isBuy ? buyAmount : sellAmount;
-    const setAmount = isBuy ? setBuyAmount : setSellAmount;
-    const disabled = isBuy ? buyDisabled : !hasPosition;
-    const displayAmount = amount || LOT_STEP;
-    return (
-        <div className={styles.tradePanel}>
-        <div className={styles.tradeValue}>
-          <span>{isBuy ? 'Сумма покупки' : 'Сумма продажи'}</span>
-          <strong>${displayAmount.toLocaleString('en-US')}</strong>
-        </div>
-        {disabled ? (
-          <p className={styles.tradeHint}>
-            {isBuy ? 'Недостаточно средств для входа.' : 'Нет доступных лотов для продажи.'}
-          </p>
-        ) : (
-          <Slider
-            min={LOT_STEP}
-            max={Math.max(LOT_STEP, max)}
-            step={SLIDER_STEP}
-            value={Math.min(displayAmount, Math.max(LOT_STEP, max))}
-            onChange={(val) => setAmount(Math.round(val))}
-          />
-        )}
-        <div className={styles.tradePanelActions}>
-          <Button
-            variant={isBuy ? 'primary' : 'ghost'}
-            onClick={() => {
-              if (isBuy) {
-                const spent = amount || LOT_STEP;
-                onBuy(spent);
-                setLastBuyAmount(spent);
-                showBuyConfirmation();
-              } else {
-                onSell(amount || LOT_STEP);
-                setPanelMode(null);
-              }
-            }}
-            disabled={disabled || buyConfirmed}
-            className={`${styles.tradeActionButton} ${buyConfirmed && isBuy ? styles.buyComplete : ''} ${!isBuy ? styles.tradeSellConfirm : ''}`}
-          >
-            {isBuy
-              ? buyConfirmed
-                ? 'Готово'
-                : 'Купить'
-              : `Продать ${formatUSD(displayAmount)}`}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setPanelMode(null)}
-            className={styles.tradeActionButton}
-          >
-            Отмена
-          </Button>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <Card className={styles.instrumentCard}>
-      <div className={styles.instrumentHeader}>
-        <div>
-          <h3>{instrument.title}</h3>
-        </div>
-        <div className={styles.priceBlock}>
-          <strong>${price.toLocaleString('en-US')}</strong>
-          <span className={changePct >= 0 ? styles.positive : styles.negative}>
-            {changePct >= 0 ? '▲' : '▼'} {Math.abs(changePct)}%
-          </span>
-        </div>
-      </div>
-      <div className={styles.sparkline}>
-        <SparkLine data={priceInfo?.history || []} />
-      </div>
-      <div className={styles.actions}>
-        {hasSaleNotice ? (
-          <Button
-            variant="primary"
-            className={styles.saleNotice}
-            onClick={(event) => event.preventDefault()}
-          >
-            {`Продано $${(saleData?.amount || 0).toLocaleString('en-US')} (${formatProfitLabel(
-              saleData?.profit || 0,
-            )})`}
-          </Button>
-        ) : (
-          hasPosition &&
-          panelMode !== 'buy' &&
-          panelMode !== 'sell' && (
-            <Button
-              variant="secondary"
-              onClick={() => togglePanel('sell')}
-              className={`${styles.sellButton} ${sellClassName}`}
-              disabled={sellLocked}
-            >
-              {sellLabel}
-            </Button>
-          )
-        )}
-        {panelMode !== 'buy' && panelMode !== 'sell' && !buyLocked && (
-          buyDisabled ? (
-            <div className={styles.tradeBadge}>Недостаточно средств</div>
-          ) : (
-            <Button variant="primary" onClick={() => togglePanel('buy')}>
-              Купить
-            </Button>
-          )
-        )}
-      </div>
-      {renderPanel()}
-    </Card>
-  );
-}
-
 function Investments() {
-  const instruments = useGameStore(
-    (state) => state.configs?.instruments?.instruments || [],
-  );
-  const priceState = useGameStore((state) => state.priceState);
-  const holdings = useGameStore((state) => state.investments);
+  const instruments = useGameStore((state) => state.configs?.instruments?.instruments || []);
+  const priceState = useGameStore((state) => state.priceState || {});
+  const holdings = useGameStore((state) => state.investments || {});
+  const dealParticipations = useGameStore((state) => state.dealParticipations || []);
   const cash = useGameStore((state) => state.cash);
-  const buyInstrument = useGameStore((state) => state.buyInstrument);
-  const sellInstrument = useGameStore((state) => state.sellInstrument);
   const drawCredit = useGameStore((state) => state.drawCredit);
   const serviceDebt = useGameStore((state) => state.serviceDebt);
   const debt = useGameStore((state) => state.debt);
@@ -255,39 +28,11 @@ function Investments() {
   const [creditConfirm, setCreditConfirm] = useState(null);
   const [lastDrawAmount, setLastDrawAmount] = useState(null);
   const creditConfirmRef = useRef(null);
-  const month = useGameStore((state) => state.month);
-  const tradeLocks = useGameStore((state) => state.tradeLocks || {});
   const creditLocked = useGameStore((state) => state.creditLockedMonth === state.month);
-  const filteredInstruments = useMemo(
-    () => instruments.filter((instrument) => instrument.type !== 'bonds'),
-    [instruments],
-  );
   const aprLabel = loanRules?.apr != null ? formatPercent(loanRules.apr) : null;
   const minTerm = loanRules?.minTermMonths || loanRules?.maxTermMonths || 0;
   const maxTerm = loanRules?.maxTermMonths || loanRules?.minTermMonths || 0;
   const termLabel = minTerm && maxTerm ? `${minTerm}–${maxTerm} мес.` : minTerm ? `${minTerm} мес.` : '—';
-
-  const handleBuy = (instrument, amount) => {
-    if (!amount || amount <= 0) return;
-    buyInstrument(instrument.id, amount);
-  };
-
-  const handleSell = (instrument, amount) => {
-    if (!amount || amount <= 0) return;
-    sellInstrument(instrument.id, amount);
-  };
-
-  const lastSales = useGameStore((state) => state.lastSales || {});
-  const lastPurchases = useGameStore((state) => state.lastPurchases || {});
-  const cards = useMemo(
-    () =>
-      filteredInstruments.map((instrument) => ({
-        instrument,
-        priceInfo: priceState[instrument.id],
-        holding: holdings[instrument.id],
-      })),
-    [filteredInstruments, priceState, holdings],
-  );
 
   useEffect(() => {
     const maxDraw = Math.max(500, Math.round(Math.max(availableCredit, 0)));
@@ -342,26 +87,33 @@ function Investments() {
     return (amount * monthlyRate) / (1 - factor);
   }, [creditAmount, loanRules]);
 
+  const holdingsList = useMemo(() => {
+    return instruments
+      .filter((instrument) => ['stocks', 'crypto'].includes(instrument.type))
+      .map((instrument) => {
+        const holding = holdings[instrument.id];
+        if (!holding || (holding.units || 0) <= 0) return null;
+        const price = priceState[instrument.id]?.price ?? instrument.initialPrice ?? 0;
+        const value = (holding.units || 0) * price;
+        const changePct = Math.round((priceState[instrument.id]?.lastReturn || 0) * 100);
+        return {
+          instrument,
+          holding,
+          price,
+          value,
+          changePct,
+        };
+      })
+      .filter(Boolean);
+  }, [instruments, holdings, priceState]);
+
+  const activeDeals = useMemo(
+    () => dealParticipations.filter((deal) => !deal.completed),
+    [dealParticipations],
+  );
+
   return (
     <div className={styles.screen}>
-      <AssetsSectionSwitch active="investments" />
-      <div className={styles.list}>
-        {cards.map((card) => (
-          <InstrumentCard
-            key={card.instrument.id}
-            instrument={card.instrument}
-            priceInfo={card.priceInfo}
-            holding={card.holding}
-            cash={cash}
-            onBuy={(amount) => handleBuy(card.instrument, amount)}
-            onSell={(amount) => handleSell(card.instrument, amount)}
-            currentMonth={month}
-            tradeLocks={tradeLocks}
-            saleData={lastSales[card.instrument.id]}
-            purchaseData={lastPurchases[card.instrument.id]}
-          />
-        ))}
-      </div>
       <Card className={styles.creditCard}>
         <div className={styles.creditHeader}>
           <span>Кредитная линия</span>
@@ -438,6 +190,86 @@ function Investments() {
           )}
         </div>
       </Card>
+
+      <div className={styles.listCompact}>
+        <Card className={styles.blockCard}>
+          <header className={styles.sectionHeader}>
+            <h2>Акции и криптовалюта</h2>
+            <p>Все акции и криптовалюты в портфеле</p>
+          </header>
+          {holdingsList.length ? (
+            holdingsList.map((item) => (
+              <div key={item.instrument.id} className={styles.instrumentRow}>
+                <div className={styles.instrumentHeader}>
+                  <div>
+                    <span>{item.instrument.title}</span>
+                    <p>{item.instrument.type === 'crypto' ? 'Криптовалюта' : 'Акции'}</p>
+                  </div>
+                  <div className={styles.priceBlock}>
+                    <strong>{formatUSD(item.price)}</strong>
+                    <span className={item.changePct >= 0 ? styles.positive : styles.negative}>
+                      {item.changePct >= 0 ? '+' : ''}{item.changePct}%
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.assetStats}>
+                  <div>
+                    <span>Позиция</span>
+                    <strong>{formatUSD(item.value)}</strong>
+                  </div>
+                  <div>
+                    <span>Лоты</span>
+                    <strong>{item.holding.units.toFixed(2)}</strong>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className={styles.emptyHint}>Активов пока нет.</p>
+          )}
+        </Card>
+      </div>
+
+      <div className={styles.listWithBottom}>
+        <Card className={styles.blockCard}>
+          <header className={styles.sectionHeader}>
+            <h2>Сделки</h2>
+            <p>Активные участия и выплаты</p>
+          </header>
+          {activeDeals.length ? (
+            activeDeals.map((deal) => {
+              const remaining = Math.max(0, (deal.durationMonths || 0) - (deal.elapsedMonths || 0));
+              return (
+                <div key={deal.participationId} className={styles.instrumentRow}>
+                  <div className={styles.dealHeader}>
+                    <div>
+                      <span>{deal.title}</span>
+                      <p>Активная сделка</p>
+                    </div>
+                    <strong>{formatUSD(deal.invested)}</strong>
+                  </div>
+                  <div className={styles.assetStats}>
+                    <div>
+                      <span>Пассивно</span>
+                      <strong>{formatUSD(deal.monthlyPayout)}/мес</strong>
+                    </div>
+                    <div>
+                      <span>Осталось</span>
+                      <strong>{remaining} мес.</strong>
+                    </div>
+                    <div>
+                      <span>Получено</span>
+                      <strong>{formatUSD(deal.profitEarned || 0)}</strong>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <p className={styles.emptyHint}>Активных сделок пока нет.</p>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

@@ -295,7 +295,6 @@ function Home() {
   const applyHomeAction = useGameStore((state) => state.applyHomeAction);
   const lastTurn = useGameStore((state) => state.lastTurn);
   const cash = useGameStore((state) => state.cash);
-  const currentEvent = useGameStore((state) => state.currentEvent);
   const availableActions = useGameStore((state) => state.availableActions || []);
   const debt = useGameStore((state) => state.debt);
   const priceState = useGameStore((state) => state.priceState);
@@ -340,9 +339,17 @@ function Home() {
   );
 
   const getNextSeed = (seed) => (seed * 1664525 + 1013904223) % 4294967296;
+  const insuranceActions = useMemo(
+    () => (availableActions || []).filter((action) => action.effect === 'protection'),
+    [availableActions],
+  );
+  const insuranceActionIds = useMemo(
+    () => new Set(insuranceActions.map((action) => action.id)),
+    [insuranceActions],
+  );
   const monthlyOffers = useMemo(() => {
     if (monthlyOfferUsed) return [];
-    const pool = (availableActions || []).filter((action) => !activeOfferIds.has(action.id));
+    const pool = insuranceActions.filter((action) => !activeOfferIds.has(action.id));
     if (!pool.length) return [];
     let seed = (month + 1) * 9301 + 17;
     const shuffled = [...pool];
@@ -357,8 +364,10 @@ function Home() {
       return [];
     }
     return shuffled.slice(0, 1);
-  }, [availableActions, activeOfferIds, month, monthlyOfferUsed]);
-  const visibleActiveOffers = (activeMonthlyOffers || []).filter((offer) => offer.expiresMonth > month);
+  }, [insuranceActions, activeOfferIds, month, monthlyOfferUsed]);
+  const visibleActiveOffers = (activeMonthlyOffers || [])
+    .filter((offer) => offer.expiresMonth > month)
+    .filter((offer) => insuranceActionIds.has(offer.id));
   const dealIncomeVal = useMemo(
     () =>
       (dealParticipations || []).reduce((sum, deal) => {
@@ -471,25 +480,6 @@ function Home() {
 
   return (
     <div className={styles.screen}>
-      {currentEvent && (
-        <Card
-          className={`${styles.eventCard} ${
-            currentEvent.type === 'positive'
-              ? styles.eventPositive
-              : currentEvent.type === 'negative'
-                ? styles.eventNegative
-                : ''
-          }`}
-        >
-          <div className={styles.eventHeader}>
-            <div className={styles.iconSprite} style={spriteStyle(currentEvent.icon || 'iconCoins')} />
-            <div>
-              <p className={styles.eventTitle}>{currentEvent.title}</p>
-              <span>{currentEvent.message || currentEvent.description}</span>
-            </div>
-          </div>
-        </Card>
-      )}
       <Card className={styles.card}>
         <LastTurn data={lastTurn} summary={summary} passiveBreakdown={passiveBreakdown} />
         {salaryProgression && (
@@ -548,7 +538,7 @@ function Home() {
           )}
           {visibleActiveOffers.length > 0 && (
             <div className={styles.activeOffers}>
-              <div className={styles.activeOffersHeader}>Активные предложения</div>
+              <div className={styles.activeOffersHeader}>Месячное предложение по страховкам</div>
               <div className={styles.activeOfferList}>
                 {visibleActiveOffers.map((offer) => (
                   <span key={offer.id}>

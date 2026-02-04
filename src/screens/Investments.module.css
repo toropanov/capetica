@@ -18,6 +18,31 @@
   gap: var(--asset-section-gap);
 }
 
+.listCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.listWithBottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--asset-section-gap);
+  margin-bottom: var(--asset-section-gap);
+}
+
+.sectionHeader h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.1rem;
+  color: #1c2e4f;
+}
+
+.sectionHeader p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(16, 30, 60, 0.65);
+}
+
 .instrumentCard {
   background: #ffffff;
   color: #1f2d4a;
@@ -26,6 +51,29 @@
   flex-direction: column;
   gap: 0.8rem;
   border-radius: 0;
+}
+
+.blockCard {
+  background: #ffffff;
+  color: #1f2d4a;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border-radius: 0;
+}
+
+.instrumentRow {
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(18, 42, 86, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.instrumentRow:first-of-type {
+  border-top: none;
+  padding-top: 0;
 }
 
 .instrumentHeader {
@@ -51,6 +99,42 @@
 .priceBlock span {
   display: block;
   font-weight: 600;
+}
+
+.assetStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.6rem;
+}
+
+.assetStats span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(16, 30, 60, 0.55);
+}
+
+.assetStats strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1rem;
+}
+
+.dealHeader {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.dealHeader p {
+  margin: 0;
+  color: rgba(8, 12, 30, 0.6);
+}
+
+.emptyHint {
+  margin: 0;
+  color: rgba(16, 30, 60, 0.6);
 }
 
 .positive {
@@ -188,7 +272,6 @@
 
 .creditCard {
   background: rgba(255, 255, 255, 0.88);
-  margin-bottom: 1.5rem;
 }
 
 .creditCard :global(.inner) {

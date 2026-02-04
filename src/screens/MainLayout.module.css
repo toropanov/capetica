@@ -374,6 +374,10 @@
   pointer-events: none;
 }
 
+.rollOverlay {
+  pointer-events: auto;
+}
+
 .nextMoveLoader {
   display: flex;
   flex-direction: column;
@@ -396,6 +400,20 @@
   will-change: transform;
   margin-bottom: 0.35rem;
   transition: transform 0.35s ease;
+}
+
+.rollDice {
+  width: 82px;
+  height: 82px;
+  border-radius: 22px;
+}
+
+.rollDice.nextMoveDiceRolling {
+  animation-duration: 0.95s;
+}
+
+.rollDice.nextMoveDiceResult {
+  animation-duration: 0.45s;
 }
 
 .nextMoveDiceRolling {
@@ -513,10 +531,115 @@
   }
 }
 
-.pendingResultsOverlay {
-  z-index: 90;
-  pointer-events: auto;
-  background: #ffffff;
+.rollCard {
+  padding: 0.6rem 0.3rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: min(340px, 80vw);
+}
+
+.rollCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rollCardBadge {
+  align-self: flex-start;
+  background: rgba(255, 200, 119, 0.3);
+  color: #5d3c00;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rollCardTitle {
+  font-size: 1.05rem;
+  color: #1f2b4a;
+}
+
+.rollCardDesc {
+  margin: 0;
+  color: rgba(25, 38, 71, 0.78);
+  line-height: 1.4;
+}
+
+.rollCardPrice {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  color: #1d2b44;
+}
+
+.rollCardAmount {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.rollCardPositive {
+  color: #1f7b3a;
+}
+
+.rollCardNegative {
+  color: #c0435e;
+}
+
+.rollCardFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.rollCardFacts span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(25, 38, 71, 0.55);
+}
+
+.rollCardFacts strong {
+  font-size: 0.95rem;
+  color: #1f2b4a;
+}
+
+.rollCardHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(45, 32, 7, 0.75);
+}
+
+.rollCardSlider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rollCardSlider div {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #1f2b4a;
+}
+
+.rollCardActions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.rollCardActions button {
+  flex: 1;
+}
+
+.rollCardFeedback {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #c0435e;
 }
 
 .summaryButton {
