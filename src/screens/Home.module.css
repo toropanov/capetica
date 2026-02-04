@@ -595,16 +595,16 @@
 .monthlyActionCard {
   position: relative;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.85rem;
   background: linear-gradient(165deg, #ffffff, #f0f5ff);
   border: 1px solid rgba(21, 40, 72, 0.1);
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.75),
     0 10px 20px rgba(27, 45, 78, 0.12);
-  min-height: 180px;
+  min-height: 160px;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .monthlyActionCard .iconSprite {
@@ -613,10 +613,18 @@
 
 .monthlyActionCard h3 {
   margin-top: 0;
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.monthlyActionCard p {
+  font-size: 0.75rem;
+  color: rgba(16, 30, 60, 0.6);
 }
 
 .monthlyButton {
-  margin-top: 0.7rem;
+  margin-top: 0.5rem;
   padding: 0.5rem 1.1rem;
   font-size: 0.85rem;
   align-self: flex-start;
