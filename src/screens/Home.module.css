@@ -435,12 +435,9 @@
 
 
 .activeOffers {
-  background: rgba(244, 247, 255, 0.95);
-  border-radius: 20px;
-  padding: 0.9rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .activeOffersHeader {
@@ -571,18 +568,40 @@
 }
 
 .monthlySection {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--home-section-gap);
+  padding: 0.8rem;
+  border: 1px solid rgba(24, 45, 82, 0.12);
+  background: linear-gradient(135deg, #f7faff, #eef3ff);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.8),
+    0 10px 22px rgba(27, 45, 78, 0.12);
   margin-bottom: var(--home-section-gap);
+}
+
+.monthlySection::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7cc3ff, #9ee8c2, #ffd07a);
+  opacity: 0.8;
 }
 
 .monthlyActionCard {
   position: relative;
-  border-radius: 0;
-  padding: 1.2rem;
-  background: #ffffff;
-  min-height: 200px;
+  border-radius: 8px;
+  padding: 1rem;
+  background: linear-gradient(165deg, #ffffff, #f0f5ff);
+  border: 1px solid rgba(21, 40, 72, 0.1);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.75),
+    0 10px 20px rgba(27, 45, 78, 0.12);
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -598,7 +617,8 @@
 
 .monthlyButton {
   margin-top: 0.7rem;
-  padding: 0.55rem 1.25rem;
+  padding: 0.5rem 1.1rem;
   font-size: 0.85rem;
   align-self: flex-start;
+  box-shadow: 0 8px 16px rgba(27, 45, 78, 0.12);
 }

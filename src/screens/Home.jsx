@@ -538,7 +538,6 @@ function Home() {
           )}
           {visibleActiveOffers.length > 0 && (
             <div className={styles.activeOffers}>
-              <div className={styles.activeOffersHeader}>Месячное предложение по страховкам</div>
               <div className={styles.activeOfferList}>
                 {visibleActiveOffers.map((offer) => (
                   <span key={offer.id}>
