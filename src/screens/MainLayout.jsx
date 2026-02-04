@@ -772,7 +772,7 @@ function MainLayout() {
                         </div>
                       )
                     )}
-                    <div className={styles.rollCardActions}>
+                    <div className={`${styles.rollCardActions} ${styles.rollCardActionsSingle}`}>
                       <Button
                         variant="primary"
                         onClick={closeRollCard}
@@ -793,7 +793,7 @@ function MainLayout() {
                     <strong>{formatUSD(rollCardData.deal.entryCost)}</strong>
                   </div>
                   <div>
-                    <span>Пассивно</span>
+                    <span>Пассив</span>
                     <strong>{formatUSD(rollCardData.deal.monthlyPayout)}/мес</strong>
                   </div>
                   <div>
@@ -820,9 +820,18 @@ function MainLayout() {
                   <Button
                     variant="secondary"
                     onClick={closeRollCard}
-                    className={styles.rollCardSecondaryButton}
+                    className={`${styles.rollCardSecondaryButton} ${styles.rollCardIconButton}`}
+                    ariaLabel="Отказаться"
+                    title="Отказаться"
                   >
-                    Отказаться
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M6 6L18 18M18 6L6 18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </Button>
                 </div>
               </>
@@ -862,9 +871,18 @@ function MainLayout() {
                   <Button
                     variant="secondary"
                     onClick={closeRollCard}
-                    className={styles.rollCardSecondaryButton}
+                    className={`${styles.rollCardSecondaryButton} ${styles.rollCardIconButton}`}
+                    ariaLabel="Отказаться"
+                    title="Отказаться"
                   >
-                    Отказаться
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M6 6L18 18M18 6L6 18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </Button>
                 </div>
               </>
