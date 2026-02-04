@@ -89,12 +89,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.25rem 0.8rem;
-  font-size: 0.85rem;
-  color: rgba(18, 30, 56, 0.95);
-  background: #ffffff;
-  border: 1px solid rgba(23, 42, 76, 0.18);
-  box-shadow: 0 6px 12px rgba(27, 45, 78, 0.12);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  color: rgba(18, 30, 56, 0.75);
+  background: transparent;
+  border: 1px solid rgba(23, 42, 76, 0.12);
+  border-radius: 6px;
 }
 
 .actionConsequences em {
