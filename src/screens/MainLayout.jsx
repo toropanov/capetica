@@ -226,7 +226,7 @@ function MainLayout() {
   const advanceMonth = useGameStore((state) => state.advanceMonth);
   const buyInstrument = useGameStore((state) => state.buyInstrument);
   const participateInDeal = useGameStore((state) => state.participateInDeal);
-  const actionsCount = useGameStore((state) => state.actionsThisTurn || 0);
+  const actionsCount = useGameStore((state) => state.badgeActionsThisTurn || 0);
   const month = useGameStore((state) => state.month);
   const lastTurn = useGameStore((state) => state.lastTurn);
   const recentLog = useGameStore((state) => state.recentLog || []);
@@ -846,6 +846,7 @@ function MainLayout() {
                     value={Math.min(rollBuyAmount, Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0)))}
                     onChange={(value) => setRollBuyAmount(Math.round(value))}
                     disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
+                    variant="rollCard"
                   />
                 </div>
                 {rollFeedback && <p className={styles.rollCardFeedback}>{rollFeedback}</p>}
@@ -856,7 +857,7 @@ function MainLayout() {
                     disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
                     className={styles.rollCardPrimaryButton}
                   >
-                    Купить на {formatUSD(rollBuyAmount)}
+                    Купить
                   </Button>
                   <Button
                     variant="secondary"

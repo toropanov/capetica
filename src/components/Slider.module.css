@@ -62,3 +62,29 @@
   color: rgba(11, 17, 38, 0.7);
   font-size: 0.8rem;
 }
+
+.rollCard .label {
+  color: #3b2a10;
+}
+
+.rollCard .slider {
+  background: linear-gradient(120deg, #ffd27a, #ffb85d);
+}
+
+.rollCard .slider:disabled {
+  background: rgba(201, 170, 120, 0.45);
+}
+
+.rollCard .slider::-webkit-slider-thumb {
+  border-color: rgba(120, 80, 10, 0.5);
+  box-shadow: 0 6px 16px rgba(120, 80, 10, 0.35);
+}
+
+.rollCard .slider::-moz-range-thumb {
+  border-color: rgba(120, 80, 10, 0.5);
+  box-shadow: 0 6px 16px rgba(120, 80, 10, 0.35);
+}
+
+.rollCard .scale {
+  color: rgba(59, 42, 16, 0.7);
+}

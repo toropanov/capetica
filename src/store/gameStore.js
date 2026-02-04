@@ -311,6 +311,7 @@ function buildProfessionState(baseState, profession) {
     activeMonthlyOffers: [],
     dealParticipations: [],
     actionsThisTurn: 0,
+    badgeActionsThisTurn: 0,
     lastTradeAction: null,
     monthlyOfferUsed: false,
     joblessMonths: 0,
@@ -460,6 +461,7 @@ const useGameStore = create(
       activeMonthlyOffers: [],
       dealParticipations: [],
       actionsThisTurn: 0,
+      badgeActionsThisTurn: 0,
       lastTradeAction: null,
       lastPurchases: {},
       lastSales: {},
@@ -531,6 +533,7 @@ const useGameStore = create(
             selectedGoalId: nextGoalId,
             difficulty: nextDifficulty,
             actionsThisTurn: 0,
+            badgeActionsThisTurn: 0,
             lastTradeAction: null,
             lastPurchases: {},
             lastSales: {},
@@ -566,6 +569,7 @@ const useGameStore = create(
             selectedGoalId: nextGoalId,
             difficulty: nextDifficulty,
             actionsThisTurn: 0,
+            badgeActionsThisTurn: 0,
             lastTradeAction: null,
             lastPurchases: {},
             lastSales: {},
@@ -861,6 +865,7 @@ const useGameStore = create(
             monthlyOfferUsed: false,
             salaryProgression,
             actionsThisTurn: 0,
+            badgeActionsThisTurn: 0,
             lastTradeAction: null,
             lastSales: {},
             lastPurchases: {},
@@ -1110,6 +1115,7 @@ const useGameStore = create(
             creditBucket: roundMoney((state.creditBucket || 0) + draw),
             creditLockedMonth: state.month,
             actionsThisTurn: (state.actionsThisTurn || 0) + 1,
+            badgeActionsThisTurn: (state.badgeActionsThisTurn || 0) + 1,
           };
         }),
       serviceDebt: (amount = 600) =>
@@ -1126,6 +1132,7 @@ const useGameStore = create(
             debt: roundMoney(state.debt - payment),
             creditLockedMonth: state.month,
             actionsThisTurn: (state.actionsThisTurn || 0) + 1,
+            badgeActionsThisTurn: (state.badgeActionsThisTurn || 0) + 1,
           };
         }),
       applyHomeAction: (actionId, options = {}) =>
@@ -1162,6 +1169,9 @@ const useGameStore = create(
               updates.monthlyOfferUsed = true;
             }
             updates.actionsThisTurn = (state.actionsThisTurn || 0) + 1;
+            if (actionMeta && ['protection', 'take_credit'].includes(actionMeta.effect)) {
+              updates.badgeActionsThisTurn = (state.badgeActionsThisTurn || 0) + 1;
+            }
           }
           if (!message) {
             return updates;
@@ -1209,6 +1219,7 @@ const useGameStore = create(
             selectedGoalId: state.selectedGoalId,
             difficulty: state.difficulty || DEFAULT_DIFFICULTY,
             actionsThisTurn: 0,
+            badgeActionsThisTurn: 0,
             lastTradeAction: null,
             lastSales: {},
             tradeLocks: {},
@@ -1252,6 +1263,7 @@ const useGameStore = create(
         dealWindows: state.dealWindows,
         salaryProgression: state.salaryProgression,
         actionsThisTurn: state.actionsThisTurn,
+        badgeActionsThisTurn: state.badgeActionsThisTurn,
         lastTradeAction: state.lastTradeAction,
         lastSales: state.lastSales,
         lastPurchases: state.lastPurchases,
