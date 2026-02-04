@@ -172,15 +172,28 @@
 
 .dealHeader {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.7rem;
+  align-items: start;
+}
+
+.dealHeader > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.dealHeader span {
+  display: block;
+  line-height: 1.3;
 }
 
 .dealHeader p {
   margin: 0.2rem 0 0;
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   padding: 0.12rem 0.5rem 0.12rem 0.9rem;
   border-radius: 999px;
   font-size: 0.72rem;
