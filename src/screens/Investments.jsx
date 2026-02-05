@@ -131,7 +131,7 @@ function Investments() {
       const term = loanRules.maxTermMonths || loanRules.minTermMonths || 12;
       if (!term) return null;
       const apr = loanRules.apr || 0;
-      const monthlyRate = apr > 0 ? apr / 12 : 0;
+      const monthlyRate = Math.max(0, apr);
       if (!monthlyRate) {
         return amount / term;
       }

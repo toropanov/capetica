@@ -919,7 +919,7 @@ const useGameStore = create(
           }
           const livingCost = 0;
           const recurringExpenses = roundMoney(state.recurringExpenses || 0);
-          const monthlyRate = (state.configs.rules?.loans?.apr || 0) / 12;
+          const monthlyRate = state.configs.rules?.loans?.apr || 0;
           const baseDebt = Math.max(0, roundMoney(state.debt));
           const debtInterest = roundMoney(baseDebt * monthlyRate);
           const debt = Math.max(0, roundMoney(baseDebt + debtInterest));
