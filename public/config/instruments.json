@@ -4,7 +4,7 @@
   "instruments": [
     {
       "id": "STOCKS_TECH",
-      "title": "TechNova",
+      "title": "Vortex Juno",
       "type": "stocks",
       "currency": "USD",
       "initialPrice": 18,
@@ -14,7 +14,7 @@
     },
     {
       "id": "STOCKS_GREEN",
-      "title": "GreenGrid",
+      "title": "Kestrel Anvil",
       "type": "stocks",
       "currency": "USD",
       "initialPrice": 24,
@@ -24,7 +24,7 @@
     },
     {
       "id": "STOCKS_AERO",
-      "title": "AeroPulse",
+      "title": "Morrow Vanta",
       "type": "stocks",
       "currency": "USD",
       "initialPrice": 14,
@@ -34,7 +34,7 @@
     },
     {
       "id": "CRYPTO_ORBIT",
-      "title": "Orbit",
+      "title": "Lumen Coin",
       "type": "crypto",
       "currency": "USD",
       "initialPrice": 22,
@@ -44,7 +44,7 @@
     },
     {
       "id": "CRYPTO_NEBULA",
-      "title": "Nebula",
+      "title": "Zephyr Loom",
       "type": "crypto",
       "currency": "USD",
       "initialPrice": 16,
