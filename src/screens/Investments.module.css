@@ -447,6 +447,26 @@
   gap: 0.6rem;
 }
 
+.creditDrawRowRepaying {
+  animation: creditRepayRow 0.85s ease;
+  border-radius: 999px;
+}
+
+@keyframes creditRepayRow {
+  0% {
+    background: rgba(35, 199, 158, 0);
+    box-shadow: none;
+  }
+  35% {
+    background: rgba(35, 199, 158, 0.18);
+    box-shadow: 0 12px 26px rgba(35, 199, 158, 0.35);
+  }
+  100% {
+    background: rgba(35, 199, 158, 0);
+    box-shadow: none;
+  }
+}
+
 .creditDrawRow span {
   display: block;
   font-size: 0.7rem;
@@ -469,6 +489,25 @@
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
   cursor: pointer;
+}
+
+.creditDrawButtonRepaying {
+  animation: creditRepayButton 0.85s ease;
+  background: linear-gradient(120deg, rgba(35, 199, 158, 0.3), rgba(35, 199, 158, 0.15));
+  color: #0f2b28;
+  box-shadow: 0 8px 18px rgba(35, 199, 158, 0.25);
+}
+
+@keyframes creditRepayButton {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .creditDrawButton:disabled {
@@ -501,8 +540,8 @@
 }
 
 .emptyIllustration {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   margin: 0 auto 0.6rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.8);

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
@@ -53,6 +53,8 @@ function Investments() {
   const [creditAmount, setCreditAmount] = useState(1000);
   const [creditConfirm, setCreditConfirm] = useState(null);
   const creditConfirmRef = useRef(null);
+  const [repayingDrawId, setRepayingDrawId] = useState(null);
+  const repayAnimationRef = useRef(null);
   const aprLabel = loanRules?.apr != null ? formatPercent(loanRules.apr) : null;
   const minTerm = loanRules?.minTermMonths || loanRules?.maxTermMonths || 0;
   const maxTerm = loanRules?.maxTermMonths || loanRules?.minTermMonths || 0;
@@ -69,6 +71,9 @@ function Investments() {
     () => () => {
       if (creditConfirmRef.current) {
         clearTimeout(creditConfirmRef.current);
+      }
+      if (repayAnimationRef.current) {
+        clearTimeout(repayAnimationRef.current);
       }
     },
     [],
@@ -89,11 +94,19 @@ function Investments() {
     flashCreditConfirm('draw');
   };
 
+  const flashRepayAnimation = (drawId) => {
+    setRepayingDrawId(drawId || 'all');
+    if (repayAnimationRef.current) {
+      clearTimeout(repayAnimationRef.current);
+    }
+    repayAnimationRef.current = setTimeout(() => setRepayingDrawId(null), 900);
+  };
+
   const handleRepay = (options = {}) => {
     const targetAmount = options.amount ?? creditAmount;
     if (targetAmount <= 0 || debt <= 0 || cash <= 0) return;
     serviceDebt(targetAmount, { drawId: options.drawId });
-    flashCreditConfirm('repay');
+    flashRepayAnimation(options.drawId || 'all');
   };
 
   const totalCreditBalance = useMemo(() => {
@@ -102,20 +115,43 @@ function Investments() {
     return Math.max(debt, 0);
   }, [creditDraws, debt]);
 
-  const totalMonthlyPayment = useMemo(() => {
-    if (!loanRules) return null;
-    const principal = Math.max(0, Math.round(totalCreditBalance || 0));
-    if (principal <= 0) return null;
-    const term = loanRules.maxTermMonths || loanRules.minTermMonths || 12;
-    if (!term) return null;
-    const apr = loanRules.apr || 0;
-    const monthlyRate = apr > 0 ? apr / 12 : 0;
-    if (!monthlyRate) {
-      return principal / term;
-    }
-    const factor = Math.pow(1 + monthlyRate, -term);
-    return (principal * monthlyRate) / (1 - factor);
-  }, [loanRules, totalCreditBalance]);
+  const plannedCreditDraw = useMemo(() => {
+    if (availableCredit <= 0) return 0;
+    const capped = Math.min(Math.round(creditAmount || 0), Math.round(Math.max(availableCredit, 0)));
+    return Math.max(0, capped);
+  }, [availableCredit, creditAmount]);
+
+  const calculateMonthlyPayment = useCallback(
+    (principal) => {
+      if (!loanRules) return null;
+      const amount = Math.max(0, Math.round(principal || 0));
+      if (amount <= 0) return null;
+      const term = loanRules.maxTermMonths || loanRules.minTermMonths || 12;
+      if (!term) return null;
+      const apr = loanRules.apr || 0;
+      const monthlyRate = apr > 0 ? apr / 12 : 0;
+      if (!monthlyRate) {
+        return amount / term;
+      }
+      const factor = Math.pow(1 + monthlyRate, -term);
+      return (amount * monthlyRate) / (1 - factor);
+    },
+    [loanRules],
+  );
+
+  const currentMonthlyPayment = useMemo(
+    () => calculateMonthlyPayment(totalCreditBalance),
+    [calculateMonthlyPayment, totalCreditBalance],
+  );
+  const previewMonthlyPayment = useMemo(
+    () => calculateMonthlyPayment(totalCreditBalance + plannedCreditDraw),
+    [calculateMonthlyPayment, totalCreditBalance, plannedCreditDraw],
+  );
+  const paymentValue = previewMonthlyPayment ?? currentMonthlyPayment;
+  const paymentChanged =
+    currentMonthlyPayment != null &&
+    previewMonthlyPayment != null &&
+    Math.round(previewMonthlyPayment) !== Math.round(currentMonthlyPayment);
 
   const holdingsList = useMemo(() => {
     return instruments
@@ -205,28 +241,36 @@ function Investments() {
         </div>
         {creditDraws.length > 0 && (
           <div className={styles.creditDrawList}>
-            {creditDraws.map((draw) => (
-              <div key={draw.id} className={styles.creditDrawRow}>
-                <div>
-                  <span>{draw.label || 'Кредит'}</span>
-                  <strong>{formatUSD(draw.balance)}</strong>
-                </div>
-                <button
-                  type="button"
-                  className={styles.creditDrawButton}
-                  onClick={() => handleRepay({ amount: draw.balance, drawId: draw.id })}
-                  disabled={cash <= 0}
+            {creditDraws.map((draw) => {
+              const isRepaying = repayingDrawId && (repayingDrawId === draw.id || repayingDrawId === 'all');
+              return (
+                <div
+                  key={draw.id}
+                  className={`${styles.creditDrawRow} ${isRepaying ? styles.creditDrawRowRepaying : ''}`}
                 >
-                  Погасить
-                </button>
-              </div>
-            ))}
+                  <div>
+                    <span>{draw.label || 'Кредит'}</span>
+                    <strong>{formatUSD(draw.balance)}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className={`${styles.creditDrawButton} ${isRepaying ? styles.creditDrawButtonRepaying : ''}`}
+                    onClick={() => handleRepay({ amount: draw.balance, drawId: draw.id })}
+                    disabled={cash <= 0}
+                  >
+                    Погасить
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
-        {totalMonthlyPayment && (
+        {paymentValue != null && (
           <div className={styles.totalPaymentHint}>
             <small className={styles.paymentHint}>
-              Платёж по кредитам ≈ {formatUSD(Math.round(totalMonthlyPayment))}/мес
+              {paymentChanged
+                ? `Платёж по кредитам ≈ ${formatUSD(Math.round(currentMonthlyPayment || 0))} → ${formatUSD(Math.round(previewMonthlyPayment || 0))}/мес`
+                : `Платёж по кредитам ≈ ${formatUSD(Math.round(paymentValue))}/мес`}
             </small>
           </div>
         )}
