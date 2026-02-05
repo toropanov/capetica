@@ -296,48 +296,53 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
           </div>
         </div>
       </div>
-      <div className={`${styles.infoSection} ${styles.infoPositive}`}>
-        <div className={styles.infoHeader}>
-          <span>Месячные доходы</span>
-          <div className={styles.metricPulseValue}>
-            <strong>{formatMonthlyValue(incomesValue)}</strong>
-          </div>
-        </div>
-        {passiveGap >= 0 && <p className={styles.infoHint}>Перекрывает фикс. расходы</p>}
-        <div className={styles.infoList}>
-          {incomeRows.map((item) => {
-            const amount = Math.round(item.amount || 0);
-            const sign = amount >= 0 ? '+' : '-';
-            return (
-              <div key={item.id}>
-                <span>{item.label}</span>
-                <strong>{`${sign}$${Math.abs(amount).toLocaleString('en-US')}`}</strong>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className={`${styles.infoSection} ${styles.infoNeutral}`}>
-        <div className={styles.infoHeader}>
-          <span>Месячные расходы</span>
-          <div className={styles.metricPulseValue}>
-            <strong>{formatMonthlyValue(expensesValue, '', true)}</strong>
-          </div>
-        </div>
-        <div className={styles.infoList}>
-          {expenseRows.length > 0 ? (
-            expenseRows.map((item) => (
-              <div key={item.id}>
-                <span>{item.label}</span>
-                <strong>{`-$${Math.round(item.amount).toLocaleString('en-US')}`}</strong>
-              </div>
-            ))
-          ) : (
-            <div>
-              <span>Бытовые</span>
-              <strong>-$0</strong>
+      <div className={styles.analyticsGrid}>
+        <div className={`${styles.infoSection} ${styles.infoPositive}`}>
+          <div className={styles.infoHeader}>
+            <div className={styles.infoHeaderLeft}>
+              <span>Месячные доходы</span>
             </div>
-          )}
+            <div className={styles.metricPulseValue}>
+              <strong>{formatMonthlyValue(incomesValue)}</strong>
+            </div>
+          </div>
+          <div className={styles.infoList}>
+            {incomeRows.map((item) => {
+              const amount = Math.round(item.amount || 0);
+              const sign = amount >= 0 ? '+' : '-';
+              return (
+                <div key={item.id}>
+                  <span>{item.label}</span>
+                  <strong>{`${sign}$${Math.abs(amount).toLocaleString('en-US')}`}</strong>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className={`${styles.infoSection} ${styles.infoNeutral}`}>
+          <div className={styles.infoHeader}>
+            <div className={styles.infoHeaderLeft}>
+              <span>Месячные расходы</span>
+            </div>
+            <div className={styles.metricPulseValue}>
+              <strong>{formatMonthlyValue(expensesValue, '', true)}</strong>
+            </div>
+          </div>
+          <div className={styles.infoList}>
+            {expenseRows.length > 0 ? (
+              expenseRows.map((item) => (
+                <div key={item.id}>
+                  <span>{item.label}</span>
+                  <strong>{`-$${Math.round(item.amount).toLocaleString('en-US')}`}</strong>
+                </div>
+              ))
+            ) : (
+              <div>
+                <span>Бытовые</span>
+                <strong>-$0</strong>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {renderBody()}
