@@ -292,7 +292,7 @@ function Investments() {
             <Card className={styles.blockCard}>
               <header className={styles.sectionHeader}>
                 <h2>Акции и криптовалюта</h2>
-                <p>Текущие инструменты в портфеле</p>
+                <p>Текущие инструменты в портфеле. Покупка и их продажа возможны только по карточкам событий хода.</p>
               </header>
               {holdingsList.length ? (
                 holdingsList.map((item) => (
