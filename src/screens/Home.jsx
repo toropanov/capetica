@@ -3,7 +3,12 @@ import { useOutletContext } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { calculateHoldingsValue, calculatePassiveIncome, getPassiveMultiplier } from '../domain/finance';
+import {
+  calculateHoldingsValue,
+  calculatePassiveIncome,
+  getPassiveMultiplier,
+  estimateMonthlyDebtInterest,
+} from '../domain/finance';
 import styles from './Home.module.css';
 import { spriteStyle } from '../utils/iconSprite';
 import teacherImg from '../assets/proffesions/teacher.png';
@@ -215,10 +220,13 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
             (data.recurringExpenses || 0) -
             (data.debtInterest || 0),
         )
-      : Math.round(summary.passiveIncome - summary.recurringExpenses);
+      : Math.round(
+          summary.passiveIncome - summary.livingCost - summary.recurringExpenses - summary.debtInterest,
+        );
   const netForecast = summary.netWorth + net * FORECAST_TURNS;
   const cashForecast = summary.cash + net * 3;
-  const passiveGap = summary.passiveIncome - summary.recurringExpenses;
+  const passiveGap =
+    summary.passiveIncome - summary.livingCost - summary.recurringExpenses - summary.debtInterest;
   const creditLimit = Math.max(0, (summary.availableCredit || 0) + summary.debt);
   const incomeRows = useMemo(
     () => [{ id: 'salary-base', label: 'Зарплата', amount: summary.salary || 0 }, ...passiveBreakdown],
@@ -226,17 +234,25 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
   );
   const totalMonthlyIncome = incomeRows.reduce((sum, item) => sum + (item.amount || 0), 0);
   const expenseRows = useMemo(() => {
-    if (data) {
-      return [
-        { id: 'fixed', label: 'Бытовые', amount: data.recurringExpenses || 0 },
-        { id: 'interest', label: 'Проценты по долгу', amount: data.debtInterest || 0 },
-      ].filter((item) => (item.amount || 0) > 0);
+    const rows = [];
+    const livingAmount =
+      data && (data.livingCost || 0) > 0 ? data.livingCost || 0 : summary.livingCost || 0;
+    if (livingAmount > 0) {
+      rows.push({ id: 'living', label: 'Стоимость жизни', amount: livingAmount });
     }
-    if (summary.recurringExpenses) {
-      return [{ id: 'fixed', label: 'Бытовые', amount: summary.recurringExpenses }];
+    const fixedAmount =
+      data && (data.recurringExpenses || 0) > 0
+        ? data.recurringExpenses || 0
+        : summary.recurringExpenses || 0;
+    if (fixedAmount > 0) {
+      rows.push({ id: 'fixed', label: 'Бытовые', amount: fixedAmount });
     }
-    return [];
-  }, [data, summary.recurringExpenses]);
+    const interestAmount = summary.debtInterest || data?.debtInterest || 0;
+    if (summary.debt > 0 || interestAmount > 0) {
+      rows.push({ id: 'interest', label: 'Проценты по долгу', amount: interestAmount });
+    }
+    return rows;
+  }, [data, summary.livingCost, summary.recurringExpenses, summary.debtInterest, summary.debt]);
   const totalMonthlyExpenses = expenseRows.reduce((sum, item) => sum + (item.amount || 0), 0);
   const cashValue = getMetricValue('cash', summary.cash);
   const incomesValue = getMetricValue('incomes', totalMonthlyIncome);
@@ -437,6 +453,7 @@ function Home() {
   const cash = useGameStore((state) => state.cash);
   const availableActions = useGameStore((state) => state.availableActions || []);
   const debt = useGameStore((state) => state.debt);
+  const livingCost = useGameStore((state) => state.livingCost || 0);
   const priceState = useGameStore((state) => state.priceState);
   const investments = useGameStore((state) => state.investments);
   const configs = useGameStore((state) => state.configs);
@@ -569,6 +586,16 @@ function Home() {
   }, [investments, priceState, instrumentMap, dealParticipations, passiveIncomeEffective]);
 
   const recurringExpenses = useGameStore((state) => state.recurringExpenses || 0);
+  const debtInterestEstimate = useMemo(
+    () =>
+      estimateMonthlyDebtInterest({
+        debt,
+        apr: configs?.rules?.loans?.apr || 0,
+        lastTurnInterest: lastTurn?.debtInterest,
+        preferLastTurn: false,
+      }),
+    [configs, debt, lastTurn],
+  );
   const summary = {
     netWorth,
     cash,
@@ -577,6 +604,8 @@ function Home() {
     debt,
     recurringExpenses,
     availableCredit,
+    debtInterest: debtInterestEstimate,
+    livingCost,
   };
   const winRules = configs?.rules?.win || [];
   const selectedGoalId = useGameStore((state) => state.selectedGoalId);

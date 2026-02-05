@@ -135,8 +135,7 @@ function Investments() {
       if (!monthlyRate) {
         return amount / term;
       }
-      const factor = Math.pow(1 + monthlyRate, -term);
-      return (amount * monthlyRate) / (1 - factor);
+      return amount * monthlyRate;
     },
     [loanRules],
   );

@@ -6,7 +6,12 @@ import BottomNav from '../components/BottomNav';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import Slider from '../components/Slider';
-import { calculateHoldingsValue, calculatePassiveIncome, getPassiveMultiplier } from '../domain/finance';
+import {
+  calculateHoldingsValue,
+  calculatePassiveIncome,
+  getPassiveMultiplier,
+  estimateMonthlyDebtInterest,
+} from '../domain/finance';
 import { DEAL_TEMPLATES } from '../domain/deals';
 import styles from './MainLayout.module.css';
 import { spriteStyle, getProfessionIcon } from '../utils/iconSprite';
@@ -192,7 +197,15 @@ function computeMetricSnapshotFromState(snapshotState) {
       ? 0
       : Math.max(0, Math.round(salaryBase + (snapshotState.salaryBonus || 0) - salaryCut));
   const incomes = Math.round(salary + passiveIncomeTotal);
-  const expenses = Math.round((snapshotState.livingCost || 0) + (snapshotState.recurringExpenses || 0));
+  const debtInterest = estimateMonthlyDebtInterest({
+    debt: snapshotState.debt,
+    apr: snapshotState.configs?.rules?.loans?.apr || 0,
+    lastTurnInterest: snapshotState.lastTurn?.debtInterest,
+    preferLastTurn: false,
+  });
+  const expenses = Math.round(
+    (snapshotState.livingCost || 0) + (snapshotState.recurringExpenses || 0) + debtInterest,
+  );
   return {
     incomes,
     expenses,

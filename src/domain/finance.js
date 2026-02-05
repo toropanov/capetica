@@ -68,6 +68,22 @@ export function buildPortfolioSummary(investments = {}, priceState = {}, instrum
   return rows.map((row) => ({ ...row, allocation: row.value / total }));
 }
 
+export function estimateMonthlyDebtInterest({
+  debt = 0,
+  apr = 0,
+  lastTurnInterest,
+  preferLastTurn = true,
+} = {}) {
+  if (preferLastTurn && typeof lastTurnInterest === 'number' && !Number.isNaN(lastTurnInterest)) {
+    return Math.max(0, Math.round(lastTurnInterest));
+  }
+  const baseDebt = Math.max(0, Math.round(debt || 0));
+  if (baseDebt <= 0 || apr <= 0) {
+    return 0;
+  }
+  return Math.max(0, Math.round(baseDebt * apr));
+}
+
 function checkWinCondition(rule, metrics) {
   switch (rule.type) {
     case 'passive_income_cover_costs':
