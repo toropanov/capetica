@@ -494,6 +494,18 @@ function Home() {
     [investments, priceState, instrumentMap],
   );
   const netWorth = useMemo(() => cash + holdingsValue - debt, [cash, holdingsValue, debt]);
+  const debtRatioWarning = useMemo(() => {
+    const loseRules = configs?.rules?.lose || [];
+    const debtRule = loseRules.find((rule) => rule.type === 'debt_ratio');
+    if (!debtRule) return false;
+    const threshold = typeof debtRule.minDebtToNetWorth === 'number' ? debtRule.minDebtToNetWorth : 1;
+    const streak = trackers?.lose?.[debtRule.id] || 0;
+    const needed = typeof debtRule.consecutiveMonths === 'number' ? debtRule.consecutiveMonths : 1;
+    const conditionActive = debt >= netWorth * threshold;
+    if (!conditionActive) return false;
+    const remaining = needed - streak;
+    return remaining > 0 && remaining <= 3;
+  }, [configs, debt, netWorth, trackers]);
   const activeOfferIds = useMemo(
     () =>
       new Set(
@@ -726,10 +738,12 @@ function Home() {
       {highlightData && (
         <TurnHighlightOverlay data={highlightData} active={highlightActive} onDismiss={dismissHighlight} />
       )}
-      <div className={styles.analyticsWarning}>
-        <strong>Высокая долговая нагрузка</strong>
-        <span>Риск проигрыша через 3 хода без улучшения показателей.</span>
-      </div>
+      {debtRatioWarning ? (
+        <div className={styles.analyticsWarning}>
+          <strong>Высокая долговая нагрузка</strong>
+          <span>Риск проигрыша через 3 хода без улучшения показателей.</span>
+        </div>
+      ) : null}
       <Card className={styles.card}>
         <LastTurn
           data={lastTurn}
