@@ -1447,16 +1447,15 @@ const useGameStore = create(
         }),
       resetGame: () =>
         set((state) => {
-          let profession = state.profession;
-          if (
-            !profession &&
-            state.professionId &&
-            state.configs?.professions
-          ) {
+          let profession = null;
+          if (state.professionId && state.configs?.professions) {
             profession = getProfessionById(
               state.configs.professions,
               state.professionId,
             );
+          }
+          if (!profession) {
+            profession = state.profession;
           }
           if (!profession) {
             const list = state.configs?.professions?.professions || [];

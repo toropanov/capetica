@@ -42,8 +42,19 @@ const EXPENSE_LABELS = {
   housing: 'Жилье',
   health: 'Здоровье',
   insurance: 'Страховка',
+  taxes: 'Налоги',
+  transport: 'Транспорт',
 };
-const EXPENSE_KEYS = ['education', 'food', 'entertainment', 'housing', 'health', 'insurance'];
+const EXPENSE_KEYS = [
+  'education',
+  'food',
+  'entertainment',
+  'housing',
+  'health',
+  'insurance',
+  'taxes',
+  'transport',
+];
 
 function formatUSD(value) {
   const rounded = Math.round(value || 0);
