@@ -63,7 +63,7 @@ function Investments() {
   const termLabel = minTerm && maxTerm ? `${minTerm}–${maxTerm} мес.` : minTerm ? `${minTerm} мес.` : '—';
 
   useEffect(() => {
-    const maxDraw = Math.max(500, Math.round(Math.max(availableCredit, 0)));
+    const maxDraw = Math.round(Math.max(availableCredit, 0));
     if (creditAmount > maxDraw) {
       setCreditAmount(maxDraw);
     }
@@ -211,7 +211,7 @@ function Investments() {
         {availableCredit > 0 ? (
           (() => {
             const maxAvailable = Math.round(Math.max(availableCredit, 0));
-            const sliderMin = Math.min(500, maxAvailable);
+            const sliderMin = 0;
             const sliderMax = Math.max(sliderMin, maxAvailable);
             const sliderStep = getCreditSliderStep(sliderMin, sliderMax);
             return (
@@ -237,7 +237,7 @@ function Investments() {
             >
               {creditConfirm === 'draw'
                 ? 'Готово'
-                : `Взять ${formatUSD(creditAmount)}`}
+                : `Взять ${formatUSD(plannedCreditDraw)}`}
             </Button>
           </div>
         </div>
