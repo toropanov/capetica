@@ -506,9 +506,7 @@ function Home() {
     }
     return shuffled.slice(0, 1);
   }, [insuranceActions, activeOfferIds, month, monthlyOfferUsed]);
-  const visibleActiveOffers = (activeMonthlyOffers || [])
-    .filter((offer) => offer.expiresMonth > month)
-    .filter((offer) => insuranceActionIds.has(offer.id));
+  const visibleActiveOffers = (activeMonthlyOffers || []).filter((offer) => offer.expiresMonth > month);
   const dealIncomeVal = useMemo(
     () =>
       (dealParticipations || []).reduce((sum, deal) => {
