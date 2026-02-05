@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -20,6 +21,13 @@ const PROFESSION_IMAGES = {
   dentist: doctorImg,
   firefighter: fireImg,
   sales_manager: managerImg,
+};
+
+const METRIC_SUFFIXES = {
+  cash: '',
+  incomes: '/мес',
+  expenses: '/мес',
+  passiveIncome: '/мес',
 };
 
 function formatUSD(value) {
@@ -157,8 +165,47 @@ function ActionCard({ action, onSelect, cash, compact = false, variant = 'defaul
   );
 }
 
-function LastTurn({ data, summary, passiveBreakdown = [] }) {
+function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
   const formatter = (value) => formatUSD(value);
+  const metricValues = metricPulse?.current || null;
+  const metricAnimation = metricPulse?.animation || null;
+  const getMetricValue = (key, fallback) => {
+    if (metricValues && typeof metricValues[key] === 'number') {
+      return metricValues[key];
+    }
+    return fallback;
+  };
+  const formatMonthlyValue = (value, suffix = '/мес', forceNegative = false) => {
+    const rounded = Math.round(value || 0);
+    const effective = forceNegative ? -Math.abs(rounded) : rounded;
+    const sign = effective >= 0 ? '+' : '-';
+    return `${sign}$${Math.abs(Math.round(effective)).toLocaleString('en-US')}${suffix}`;
+  };
+  const formatPulseDelta = (value, suffix = '') => {
+    const rounded = Math.round(Math.abs(value) || 0);
+    if (!rounded) return null;
+    const sign = value >= 0 ? '+' : '-';
+    return `${sign}$${rounded.toLocaleString('en-US')}${suffix}`;
+  };
+  const getMetricDelta = (key) => {
+    if (!metricAnimation || !metricValues) return null;
+    const target = metricAnimation.next?.[key];
+    const baseline = metricAnimation.prev?.[key];
+    if (typeof target !== 'number' || typeof baseline !== 'number') {
+      return null;
+    }
+    if (Math.round(target) === Math.round(baseline)) {
+      return null;
+    }
+    const currentValue = typeof metricValues[key] === 'number' ? metricValues[key] : target;
+    const remaining = target - currentValue;
+    if (Math.abs(Math.round(remaining)) === 0) {
+      return null;
+    }
+    const label = formatPulseDelta(remaining, METRIC_SUFFIXES[key] || '');
+    if (!label) return null;
+    return { value: remaining, label };
+  };
   const net =
     data
       ? Math.round(
@@ -191,6 +238,24 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
     return [];
   }, [data, summary.recurringExpenses]);
   const totalMonthlyExpenses = expenseRows.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const cashValue = getMetricValue('cash', summary.cash);
+  const incomesValue = getMetricValue('incomes', totalMonthlyIncome);
+  const expensesValue = getMetricValue('expenses', totalMonthlyExpenses);
+  const cashDelta = getMetricDelta('cash');
+  const incomesDelta = getMetricDelta('incomes');
+  const expensesDelta = getMetricDelta('expenses');
+  const renderDelta = (delta) => {
+    if (!delta) return null;
+    return (
+      <em
+        className={`${styles.metricPulseDelta} ${
+          delta.value >= 0 ? styles.metricPulsePositive : styles.metricPulseNegative
+        }`}
+      >
+        {delta.label}
+      </em>
+    );
+  };
   const renderBody = () => {
     if (!data) {
       return (
@@ -213,27 +278,33 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
   return (
     <div className={styles.lastTurn}>
       <div className={styles.balanceBlock}>
-        <div className={styles.balanceStats}>
-          <div>
-            <span>Чистый капитал</span>
-            <strong>{formatter(summary.netWorth)}</strong>
-            <small>{`Прогноз ${FORECAST_TURNS} ходов: ~${formatUSD(netForecast)}`}</small>
+      <div className={styles.balanceStats}>
+        <div>
+          <span>Чистый капитал</span>
+          <strong>{formatter(summary.netWorth)}</strong>
+          <small>{`Прогноз ${FORECAST_TURNS} ходов: ~${formatUSD(netForecast)}`}</small>
+        </div>
+        <div>
+          <span>Наличные</span>
+          <div className={styles.metricPulseValue}>
+            <strong>{formatter(cashValue)}</strong>
+            {renderDelta(cashDelta)}
           </div>
-          <div>
-            <span>Наличные</span>
-            <strong>{formatter(summary.cash)}</strong>
-            <small>{`Прогноз 3 хода: ${formatUSD(cashForecast)}`}</small>
-          </div>
-          <div>
-            <span>Кредитный лимит</span>
-            <strong>{formatter(creditLimit)}</strong>
+          <small>{`Прогноз 3 хода: ${formatUSD(cashForecast)}`}</small>
+        </div>
+        <div>
+          <span>Кредитный лимит</span>
+          <strong>{formatter(creditLimit)}</strong>
           </div>
         </div>
       </div>
       <div className={`${styles.infoSection} ${styles.infoPositive}`}>
         <div className={styles.infoHeader}>
           <span>Месячные доходы</span>
-          <strong>{`+$${Math.round(totalMonthlyIncome).toLocaleString('en-US')}`}</strong>
+          <div className={styles.metricPulseValue}>
+            <strong>{formatMonthlyValue(incomesValue)}</strong>
+            {renderDelta(incomesDelta)}
+          </div>
         </div>
         {passiveGap >= 0 && <p className={styles.infoHint}>Перекрывает фикс. расходы</p>}
         <div className={styles.infoList}>
@@ -252,7 +323,10 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
       <div className={`${styles.infoSection} ${styles.infoNeutral}`}>
         <div className={styles.infoHeader}>
           <span>Месячные расходы</span>
-          <strong>{`-$${Math.round(totalMonthlyExpenses).toLocaleString('en-US')}`}</strong>
+          <div className={styles.metricPulseValue}>
+            <strong>{formatMonthlyValue(expensesValue, '/мес', true)}</strong>
+            {renderDelta(expensesDelta)}
+          </div>
         </div>
         <div className={styles.infoList}>
           {expenseRows.length > 0 ? (
@@ -355,6 +429,8 @@ function TurnHighlightOverlay({ data, active, onDismiss }) {
 }
 
 function Home() {
+  const outletContext = useOutletContext();
+  const metricPulse = outletContext?.metricPulse || null;
   const applyHomeAction = useGameStore((state) => state.applyHomeAction);
   const lastTurn = useGameStore((state) => state.lastTurn);
   const cash = useGameStore((state) => state.cash);
@@ -585,8 +661,8 @@ function Home() {
         <TurnHighlightOverlay data={highlightData} active={highlightActive} onDismiss={dismissHighlight} />
       )}
       <Card className={styles.card}>
-        <LastTurn data={lastTurn} summary={summary} passiveBreakdown={passiveBreakdown} />
-        {salaryProgression && (
+        <LastTurn data={lastTurn} summary={summary} passiveBreakdown={passiveBreakdown} metricPulse={metricPulse} />
+      {salaryProgression && (
           <div className={styles.professionGrowth}>
             <span className={styles.professionGrowthLabel}>Рост дохода</span>
             <strong className={styles.professionGrowthValue}>

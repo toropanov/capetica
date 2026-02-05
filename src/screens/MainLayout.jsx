@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import useGameStore from '../store/gameStore';
@@ -157,11 +157,25 @@ function SimpleLoader({ message }) {
 }
 
 const formatUSD = (value) => `$${Math.round(value || 0).toLocaleString('en-US')}`;
+const METRIC_DELTA_DEFS = [
+  { key: 'cash', label: 'Наличные', suffix: '' },
+  { key: 'incomes', label: 'Доходы/мес', suffix: '/мес' },
+  { key: 'expenses', label: 'Расходы/мес', suffix: '/мес' },
+  { key: 'passiveIncome', label: 'Пассивный доход', suffix: '/мес' },
+];
 
 const pickFromList = (list, roll) => {
   if (!list.length) return null;
   const index = Math.min(list.length - 1, Math.floor(roll * list.length));
   return list[index];
+};
+
+const buildInstrumentLookup = (configs) => {
+  const list = configs?.instruments?.instruments || [];
+  return list.reduce((acc, instrument) => {
+    acc[instrument.id] = instrument;
+    return acc;
+  }, {});
 };
 
 function buildRollCard(state) {
@@ -221,6 +235,13 @@ function MainLayout() {
       loseCondition: state.loseCondition,
       recurringExpenses: state.recurringExpenses,
       dealWindows: state.dealWindows,
+      dealParticipations: state.dealParticipations || [],
+      salaryBonus: state.salaryBonus || 0,
+      salaryProgression: state.salaryProgression,
+      joblessMonths: state.joblessMonths || 0,
+      salaryCutMonths: state.salaryCutMonths || 0,
+      salaryCutAmount: state.salaryCutAmount || 0,
+      livingCost: state.livingCost || 0,
     })),
   );
   const advanceMonth = useGameStore((state) => state.advanceMonth);
@@ -259,6 +280,10 @@ function MainLayout() {
   const [rollBuyAmount, setRollBuyAmount] = useState(0);
   const [rollSellAmount, setRollSellAmount] = useState(0);
   const [rollFeedback, setRollFeedback] = useState('');
+  const [pendingMetricDelta, setPendingMetricDelta] = useState(null);
+  const [metricAnimation, setMetricAnimation] = useState(null);
+  const [animatedMetrics, setAnimatedMetrics] = useState(null);
+  const metricAnimationFrameRef = useRef(null);
 
   useEffect(() => () => {
     if (diceTimerRef.current) {
@@ -275,6 +300,9 @@ function MainLayout() {
     }
     if (newGameTimerRef.current) {
       clearTimeout(newGameTimerRef.current);
+    }
+    if (metricAnimationFrameRef.current) {
+      cancelAnimationFrame(metricAnimationFrameRef.current);
     }
   }, []);
 
@@ -299,6 +327,9 @@ function MainLayout() {
     if (!confirmingFinish) {
       setConfirmingFinish(true);
       return;
+    }
+    if (location.pathname !== '/app') {
+      navigate('/app');
     }
     setConfirmingFinish(false);
     setDiceAnimating(true);
@@ -346,6 +377,80 @@ function MainLayout() {
     const rounded = Math.round(value);
     return `${rounded < 0 ? '-$' : '$'}${Math.abs(rounded).toLocaleString('en-US')}`;
   };
+  const buildMetricSnapshot = useCallback((overrideState) => {
+    const snapshotState = overrideState || useGameStore.getState();
+    const instrumentLookup = buildInstrumentLookup(snapshotState.configs);
+    const passiveFromInvestments = calculatePassiveIncome(
+      snapshotState.investments,
+      snapshotState.priceState,
+      instrumentLookup,
+    );
+    const passiveFromDeals = (snapshotState.dealParticipations || []).reduce((sum, deal) => {
+      if (deal.completed) return sum;
+      return sum + (deal.monthlyPayout || 0);
+    }, 0);
+    const passiveIncomeTotal = Math.round(passiveFromInvestments + passiveFromDeals);
+    const salaryBase =
+      (snapshotState.salaryProgression?.currentBase ?? snapshotState.profession?.salaryMonthly) || 0;
+    const salaryCut = snapshotState.salaryCutMonths > 0 ? snapshotState.salaryCutAmount || 0 : 0;
+    const salary =
+      snapshotState.joblessMonths > 0
+        ? 0
+        : Math.max(0, Math.round(salaryBase + (snapshotState.salaryBonus || 0) - salaryCut));
+    const incomes = Math.round(salary + passiveIncomeTotal);
+    const expenses = Math.round((snapshotState.livingCost || 0) + (snapshotState.recurringExpenses || 0));
+    return {
+      incomes,
+      expenses,
+      passiveIncome: passiveIncomeTotal,
+      cash: Math.round(snapshotState.cash || 0),
+    };
+  }, []);
+  const buildMetricDeltaPayload = useCallback((prevSnapshot, nextSnapshot) => {
+    if (!prevSnapshot || !nextSnapshot) return null;
+    const changed = METRIC_DELTA_DEFS.some(({ key }) => {
+      const prevValue = Math.round(prevSnapshot[key] ?? 0);
+      const nextValue = Math.round(nextSnapshot[key] ?? prevValue);
+      return nextValue !== prevValue;
+    });
+    if (!changed) return null;
+    return {
+      prev: prevSnapshot,
+      next: nextSnapshot,
+    };
+  }, []);
+  const queueMetricDelta = useCallback((prevSnapshot) => {
+    if (!prevSnapshot) return;
+    const nextSnapshot = buildMetricSnapshot();
+    const payload = buildMetricDeltaPayload(prevSnapshot, nextSnapshot);
+    if (payload) {
+      setPendingMetricDelta(payload);
+    }
+  }, [buildMetricSnapshot, buildMetricDeltaPayload]);
+  const currentMetrics = useMemo(
+    () => buildMetricSnapshot(storeData),
+    [
+      buildMetricSnapshot,
+      storeData.cash,
+      storeData.recurringExpenses,
+      storeData.investments,
+      storeData.priceState,
+      storeData.dealParticipations,
+      storeData.salaryProgression,
+      storeData.profession,
+      storeData.salaryBonus,
+      storeData.joblessMonths,
+      storeData.salaryCutMonths,
+      storeData.salaryCutAmount,
+      storeData.livingCost,
+      storeData.configs,
+    ],
+  );
+  const displayedMetrics = animatedMetrics || currentMetrics;
+  const outletContext = useMemo(
+    () => ({ metricPulse: { current: displayedMetrics, animation: metricAnimation } }),
+    [displayedMetrics, metricAnimation],
+  );
   const acknowledgeOutcome = useGameStore((state) => state.acknowledgeOutcome);
   const hasWin = Boolean(storeData.winCondition);
   const hasLose = Boolean(storeData.loseCondition);
@@ -449,6 +554,42 @@ function MainLayout() {
   }, [pendingSummary, month, lastTurn, recentLog, currentEvent]);
 
   useEffect(() => {
+    if (rollCloseLoading || !pendingMetricDelta) return;
+    setMetricAnimation(pendingMetricDelta);
+    setPendingMetricDelta(null);
+  }, [rollCloseLoading, pendingMetricDelta]);
+
+  useEffect(() => {
+    if (!metricAnimation) return undefined;
+    const duration = 1250;
+    const start = performance.now();
+    setAnimatedMetrics(metricAnimation.prev);
+    const step = (timestamp) => {
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const frameValues = {};
+      METRIC_DELTA_DEFS.forEach(({ key }) => {
+        const from = metricAnimation.prev?.[key] ?? 0;
+        const to = metricAnimation.next?.[key] ?? from;
+        frameValues[key] = from + (to - from) * progress;
+      });
+      setAnimatedMetrics(frameValues);
+      if (progress < 1) {
+        metricAnimationFrameRef.current = requestAnimationFrame(step);
+      } else {
+        setAnimatedMetrics(null);
+        setMetricAnimation(null);
+      }
+    };
+    metricAnimationFrameRef.current = requestAnimationFrame(step);
+    return () => {
+      if (metricAnimationFrameRef.current) {
+        cancelAnimationFrame(metricAnimationFrameRef.current);
+        metricAnimationFrameRef.current = null;
+      }
+    };
+  }, [metricAnimation]);
+
+  useEffect(() => {
     if (summaryReady && !diceAnimating && turnSummary) {
       if (outcomeState) {
         setTurnSummaryOpen(true);
@@ -482,7 +623,9 @@ function MainLayout() {
       setRollFeedback('Недостаточно средств для покупки.');
       return;
     }
+    const prevSnapshot = buildMetricSnapshot(useGameStore.getState());
     buyInstrument(rollCardData.instrument.id, amount);
+    queueMetricDelta(prevSnapshot);
     closeRollCard();
   };
   const handleRollSell = () => {
@@ -498,16 +641,20 @@ function MainLayout() {
       setRollFeedback('Выбери сумму продажи.');
       return;
     }
+    const prevSnapshot = buildMetricSnapshot(useGameStore.getState());
     sellInstrument(rollCardData.instrument.id, amount);
+    queueMetricDelta(prevSnapshot);
     closeRollCard();
   };
   const handleRollDeal = () => {
     if (!rollCardData || rollCardData.type !== 'deal') return;
+    const prevSnapshot = buildMetricSnapshot(useGameStore.getState());
     const result = participateInDeal(rollCardData.deal);
     if (result?.error) {
       setRollFeedback(result.error);
       return;
     }
+    queueMetricDelta(prevSnapshot);
     closeRollCard();
   };
   const handleNewGameFromVictory = () => {
@@ -656,7 +803,7 @@ function MainLayout() {
         </button>
       </header>
       <main className={styles.content} ref={contentRef}>
-        <Outlet />
+        <Outlet context={outletContext} />
       </main>
       <BottomNav
         current={location.pathname}

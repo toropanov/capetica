@@ -178,6 +178,26 @@
   color: #1f2d4a;
 }
 
+.metricPulseValue {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+}
+
+.metricPulseDelta {
+  font-style: normal;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.metricPulsePositive {
+  color: #1fb673;
+}
+
+.metricPulseNegative {
+  color: #d94c6f;
+}
+
 .balanceStats small {
   display: block;
   font-size: 0.7rem;
