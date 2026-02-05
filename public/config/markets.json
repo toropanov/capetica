@@ -3,23 +3,23 @@
   "tick": "month",
   "rng": {"type":"mulberry32","seedPolicy":"persisted"},
   "priceModel":{"type":"log_return"},
-  "global":{"inflationMonthly":0.0015,"riskFreeRateMonthly":0.002,"minPrice":0.01,"maxMonthlyReturnAbs":0.65},
+  "global":{"inflationMonthly":0.0015,"riskFreeRateMonthly":0.002,"minPrice":0.01,"maxMonthlyReturnAbs":0.45},
   "cycles":[
-    {"id":"macro_cycle","type":"sine","periodMonths":84,"amplitude":0.006,"phase":0.0},
-    {"id":"crypto_cycle","type":"sine","periodMonths":48,"amplitude":0.018,"phase":1.3}
+    {"id":"macro_cycle","type":"sine","periodMonths":84,"amplitude":0.005,"phase":0.0},
+    {"id":"crypto_cycle","type":"sine","periodMonths":48,"amplitude":0.012,"phase":1.3}
   ],
   "shockModel":{
     "type":"compound_poisson",
     "events":[
       {"id":"market_crash","probMonthly":0.006,"meanLogImpact":-0.12,"stdLogImpact":0.06,"cooldownMonths":6},
-      {"id":"crypto_pumpdump","probMonthly":0.03,"meanLogImpact":0.06,"stdLogImpact":0.18,"cooldownMonths":1}
+      {"id":"crypto_pumpdump","probMonthly":0.02,"meanLogImpact":0.0,"stdLogImpact":0.16,"cooldownMonths":1}
     ]
   },
   "correlations":{
     "matrix":{
-      "STOCKS_US":{"STOCKS_US":1,"BONDS_US":-0.25,"CRYPTO":0.35},
-      "BONDS_US":{"STOCKS_US":-0.25,"BONDS_US":1,"CRYPTO":-0.10},
-      "CRYPTO":{"STOCKS_US":0.35,"BONDS_US":-0.10,"CRYPTO":1}
+      "STOCKS_US":{"STOCKS_US":1,"BONDS_US":-0.2,"CRYPTO":0.25},
+      "BONDS_US":{"STOCKS_US":-0.2,"BONDS_US":1,"CRYPTO":-0.05},
+      "CRYPTO":{"STOCKS_US":0.25,"BONDS_US":-0.05,"CRYPTO":1}
     },
     "method":"cholesky"
   }

@@ -62,7 +62,8 @@ function buildSyntheticHistory(instrument, baseSeed, length = 18) {
     const vol = Math.max(0.01, (instrument.model?.sigmaMonthly || 0.05) * 0.9);
     const { value, seed: nextSeed } = normalWithParams(cursorSeed, drift, vol);
     cursorSeed = nextSeed;
-    const bounded = clamp(value, -0.35, 0.35);
+    const cap = clamp((instrument.model?.sigmaMonthly || 0.05) * 3, 0.15, 0.45);
+    const bounded = clamp(value, -cap, cap);
     price = Math.max(price * Math.exp(bounded), minPrice);
     history.unshift({ month: -i, price });
   }
