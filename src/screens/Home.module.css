@@ -190,11 +190,11 @@
 }
 
 .metricPulsePositive {
-  color: #1fb673;
+  color: #0e7f57;
 }
 
 .metricPulseNegative {
-  color: #d94c6f;
+  color: #b9445c;
 }
 
 .balanceStats small {
@@ -370,10 +370,14 @@
 }
 
 .infoList div span {
+  flex: 1;
+  margin-right: 0.4rem;
   color: rgba(29, 40, 68, 0.7);
+  word-break: break-word;
 }
 
 .infoList div strong {
+  white-space: nowrap;
   font-size: 0.8rem;
 }
 
