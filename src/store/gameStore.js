@@ -30,8 +30,10 @@ const hydratedStorage = createJSONStorage(() =>
 );
 
 const DEFAULT_HOME_ACTION_COUNT = 4;
+const DEFAULT_HOME_ACTION_SHOW_CHANCE = 0.55;
 
-const getHomeActions = (configs) => configs?.homeActions?.actions || [];
+const getHomeActionsConfig = (configs) => configs?.homeActions || {};
+const getHomeActions = (configs) => getHomeActionsConfig(configs).actions || [];
 
 const getRandomEvents = (configs) => configs?.randomEvents?.events || [];
 
@@ -120,11 +122,24 @@ function describeEffect(effect = {}) {
   return parts.length ? parts.join(', ') : null;
 }
 
-function rollMonthlyActions(seed, actions = [], count = DEFAULT_HOME_ACTION_COUNT) {
+function rollMonthlyActions(seed, actions = [], options = {}) {
   let cursor = seed ?? ensureSeed();
   const pool = actions.map((item) => item.id);
-  const limit = Math.min(count, pool.length);
+  const limit = Math.min(options.count ?? DEFAULT_HOME_ACTION_COUNT, pool.length);
   if (!limit) {
+    return { actions: [], seed: cursor };
+  }
+  const rawChance =
+    typeof options.showChance === 'number'
+      ? options.showChance
+      : DEFAULT_HOME_ACTION_SHOW_CHANCE;
+  const showChance = Math.min(1, Math.max(0, rawChance));
+  if (showChance <= 0) {
+    return { actions: [], seed: cursor };
+  }
+  const showRoll = uniformFromSeed(cursor);
+  cursor = showRoll.seed;
+  if (showRoll.value > showChance) {
     return { actions: [], seed: cursor };
   }
   const picked = new Set();
@@ -697,26 +712,31 @@ const useGameStore = create(
       salaryProgression: null,
       bootstrapFromConfigs: (bundle) =>
         set((state) => {
-          const rngSeed = state.rngSeed ?? ensureStoredSeed();
-          const priceState =
-            Object.keys(state.priceState || {}).length > 0
-              ? state.priceState
-              : seedPriceState(bundle?.instruments?.instruments, rngSeed);
-          const defaultActions = getHomeActions(bundle).slice(0, DEFAULT_HOME_ACTION_COUNT);
-          const defaultGoal = state.selectedGoalId || bundle?.rules?.win?.[0]?.id || null;
-          const difficulty = state.difficulty || DEFAULT_DIFFICULTY;
-          return {
-            configs: bundle,
-            configsReady: true,
-            rngSeed,
-            priceState,
-            availableActions: state.availableActions?.length
-              ? state.availableActions
-              : defaultActions,
-            selectedGoalId: defaultGoal,
-            difficulty,
-          };
-        }),
+      const rngSeed = state.rngSeed ?? ensureStoredSeed();
+      const priceState =
+        Object.keys(state.priceState || {}).length > 0
+          ? state.priceState
+          : seedPriceState(bundle?.instruments?.instruments, rngSeed);
+      const homeActionsConfig = getHomeActionsConfig(bundle);
+      const defaultActionRoll = rollMonthlyActions(
+        rngSeed,
+        homeActionsConfig.actions || [],
+        homeActionsConfig,
+      );
+      const defaultGoal = state.selectedGoalId || bundle?.rules?.win?.[0]?.id || null;
+      const difficulty = state.difficulty || DEFAULT_DIFFICULTY;
+      return {
+        configs: bundle,
+        configsReady: true,
+        rngSeed: state.availableActions?.length ? rngSeed : defaultActionRoll.seed,
+        priceState,
+        availableActions: state.availableActions?.length
+          ? state.availableActions
+          : defaultActionRoll.actions,
+        selectedGoalId: defaultGoal,
+        difficulty,
+      };
+    }),
       selectProfession: (professionId, prefs = {}) =>
         set((state) => {
           if (!state.configsReady) return {};
@@ -728,11 +748,13 @@ const useGameStore = create(
           const goalList = state.configs?.rules?.win || [];
           const nextGoalId = prefs.goalId || state.selectedGoalId || goalList[0]?.id || null;
           const nextDifficulty = prefs.difficulty || state.difficulty || DEFAULT_DIFFICULTY;
-          const homeActionList = getHomeActions(state.configs);
-          const actionRoll = rollMonthlyActions(
-            state.rngSeed || ensureStoredSeed(),
-            homeActionList,
-          );
+        const homeActionsConfig = getHomeActionsConfig(state.configs);
+        const homeActionList = homeActionsConfig.actions || [];
+        const actionRoll = rollMonthlyActions(
+          state.rngSeed || ensureStoredSeed(),
+          homeActionList,
+          homeActionsConfig,
+        );
           const base = buildProfessionState(
             { ...state, selectedGoalId: nextGoalId, difficulty: nextDifficulty },
             profession,
@@ -765,8 +787,9 @@ const useGameStore = create(
             Math.floor(roll.value * list.length),
           );
           const profession = list[index];
-          const homeActionList = getHomeActions(state.configs);
-          const actionRoll = rollMonthlyActions(roll.seed, homeActionList);
+        const homeActionsConfig = getHomeActionsConfig(state.configs);
+        const homeActionList = homeActionsConfig.actions || [];
+        const actionRoll = rollMonthlyActions(roll.seed, homeActionList, homeActionsConfig);
           const goalList = state.configs?.rules?.win || [];
           const nextGoalId = prefs.goalId || state.selectedGoalId || goalList[0]?.id || null;
           const nextDifficulty = prefs.difficulty || state.difficulty || DEFAULT_DIFFICULTY;
@@ -958,11 +981,12 @@ const useGameStore = create(
               completed,
             };
           });
-          const homeActionList = getHomeActions(state.configs);
-          const eventPool = getRandomEvents(state.configs);
-          const eventRoll = rollRandomEvent({ ...state, cash, debt }, rngSeed, eventPool);
-          const actionsRoll = rollMonthlyActions(eventRoll.seed, homeActionList);
-          const dealWindowRoll = advanceDealWindows(state.dealWindows, actionsRoll.seed);
+        const homeActionsConfig = getHomeActionsConfig(state.configs);
+        const homeActionList = homeActionsConfig.actions || [];
+        const eventPool = getRandomEvents(state.configs);
+        const eventRoll = rollRandomEvent({ ...state, cash, debt }, rngSeed, eventPool);
+        const actionsRoll = rollMonthlyActions(eventRoll.seed, homeActionList, homeActionsConfig);
+        const dealWindowRoll = advanceDealWindows(state.dealWindows, actionsRoll.seed);
           const patchedCash = eventRoll.patch.cash ?? cash;
           const patchedDebt = eventRoll.patch.debt ?? debt;
           if (eventRoll.patch.creditDraws) {
@@ -1465,8 +1489,13 @@ const useGameStore = create(
             profession = list[0];
           }
           const base = buildProfessionState(state, profession);
-          const homeActionList = getHomeActions(state.configs);
-          const roll = rollMonthlyActions(state.rngSeed || ensureStoredSeed(), homeActionList);
+        const homeActionsConfig = getHomeActionsConfig(state.configs);
+        const homeActionList = homeActionsConfig.actions || [];
+        const roll = rollMonthlyActions(
+          state.rngSeed || ensureStoredSeed(),
+          homeActionList,
+          homeActionsConfig,
+        );
           return {
             ...state,
             ...base,

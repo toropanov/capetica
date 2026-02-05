@@ -1,13 +1,1047 @@
 {
+  "showChance": 0.3,
+  "count": 1,
   "actions": [
     {
-      "id": "side_hustle",
-      "title": "Франшиза кофе",
-      "description": "Оплата наставника → +$250 к зарплате со следующего месяца.",
-      "cost": 250,
+      "id": "salary_up_01",
+      "title": "Курс переговоров",
+      "description": "Инвестиция в рост → +$120 к зарплате ежемесячно.",
+      "cost": 560,
+      "effect": "salary_up",
+      "value": 120,
+      "icon": "iconCard"
+    },
+    {
+      "id": "salary_up_02",
+      "title": "Сертификация",
+      "description": "Инвестиция в рост → +$130 к зарплате ежемесячно.",
+      "cost": 600,
+      "effect": "salary_up",
+      "value": 130,
+      "icon": "iconOwl"
+    },
+    {
+      "id": "salary_up_03",
+      "title": "Портфолио-апдейт",
+      "description": "Инвестиция в рост → +$140 к зарплате ежемесячно.",
+      "cost": 640,
+      "effect": "salary_up",
+      "value": 140,
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "salary_up_04",
+      "title": "Доступ к ментору",
+      "description": "Инвестиция в рост → +$150 к зарплате ежемесячно.",
+      "cost": 680,
+      "effect": "salary_up",
+      "value": 150,
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "salary_up_05",
+      "title": "Профиль в рекрутинге",
+      "description": "Инвестиция в рост → +$160 к зарплате ежемесячно.",
+      "cost": 720,
+      "effect": "salary_up",
+      "value": 160,
+      "icon": "iconSmile"
+    },
+    {
+      "id": "salary_up_06",
+      "title": "Публичный доклад",
+      "description": "Инвестиция в рост → +$170 к зарплате ежемесячно.",
+      "cost": 760,
+      "effect": "salary_up",
+      "value": 170,
+      "icon": "iconGrowth"
+    },
+    {
+      "id": "salary_up_07",
+      "title": "Автоматизация отчётов",
+      "description": "Инвестиция в рост → +$180 к зарплате ежемесячно.",
+      "cost": 800,
+      "effect": "salary_up",
+      "value": 180,
+      "icon": "iconHardhat"
+    },
+    {
+      "id": "salary_up_08",
+      "title": "Повышение квалификации",
+      "description": "Инвестиция в рост → +$190 к зарплате ежемесячно.",
+      "cost": 840,
+      "effect": "salary_up",
+      "value": 190,
+      "icon": "iconPiggy"
+    },
+    {
+      "id": "salary_up_09",
+      "title": "Проект с премией",
+      "description": "Инвестиция в рост → +$200 к зарплате ежемесячно.",
+      "cost": 880,
+      "effect": "salary_up",
+      "value": 200,
+      "icon": "iconGift"
+    },
+    {
+      "id": "salary_up_10",
+      "title": "Кейс для резюме",
+      "description": "Инвестиция в рост → +$210 к зарплате ежемесячно.",
+      "cost": 920,
+      "effect": "salary_up",
+      "value": 210,
+      "icon": "iconCoins"
+    },
+    {
+      "id": "salary_up_11",
+      "title": "Тренинг по продажам",
+      "description": "Инвестиция в рост → +$220 к зарплате ежемесячно.",
+      "cost": 960,
+      "effect": "salary_up",
+      "value": 220,
+      "icon": "iconPlant"
+    },
+    {
+      "id": "salary_up_12",
+      "title": "Экзамен по отрасли",
+      "description": "Инвестиция в рост → +$230 к зарплате ежемесячно.",
+      "cost": 1000,
+      "effect": "salary_up",
+      "value": 230,
+      "icon": "iconBulb"
+    },
+    {
+      "id": "salary_up_13",
+      "title": "Дипломная программа",
+      "description": "Инвестиция в рост → +$240 к зарплате ежемесячно.",
+      "cost": 1040,
+      "effect": "salary_up",
+      "value": 240,
+      "icon": "iconCart"
+    },
+    {
+      "id": "salary_up_14",
+      "title": "Реструктуризация задач",
+      "description": "Инвестиция в рост → +$250 к зарплате ежемесячно.",
+      "cost": 1080,
       "effect": "salary_up",
       "value": 250,
       "icon": "iconWallet"
+    },
+    {
+      "id": "salary_up_15",
+      "title": "Личный бренд",
+      "description": "Инвестиция в рост → +$260 к зарплате ежемесячно.",
+      "cost": 1120,
+      "effect": "salary_up",
+      "value": 260,
+      "icon": "iconCard"
+    },
+    {
+      "id": "salary_up_16",
+      "title": "Платная стажировка",
+      "description": "Инвестиция в рост → +$270 к зарплате ежемесячно.",
+      "cost": 1160,
+      "effect": "salary_up",
+      "value": 270,
+      "icon": "iconOwl"
+    },
+    {
+      "id": "salary_up_17",
+      "title": "Проверка навыков",
+      "description": "Инвестиция в рост → +$280 к зарплате ежемесячно.",
+      "cost": 1200,
+      "effect": "salary_up",
+      "value": 280,
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "salary_up_18",
+      "title": "Клуб специалистов",
+      "description": "Инвестиция в рост → +$290 к зарплате ежемесячно.",
+      "cost": 1240,
+      "effect": "salary_up",
+      "value": 290,
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "expense_down_01",
+      "title": "Анти-подписки",
+      "description": "Снижаешь фиксированные расходы на $40/мес.",
+      "cost": 172,
+      "effect": "expense_down",
+      "value": 40,
+      "icon": "iconHardhat"
+    },
+    {
+      "id": "expense_down_02",
+      "title": "Пересмотр тарифов",
+      "description": "Снижаешь фиксированные расходы на $46/мес.",
+      "cost": 189,
+      "effect": "expense_down",
+      "value": 46,
+      "icon": "iconPiggy"
+    },
+    {
+      "id": "expense_down_03",
+      "title": "Комбо-скидка услуг",
+      "description": "Снижаешь фиксированные расходы на $52/мес.",
+      "cost": 206,
+      "effect": "expense_down",
+      "value": 52,
+      "icon": "iconGift"
+    },
+    {
+      "id": "expense_down_04",
+      "title": "Объединение счетов",
+      "description": "Снижаешь фиксированные расходы на $58/мес.",
+      "cost": 222,
+      "effect": "expense_down",
+      "value": 58,
+      "icon": "iconCoins"
+    },
+    {
+      "id": "expense_down_05",
+      "title": "Бюджетный аудит",
+      "description": "Снижаешь фиксированные расходы на $64/мес.",
+      "cost": 239,
+      "effect": "expense_down",
+      "value": 64,
+      "icon": "iconPlant"
+    },
+    {
+      "id": "expense_down_06",
+      "title": "Торг с провайдерами",
+      "description": "Снижаешь фиксированные расходы на $70/мес.",
+      "cost": 256,
+      "effect": "expense_down",
+      "value": 70,
+      "icon": "iconBulb"
+    },
+    {
+      "id": "expense_down_07",
+      "title": "Замена банка",
+      "description": "Снижаешь фиксированные расходы на $76/мес.",
+      "cost": 273,
+      "effect": "expense_down",
+      "value": 76,
+      "icon": "iconCart"
+    },
+    {
+      "id": "expense_down_08",
+      "title": "Оптимизация логистики",
+      "description": "Снижаешь фиксированные расходы на $82/мес.",
+      "cost": 290,
+      "effect": "expense_down",
+      "value": 82,
+      "icon": "iconWallet"
+    },
+    {
+      "id": "expense_down_09",
+      "title": "Пакет семейных скидок",
+      "description": "Снижаешь фиксированные расходы на $88/мес.",
+      "cost": 306,
+      "effect": "expense_down",
+      "value": 88,
+      "icon": "iconCard"
+    },
+    {
+      "id": "expense_down_10",
+      "title": "Новый тариф связи",
+      "description": "Снижаешь фиксированные расходы на $94/мес.",
+      "cost": 323,
+      "effect": "expense_down",
+      "value": 94,
+      "icon": "iconOwl"
+    },
+    {
+      "id": "expense_down_11",
+      "title": "Переезд в меньший план",
+      "description": "Снижаешь фиксированные расходы на $100/мес.",
+      "cost": 340,
+      "effect": "expense_down",
+      "value": 100,
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "expense_down_12",
+      "title": "Снижение комиссий",
+      "description": "Снижаешь фиксированные расходы на $106/мес.",
+      "cost": 357,
+      "effect": "expense_down",
+      "value": 106,
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "expense_down_13",
+      "title": "Оптимизация страховок",
+      "description": "Снижаешь фиксированные расходы на $112/мес.",
+      "cost": 374,
+      "effect": "expense_down",
+      "value": 112,
+      "icon": "iconSmile"
+    },
+    {
+      "id": "expense_down_14",
+      "title": "Переподключение сервиса",
+      "description": "Снижаешь фиксированные расходы на $118/мес.",
+      "cost": 390,
+      "effect": "expense_down",
+      "value": 118,
+      "icon": "iconGrowth"
+    },
+    {
+      "id": "expense_down_15",
+      "title": "Транспортная экономия",
+      "description": "Снижаешь фиксированные расходы на $124/мес.",
+      "cost": 407,
+      "effect": "expense_down",
+      "value": 124,
+      "icon": "iconHardhat"
+    },
+    {
+      "id": "expense_down_16",
+      "title": "Скидка за автоплатеж",
+      "description": "Снижаешь фиксированные расходы на $130/мес.",
+      "cost": 424,
+      "effect": "expense_down",
+      "value": 130,
+      "icon": "iconPiggy"
+    },
+    {
+      "id": "expense_down_17",
+      "title": "Рефинансирование услуг",
+      "description": "Снижаешь фиксированные расходы на $136/мес.",
+      "cost": 441,
+      "effect": "expense_down",
+      "value": 136,
+      "icon": "iconGift"
+    },
+    {
+      "id": "expense_down_18",
+      "title": "Сезонная скидка",
+      "description": "Снижаешь фиксированные расходы на $142/мес.",
+      "cost": 458,
+      "effect": "expense_down",
+      "value": 142,
+      "icon": "iconCoins"
+    },
+    {
+      "id": "cost_down_01",
+      "title": "Mind&Body выходные",
+      "description": "Привычки дают экономию $25 в месяц.",
+      "cost": 95,
+      "effect": "cost_down",
+      "value": 25,
+      "icon": "iconCart"
+    },
+    {
+      "id": "cost_down_02",
+      "title": "Детокс бюджета",
+      "description": "Привычки дают экономию $30 в месяц.",
+      "cost": 106,
+      "effect": "cost_down",
+      "value": 30,
+      "icon": "iconWallet"
+    },
+    {
+      "id": "cost_down_03",
+      "title": "Умный список покупок",
+      "description": "Привычки дают экономию $35 в месяц.",
+      "cost": 117,
+      "effect": "cost_down",
+      "value": 35,
+      "icon": "iconCard"
+    },
+    {
+      "id": "cost_down_04",
+      "title": "Стоп-импульс",
+      "description": "Привычки дают экономию $40 в месяц.",
+      "cost": 128,
+      "effect": "cost_down",
+      "value": 40,
+      "icon": "iconOwl"
+    },
+    {
+      "id": "cost_down_05",
+      "title": "Фокус на питании",
+      "description": "Привычки дают экономию $45 в месяц.",
+      "cost": 139,
+      "effect": "cost_down",
+      "value": 45,
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "cost_down_06",
+      "title": "Смена привычек",
+      "description": "Привычки дают экономию $50 в месяц.",
+      "cost": 150,
+      "effect": "cost_down",
+      "value": 50,
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "cost_down_07",
+      "title": "Дни без трат",
+      "description": "Привычки дают экономию $55 в месяц.",
+      "cost": 161,
+      "effect": "cost_down",
+      "value": 55,
+      "icon": "iconSmile"
+    },
+    {
+      "id": "cost_down_08",
+      "title": "Минимализм дома",
+      "description": "Привычки дают экономию $60 в месяц.",
+      "cost": 172,
+      "effect": "cost_down",
+      "value": 60,
+      "icon": "iconGrowth"
+    },
+    {
+      "id": "cost_down_09",
+      "title": "Планирование меню",
+      "description": "Привычки дают экономию $65 в месяц.",
+      "cost": 183,
+      "effect": "cost_down",
+      "value": 65,
+      "icon": "iconHardhat"
+    },
+    {
+      "id": "cost_down_10",
+      "title": "Месяц без такси",
+      "description": "Привычки дают экономию $70 в месяц.",
+      "cost": 194,
+      "effect": "cost_down",
+      "value": 70,
+      "icon": "iconPiggy"
+    },
+    {
+      "id": "cost_down_11",
+      "title": "Тёплый гардероб",
+      "description": "Привычки дают экономию $75 в месяц.",
+      "cost": 205,
+      "effect": "cost_down",
+      "value": 75,
+      "icon": "iconGift"
+    },
+    {
+      "id": "cost_down_12",
+      "title": "Складной спорт",
+      "description": "Привычки дают экономию $80 в месяц.",
+      "cost": 216,
+      "effect": "cost_down",
+      "value": 80,
+      "icon": "iconCoins"
+    },
+    {
+      "id": "cost_down_13",
+      "title": "Ремонт своими силами",
+      "description": "Привычки дают экономию $85 в месяц.",
+      "cost": 227,
+      "effect": "cost_down",
+      "value": 85,
+      "icon": "iconPlant"
+    },
+    {
+      "id": "cost_down_14",
+      "title": "Бережливый месяц",
+      "description": "Привычки дают экономию $90 в месяц.",
+      "cost": 238,
+      "effect": "cost_down",
+      "value": 90,
+      "icon": "iconBulb"
+    },
+    {
+      "id": "protection_01",
+      "title": "Премиум страховка",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 160,
+      "effect": "protection",
+      "protectionKey": "healthPlan",
+      "icon": "iconSmile"
+    },
+    {
+      "id": "protection_02",
+      "title": "Юр. защита",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 178,
+      "effect": "protection",
+      "protectionKey": "legalShield",
+      "icon": "iconGrowth"
+    },
+    {
+      "id": "protection_03",
+      "title": "Сервис гаджетов",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 196,
+      "effect": "protection",
+      "protectionKey": "techShield",
+      "icon": "iconHardhat"
+    },
+    {
+      "id": "protection_04",
+      "title": "Медицинский пакет",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 214,
+      "effect": "protection",
+      "protectionKey": "healthPlan",
+      "icon": "iconPiggy"
+    },
+    {
+      "id": "protection_05",
+      "title": "Юрист на связи",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 232,
+      "effect": "protection",
+      "protectionKey": "legalShield",
+      "icon": "iconGift"
+    },
+    {
+      "id": "protection_06",
+      "title": "Техподдержка 24/7",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 250,
+      "effect": "protection",
+      "protectionKey": "techShield",
+      "icon": "iconCoins"
+    },
+    {
+      "id": "protection_07",
+      "title": "Страховка семьи",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 268,
+      "effect": "protection",
+      "protectionKey": "healthPlan",
+      "icon": "iconPlant"
+    },
+    {
+      "id": "protection_08",
+      "title": "Защита покупок",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 286,
+      "effect": "protection",
+      "protectionKey": "legalShield",
+      "icon": "iconBulb"
+    },
+    {
+      "id": "protection_09",
+      "title": "План клиники",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 304,
+      "effect": "protection",
+      "protectionKey": "techShield",
+      "icon": "iconCart"
+    },
+    {
+      "id": "protection_10",
+      "title": "Абонент юриста",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 322,
+      "effect": "protection",
+      "protectionKey": "healthPlan",
+      "icon": "iconWallet"
+    },
+    {
+      "id": "protection_11",
+      "title": "Сервис техники",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 340,
+      "effect": "protection",
+      "protectionKey": "legalShield",
+      "icon": "iconCard"
+    },
+    {
+      "id": "protection_12",
+      "title": "Страховка рисков",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 358,
+      "effect": "protection",
+      "protectionKey": "techShield",
+      "icon": "iconOwl"
+    },
+    {
+      "id": "protection_13",
+      "title": "Комплект защиты",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 376,
+      "effect": "protection",
+      "protectionKey": "healthPlan",
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "protection_14",
+      "title": "Охрана данных",
+      "description": "Платишь фиксированно и снижает риск крупных расходов.",
+      "cost": 394,
+      "effect": "protection",
+      "protectionKey": "legalShield",
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "take_credit_01",
+      "title": "Кредитный запас",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 800,
+      "buttonText": "Получить $800",
+      "icon": "iconPlant"
+    },
+    {
+      "id": "take_credit_02",
+      "title": "Резервный лимит",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 1000,
+      "buttonText": "Получить $1000",
+      "icon": "iconBulb"
+    },
+    {
+      "id": "take_credit_03",
+      "title": "Кредит на подушку",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 1200,
+      "buttonText": "Получить $1200",
+      "icon": "iconCart"
+    },
+    {
+      "id": "take_credit_04",
+      "title": "Набор оборотки",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 1400,
+      "buttonText": "Получить $1400",
+      "icon": "iconWallet"
+    },
+    {
+      "id": "take_credit_05",
+      "title": "Линия на месяц",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 1600,
+      "buttonText": "Получить $1600",
+      "icon": "iconCard"
+    },
+    {
+      "id": "take_credit_06",
+      "title": "Кассовый мост",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 1800,
+      "buttonText": "Получить $1800",
+      "icon": "iconOwl"
+    },
+    {
+      "id": "take_credit_07",
+      "title": "Скорость капитала",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 2000,
+      "buttonText": "Получить $2000",
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "take_credit_08",
+      "title": "Экстренный лимит",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 2300,
+      "buttonText": "Получить $2300",
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "take_credit_09",
+      "title": "Быстрый кредит",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 2600,
+      "buttonText": "Получить $2600",
+      "icon": "iconSmile"
+    },
+    {
+      "id": "take_credit_10",
+      "title": "Резерв средств",
+      "description": "Используешь часть лимита и пополняешь запас денег.",
+      "effect": "take_credit",
+      "value": 3000,
+      "buttonText": "Получить $3000",
+      "icon": "iconGrowth"
+    },
+    {
+      "id": "chance_01",
+      "title": "Венчурное мероприятие",
+      "description": "Рискуешь капиталом: шанс сорвать $1274, иначе потеряешь часть вложения.",
+      "cost": 260,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 1274
+      },
+      "fail": {
+        "cashDelta": -260
+      },
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "chance_02",
+      "title": "Пилотный заказ",
+      "description": "Рискуешь капиталом: шанс сорвать $1495, иначе потеряешь часть вложения.",
+      "cost": 282,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 1495
+      },
+      "fail": {
+        "cashDelta": -310
+      },
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "chance_03",
+      "title": "Маркетплейс-флип",
+      "description": "Рискуешь капиталом: шанс сорвать $1733, иначе потеряешь часть вложения.",
+      "cost": 304,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 1733
+      },
+      "fail": {
+        "cashDelta": -274
+      },
+      "icon": "iconSmile"
+    },
+    {
+      "id": "chance_04",
+      "title": "Комиссия за рекомендацию",
+      "description": "Рискуешь капиталом: шанс сорвать $1467, иначе потеряешь часть вложения.",
+      "cost": 326,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 1467
+      },
+      "fail": {
+        "cashDelta": -326
+      },
+      "icon": "iconGrowth"
+    },
+    {
+      "id": "chance_05",
+      "title": "Сделка с партнёром",
+      "description": "Рискуешь капиталом: шанс сорвать $1705, иначе потеряешь часть вложения.",
+      "cost": 348,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 1705
+      },
+      "fail": {
+        "cashDelta": -383
+      },
+      "icon": "iconHardhat"
+    },
+    {
+      "id": "chance_06",
+      "title": "Быстрый тендер",
+      "description": "Рискуешь капиталом: шанс сорвать $1961, иначе потеряешь часть вложения.",
+      "cost": 370,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 1961
+      },
+      "fail": {
+        "cashDelta": -333
+      },
+      "icon": "iconPiggy"
+    },
+    {
+      "id": "chance_07",
+      "title": "Рекламный спринт",
+      "description": "Рискуешь капиталом: шанс сорвать $2234, иначе потеряешь часть вложения.",
+      "cost": 392,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 2234
+      },
+      "fail": {
+        "cashDelta": -392
+      },
+      "icon": "iconGift"
+    },
+    {
+      "id": "chance_08",
+      "title": "Партнёрский вебинар",
+      "description": "Рискуешь капиталом: шанс сорвать $1863, иначе потеряешь часть вложения.",
+      "cost": 414,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 1863
+      },
+      "fail": {
+        "cashDelta": -455
+      },
+      "icon": "iconCoins"
+    },
+    {
+      "id": "chance_09",
+      "title": "Прототип на конкурс",
+      "description": "Рискуешь капиталом: шанс сорвать $2136, иначе потеряешь часть вложения.",
+      "cost": 436,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 2136
+      },
+      "fail": {
+        "cashDelta": -392
+      },
+      "icon": "iconPlant"
+    },
+    {
+      "id": "chance_10",
+      "title": "Экспортный шанс",
+      "description": "Рискуешь капиталом: шанс сорвать $2427, иначе потеряешь часть вложения.",
+      "cost": 458,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 2427
+      },
+      "fail": {
+        "cashDelta": -458
+      },
+      "icon": "iconBulb"
+    },
+    {
+      "id": "chance_11",
+      "title": "Сезонный ажиотаж",
+      "description": "Рискуешь капиталом: шанс сорвать $2736, иначе потеряешь часть вложения.",
+      "cost": 480,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 2736
+      },
+      "fail": {
+        "cashDelta": -528
+      },
+      "icon": "iconCart"
+    },
+    {
+      "id": "chance_12",
+      "title": "Демо на сцене",
+      "description": "Рискуешь капиталом: шанс сорвать $2259, иначе потеряешь часть вложения.",
+      "cost": 502,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 2259
+      },
+      "fail": {
+        "cashDelta": -452
+      },
+      "icon": "iconWallet"
+    },
+    {
+      "id": "chance_13",
+      "title": "Лидогенерация",
+      "description": "Рискуешь капиталом: шанс сорвать $2568, иначе потеряешь часть вложения.",
+      "cost": 524,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 2568
+      },
+      "fail": {
+        "cashDelta": -524
+      },
+      "icon": "iconCard"
+    },
+    {
+      "id": "chance_14",
+      "title": "Перехват клиента",
+      "description": "Рискуешь капиталом: шанс сорвать $2894, иначе потеряешь часть вложения.",
+      "cost": 546,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 2894
+      },
+      "fail": {
+        "cashDelta": -601
+      },
+      "icon": "iconOwl"
+    },
+    {
+      "id": "chance_15",
+      "title": "Сделка на выставке",
+      "description": "Рискуешь капиталом: шанс сорвать $3238, иначе потеряешь часть вложения.",
+      "cost": 568,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 3238
+      },
+      "fail": {
+        "cashDelta": -511
+      },
+      "icon": "iconCalculator"
+    },
+    {
+      "id": "chance_16",
+      "title": "Сверхурочный проект",
+      "description": "Рискуешь капиталом: шанс сорвать $2655, иначе потеряешь часть вложения.",
+      "cost": 590,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 2655
+      },
+      "fail": {
+        "cashDelta": -590
+      },
+      "icon": "iconStethoscope"
+    },
+    {
+      "id": "chance_17",
+      "title": "Офер под вопросом",
+      "description": "Рискуешь капиталом: шанс сорвать $2999, иначе потеряешь часть вложения.",
+      "cost": 612,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 2999
+      },
+      "fail": {
+        "cashDelta": -673
+      },
+      "icon": "iconSmile"
+    },
+    {
+      "id": "chance_18",
+      "title": "Тест новой ниши",
+      "description": "Рискуешь капиталом: шанс сорвать $3360, иначе потеряешь часть вложения.",
+      "cost": 634,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 3360
+      },
+      "fail": {
+        "cashDelta": -571
+      },
+      "icon": "iconGrowth"
+    },
+    {
+      "id": "chance_19",
+      "title": "Супер-упаковка",
+      "description": "Рискуешь капиталом: шанс сорвать $3739, иначе потеряешь часть вложения.",
+      "cost": 656,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 3739
+      },
+      "fail": {
+        "cashDelta": -656
+      },
+      "icon": "iconHardhat"
+    },
+    {
+      "id": "chance_20",
+      "title": "Оффлайн-точка",
+      "description": "Рискуешь капиталом: шанс сорвать $3051, иначе потеряешь часть вложения.",
+      "cost": 678,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 3051
+      },
+      "fail": {
+        "cashDelta": -746
+      },
+      "icon": "iconPiggy"
+    },
+    {
+      "id": "chance_21",
+      "title": "Кассовый разгон",
+      "description": "Рискуешь капиталом: шанс сорвать $3430, иначе потеряешь часть вложения.",
+      "cost": 700,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 3430
+      },
+      "fail": {
+        "cashDelta": -630
+      },
+      "icon": "iconGift"
+    },
+    {
+      "id": "chance_22",
+      "title": "Сезонный бонус",
+      "description": "Рискуешь капиталом: шанс сорвать $3827, иначе потеряешь часть вложения.",
+      "cost": 722,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 3827
+      },
+      "fail": {
+        "cashDelta": -722
+      },
+      "icon": "iconCoins"
+    },
+    {
+      "id": "chance_23",
+      "title": "Промо-коллаб",
+      "description": "Рискуешь капиталом: шанс сорвать $4241, иначе потеряешь часть вложения.",
+      "cost": 744,
+      "type": "chance",
+      "chanceSuccess": 0.5,
+      "success": {
+        "cashDelta": 4241
+      },
+      "fail": {
+        "cashDelta": -818
+      },
+      "icon": "iconPlant"
+    },
+    {
+      "id": "chance_24",
+      "title": "Нестандартный контракт",
+      "description": "Рискуешь капиталом: шанс сорвать $3447, иначе потеряешь часть вложения.",
+      "cost": 766,
+      "type": "chance",
+      "chanceSuccess": 0.4,
+      "success": {
+        "cashDelta": 3447
+      },
+      "fail": {
+        "cashDelta": -689
+      },
+      "icon": "iconBulb"
+    },
+    {
+      "id": "chance_25",
+      "title": "Сделка с бонусом",
+      "description": "Рискуешь капиталом: шанс сорвать $3861, иначе потеряешь часть вложения.",
+      "cost": 788,
+      "type": "chance",
+      "chanceSuccess": 0.45,
+      "success": {
+        "cashDelta": 3861
+      },
+      "fail": {
+        "cashDelta": -788
+      },
+      "icon": "iconCart"
     },
     {
       "id": "debt_payment",
@@ -15,80 +1049,6 @@
       "description": "Закрыть до 30% долга — облегчает будущие проценты.",
       "effect": "debt_down",
       "icon": "iconCard"
-    },
-    {
-      "id": "skill_invest",
-      "title": "Интенсив навыков",
-      "description": "Платное обучение → +$400 к зарплате ежемесячно.",
-      "cost": 600,
-      "effect": "salary_up",
-      "value": 400,
-      "icon": "iconOwl"
-    },
-    {
-      "id": "optimize_expenses",
-      "title": "Анти-подписки",
-      "description": "За один вечер отменяешь лишнее — расходы падают на $120/мес.",
-      "cost": 320,
-      "effect": "expense_down",
-      "value": 120,
-      "icon": "iconCalculator"
-    },
-    {
-      "id": "health_plan",
-      "title": "Премиум страховка",
-      "description": "Платишь фиксированно и избегаешь медсчётов.",
-      "cost": 350,
-      "effect": "protection",
-      "protectionKey": "healthPlan",
-      "icon": "iconStethoscope"
-    },
-    {
-      "id": "wellness",
-      "title": "Mind&Body выходные",
-      "description": "Минус стресс, траты становятся ниже на $80.",
-      "cost": 180,
-      "effect": "cost_down",
-      "value": 80,
-      "icon": "iconSmile"
-    },
-    {
-      "id": "legal_consult",
-      "title": "Финансовый юрист",
-      "description": "Разовый платёж → защита от проверок.",
-      "cost": 280,
-      "effect": "protection",
-      "protectionKey": "legalShield",
-      "icon": "iconGrowth"
-    },
-    {
-      "id": "equipment_plan",
-      "title": "Сервис гаджетов",
-      "description": "Ежемесячное ТО техники — защищает от поломок.",
-      "cost": 220,
-      "effect": "protection",
-      "protectionKey": "techShield",
-      "icon": "iconHardhat"
-    },
-    {
-      "id": "credit_draw",
-      "title": "Забрать кредит",
-      "description": "Используешь часть лимита и пополняешь кэш.",
-      "effect": "take_credit",
-      "value": 1500,
-      "buttonText": "Получить $1500",
-      "icon": "iconPiggy"
-    },
-    {
-      "id": "event_pitch",
-      "title": "Венчурное мероприятие",
-      "description": "Покупаешь билет: шанс сорвать $2200, либо потерять вложение.",
-      "cost": 500,
-      "type": "chance",
-      "chanceSuccess": 0.4,
-      "success": { "cashDelta": 2200 },
-      "fail": { "cashDelta": -600 },
-      "icon": "iconGift"
     }
   ]
 }

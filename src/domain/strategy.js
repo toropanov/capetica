@@ -33,7 +33,7 @@ export function computeStrategyIndicators({
     if (value <= 0) return;
     allocations.push({ label, value });
   };
-  addAllocation('Кэш', cash);
+  addAllocation('Деньги', cash);
   Object.entries(investments).forEach(([instrumentId, holding]) => {
     const info = instrumentMap[instrumentId];
     const type = info?.type || 'stocks';
@@ -86,4 +86,3 @@ export function computeStrategyIndicators({
     name,
   };
 }
-

@@ -129,7 +129,7 @@ function describeActionConsequences(action) {
       list.push({ icon: '⚡', text: 'Добавляет защиту' });
       break;
     case 'take_credit':
-      list.push({ icon: '💰', text: `Свободный кэш +$${action.value || 0}` });
+      list.push({ icon: '💰', text: `Свободные деньги +$${action.value || 0}` });
       list.push({ icon: '⚡', text: 'Обязательства растут' });
       break;
     default:
