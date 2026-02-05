@@ -211,23 +211,6 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
     if (!label) return null;
     return { value: remaining, label };
   };
-  const net =
-    data
-      ? Math.round(
-          data.salary +
-            data.passiveIncome -
-            data.livingCost -
-            (data.recurringExpenses || 0) -
-            (data.debtInterest || 0),
-        )
-      : Math.round(
-          summary.passiveIncome - summary.livingCost - summary.recurringExpenses - summary.debtInterest,
-        );
-  const netForecast = summary.netWorth + net * FORECAST_TURNS;
-  const cashForecast = summary.cash + net * 3;
-  const passiveGap =
-    summary.passiveIncome - summary.livingCost - summary.recurringExpenses - summary.debtInterest;
-  const creditLimit = Math.max(0, (summary.availableCredit || 0) + summary.debt);
   const incomeRows = useMemo(
     () => [{ id: 'salary-base', label: 'Зарплата', amount: summary.salary || 0 }, ...passiveBreakdown],
     [summary.salary, passiveBreakdown],
@@ -236,24 +219,29 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
   const expenseRows = useMemo(() => {
     const rows = [];
     const livingAmount =
-      data && (data.livingCost || 0) > 0 ? data.livingCost || 0 : summary.livingCost || 0;
+      typeof data?.livingCost === 'number' ? data.livingCost : summary.livingCost || 0;
     if (livingAmount > 0) {
       rows.push({ id: 'living', label: 'Стоимость жизни', amount: livingAmount });
     }
     const fixedAmount =
-      data && (data.recurringExpenses || 0) > 0
-        ? data.recurringExpenses || 0
-        : summary.recurringExpenses || 0;
+      typeof data?.recurringExpenses === 'number' ? data.recurringExpenses : summary.recurringExpenses || 0;
     if (fixedAmount > 0) {
       rows.push({ id: 'fixed', label: 'Бытовые', amount: fixedAmount });
     }
-    const interestAmount = summary.debtInterest || data?.debtInterest || 0;
+    const interestAmount =
+      typeof data?.debtInterest === 'number' ? data.debtInterest : summary.debtInterest || 0;
     if (summary.debt > 0 || interestAmount > 0) {
       rows.push({ id: 'interest', label: 'Проценты по долгу', amount: interestAmount });
     }
     return rows;
   }, [data, summary.livingCost, summary.recurringExpenses, summary.debtInterest, summary.debt]);
   const totalMonthlyExpenses = expenseRows.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const net = Math.round(totalMonthlyIncome - totalMonthlyExpenses);
+  const netForecast = summary.netWorth + net * FORECAST_TURNS;
+  const cashForecast = summary.cash + net * 3;
+  const passiveGap =
+    summary.passiveIncome - summary.livingCost - summary.recurringExpenses - summary.debtInterest;
+  const creditLimit = Math.max(0, (summary.availableCredit || 0) + summary.debt);
   const cashValue = getMetricValue('cash', summary.cash);
   const incomesValue = getMetricValue('incomes', totalMonthlyIncome);
   const expensesValue = getMetricValue('expenses', totalMonthlyExpenses);
@@ -270,25 +258,16 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
       </em>
     );
   };
-  const renderBody = () => {
-    if (!data) {
-      return (
-        <div className={styles.placeholder} />
-      );
-    }
-    return (
-      <>
-        <div className={styles.netRow}>
-          <span>Итог месяца</span>
-          <div className={styles.netBlock}>
-            <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
-              {net >= 0 ? `+$${Math.abs(net).toLocaleString('en-US')}` : `-$${Math.abs(net).toLocaleString('en-US')}`}
-            </strong>
-          </div>
-        </div>
-      </>
-    );
-  };
+  const renderBody = () => (
+    <div className={styles.netRow}>
+      <span>Итог месяца</span>
+      <div className={styles.netBlock}>
+        <strong className={net >= 0 ? styles.valuePositive : styles.valueNegative}>
+          {net >= 0 ? `+$${Math.abs(net).toLocaleString('en-US')}` : `-$${Math.abs(net).toLocaleString('en-US')}`}
+        </strong>
+      </div>
+    </div>
+  );
   return (
     <div className={styles.lastTurn}>
       <div className={styles.balanceBlock}>
