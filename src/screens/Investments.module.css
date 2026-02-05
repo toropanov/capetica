@@ -4,7 +4,6 @@
   flex-direction: column;
   gap: var(--asset-section-gap);
   padding-top: var(--asset-section-gap);
-  padding-bottom: 0;
 }
 
 .screen header h2 {

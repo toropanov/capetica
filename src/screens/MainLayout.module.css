@@ -2,6 +2,9 @@
   min-height: 100vh;
   min-height: 100svh;
   min-height: 100dvh;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
   width: min(100%, 500px);
   margin: 0 auto;
   display: flex;
@@ -144,6 +147,8 @@
 .content {
   flex: 1;
   padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
   height: calc(100dvh - var(--header-height) - var(--footer-height));
   max-height: calc(100svh - var(--header-height) - var(--footer-height));
   overflow-y: auto;
