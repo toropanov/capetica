@@ -755,7 +755,7 @@
 }
 
 .rollCardActions button {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -770,7 +770,8 @@
 }
 
 .rollCardPrimaryButton {
-  min-width: 0;
+  flex: 0 0 auto;
+  min-width: fit-content;
   background: linear-gradient(120deg, #ffd27a, #ffb85d);
   color: #3b2a10;
   box-shadow: 0 10px 20px rgba(255, 186, 90, 0.35);
@@ -795,10 +796,9 @@
 
 .rollCardIconButton {
   flex: 0 0 auto;
-  width: 2.4rem;
+  min-width: 2.4rem;
   height: 2.4rem;
-  aspect-ratio: 1 / 1;
-  padding: 0 !important;
+  padding: 0 0.4rem !important;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
