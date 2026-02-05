@@ -338,6 +338,7 @@ function MainLayout() {
   const [frozenMetrics, setFrozenMetrics] = useState(null);
   const [frozenCash, setFrozenCash] = useState(null);
   const [hideProgressCard, setHideProgressCard] = useState(false);
+  const [rollTradeMode, setRollTradeMode] = useState('buy');
   const releaseFrozenMetrics = useCallback(
     ({ animate = false } = {}) => {
       const prevMetrics = frozenMetrics;
@@ -562,6 +563,17 @@ function MainLayout() {
     rollCardData && rollCardData.holding?.units
       ? rollCardData.holding.units * (rollCardData.price || 0)
       : 0;
+  useEffect(() => {
+    if (!rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event') {
+      setRollTradeMode('buy');
+      return;
+    }
+    setRollTradeMode(rollHoldingValue > 0 ? 'sell' : 'buy');
+  }, [rollCardData?.type, rollCardData?.instrument?.id, rollHoldingValue]);
+  const canSellHolding = rollHoldingValue > 0;
+  const activeTradeMode = canSellHolding ? rollTradeMode : 'buy';
+  const showBuyControls = !canSellHolding || activeTradeMode === 'buy';
+  const showSellControls = canSellHolding && activeTradeMode === 'sell';
 
   useEffect(() => {
     setRollFeedback('');
@@ -715,6 +727,21 @@ function MainLayout() {
     }
     queueMetricDelta(prevSnapshot);
     closeRollCard();
+  };
+  const handleTradeButtonClick = (mode) => {
+    if (mode === 'sell') {
+      if (canSellHolding && activeTradeMode !== 'sell') {
+        setRollTradeMode('sell');
+        return;
+      }
+      handleRollSell();
+      return;
+    }
+    if (activeTradeMode !== 'buy') {
+      setRollTradeMode('buy');
+      return;
+    }
+    handleRollBuy();
   };
   const handleNewGameFromVictory = () => {
     if (transitionState !== 'idle') return;
@@ -1108,41 +1135,38 @@ function MainLayout() {
                     В портфеле {rollCardData.holding.units.toFixed(2)} лотов ≈ {formatUSD(rollHoldingValue)}
                   </p>
                 )}
-                <div className={styles.rollCardSlider}>
-                  <div>
-                    <span>Сумма покупки</span>
-                    <strong>{formatUSD(rollBuyAmount)}</strong>
+                {showBuyControls && (
+                  <div className={styles.rollCardSlider}>
+                    <div>
+                      <span>Сумма покупки</span>
+                      <strong>{formatUSD(rollBuyAmount)}</strong>
+                    </div>
+                    {rollPassiveRate > 0 && (
+                      <p className={styles.rollCardPassiveHint}>
+                        Пассивный доход: {formatUSD(Math.round(rollBuyAmount * rollPassiveRate))}/мес
+                      </p>
+                    )}
+                    <Slider
+                      min={rollCardData.instrument.trading?.minOrder || 10}
+                      max={Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0))}
+                      step={1}
+                      value={Math.min(rollBuyAmount, Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0)))}
+                      onChange={(value) => setRollBuyAmount(Math.round(value))}
+                      disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
+                      variant="rollCard"
+                    />
                   </div>
-                  {rollPassiveRate > 0 && (
-                    <p className={styles.rollCardPassiveHint}>
-                      Пассивный доход: {formatUSD(Math.round(rollBuyAmount * rollPassiveRate))}/мес
-                    </p>
-                  )}
-                  <Slider
-                    min={rollCardData.instrument.trading?.minOrder || 10}
-                    max={Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0))}
-                    step={10}
-                    value={Math.min(rollBuyAmount, Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0)))}
-                    onChange={(value) => setRollBuyAmount(Math.round(value))}
-                    disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
-                    variant="rollCard"
-                  />
-                </div>
-                {rollHoldingValue > 0 && (
+                )}
+                {showSellControls && (
                   <div className={styles.rollCardSlider}>
                     <div>
                       <span>Продать на</span>
                       <strong>{formatUSD(rollSellAmount)}</strong>
                     </div>
-                    {rollPassiveRate > 0 && (
-                      <p className={styles.rollCardPassiveHint}>
-                        Пассивный доход: {formatUSD(-Math.round(rollSellAmount * rollPassiveRate))}/мес
-                      </p>
-                    )}
                     <Slider
                       min={0}
                       max={Math.max(0, Math.round(rollHoldingValue))}
-                      step={10}
+                      step={1}
                       value={Math.min(rollSellAmount, Math.max(0, Math.round(rollHoldingValue)))}
                       onChange={(value) => setRollSellAmount(Math.round(value))}
                       disabled={rollHoldingValue <= 0}
@@ -1151,24 +1175,32 @@ function MainLayout() {
                   </div>
                 )}
                 {rollFeedback && <p className={styles.rollCardFeedback}>{rollFeedback}</p>}
-                <div className={`${styles.rollCardActions} ${rollHoldingValue > 0 ? styles.rollCardActionsExpanded : ''}`}>
-                  <Button
-                    variant="primary"
-                    onClick={handleRollBuy}
-                    disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
-                    className={styles.rollCardPrimaryButton}
-                  >
-                    Купить
-                  </Button>
-                  {rollHoldingValue > 0 && (
+                <div className={`${styles.rollCardActions} ${canSellHolding ? styles.rollCardActionsExpanded : ''}`}>
+                  {canSellHolding && (
                     <Button
                       variant="secondary"
-                      onClick={handleRollSell}
-                      className={styles.rollCardSecondaryButton}
+                      onClick={() => handleTradeButtonClick('sell')}
+                      className={
+                        activeTradeMode === 'sell'
+                          ? styles.rollCardPrimaryButton
+                          : styles.rollCardSecondaryButton
+                      }
                     >
                       Продать
                     </Button>
                   )}
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleTradeButtonClick('buy')}
+                    disabled={storeData.cash < (rollCardData.instrument.trading?.minOrder || 10)}
+                    className={
+                      activeTradeMode === 'buy'
+                        ? styles.rollCardPrimaryButton
+                        : styles.rollCardSecondaryButton
+                    }
+                  >
+                    Купить
+                  </Button>
                   <Button
                     variant="secondary"
                     onClick={closeRollCard}
