@@ -78,20 +78,26 @@ function Investments() {
     flashCreditConfirm('repay');
   };
 
-  const estimatedPayment = useMemo(() => {
+  const totalCreditBalance = useMemo(() => {
+    const sumDraws = creditDraws.reduce((sum, draw) => sum + Math.max(draw.balance || 0, 0), 0);
+    if (sumDraws > 0) return sumDraws;
+    return Math.max(debt, 0);
+  }, [creditDraws, debt]);
+
+  const totalMonthlyPayment = useMemo(() => {
     if (!loanRules) return null;
-    const amount = Math.max(0, Math.round(creditAmount || 0));
-    if (amount <= 0) return null;
+    const principal = Math.max(0, Math.round(totalCreditBalance || 0));
+    if (principal <= 0) return null;
     const term = loanRules.maxTermMonths || loanRules.minTermMonths || 12;
     if (!term) return null;
     const apr = loanRules.apr || 0;
     const monthlyRate = apr > 0 ? apr / 12 : 0;
     if (!monthlyRate) {
-      return amount / term;
+      return principal / term;
     }
     const factor = Math.pow(1 + monthlyRate, -term);
-    return (amount * monthlyRate) / (1 - factor);
-  }, [creditAmount, loanRules]);
+    return (principal * monthlyRate) / (1 - factor);
+  }, [loanRules, totalCreditBalance]);
 
   const holdingsList = useMemo(() => {
     return instruments
@@ -166,6 +172,22 @@ function Investments() {
         ) : (
           <Slider min={0} max={0} step={1} value={0} onChange={() => {}} disabled />
         )}
+        <div className={styles.creditActions}>
+          <div className={styles.creditActionColumn}>
+            <Button
+              variant="primary"
+              onClick={handleDrawCredit}
+              disabled={availableCredit <= 0 || creditLocked}
+              className={creditLocked && lastDrawAmount ? styles.creditTakenButton : ''}
+            >
+              {creditConfirm === 'draw'
+                ? 'Готово'
+                : creditLocked && lastDrawAmount
+                ? `Взято ${formatUSD(lastDrawAmount)}`
+                : `Взять ${formatUSD(creditAmount)}`}
+            </Button>
+          </div>
+        </div>
         {creditDraws.length > 0 && (
           <div className={styles.creditDrawList}>
             {creditDraws.map((draw) => (
@@ -186,38 +208,13 @@ function Investments() {
             ))}
           </div>
         )}
-        <div className={styles.creditActions}>
-          <div className={styles.creditActionColumn}>
-            <Button
-              variant="primary"
-              onClick={handleDrawCredit}
-              disabled={availableCredit <= 0 || creditLocked}
-              className={creditLocked && lastDrawAmount ? styles.creditTakenButton : ''}
-            >
-              {creditConfirm === 'draw'
-                ? 'Готово'
-                : creditLocked && lastDrawAmount
-                ? `Взято ${formatUSD(lastDrawAmount)}`
-                : `Взять ${formatUSD(creditAmount)}`}
-            </Button>
-            {estimatedPayment && (
-              <small className={styles.paymentHint}>
-                Платёж ≈ {formatUSD(Math.round(estimatedPayment))}/мес
-              </small>
-            )}
+        {totalMonthlyPayment && (
+          <div className={styles.totalPaymentHint}>
+            <small className={styles.paymentHint}>
+              Платёж по кредитам ≈ {formatUSD(Math.round(totalMonthlyPayment))}/мес
+            </small>
           </div>
-          {debt > 0 && !creditLocked && (
-            <div className={styles.creditActionColumn}>
-              <Button
-                variant="danger"
-                onClick={() => handleRepay()}
-                disabled={cash <= 0 || creditLocked}
-              >
-                {creditConfirm === 'repay' ? 'Готово' : 'Погасить'}
-              </Button>
-            </div>
-          )}
-        </div>
+        )}
       </Card>
 
       {holdingsList.length === 0 && activeDeals.length === 0 ? (

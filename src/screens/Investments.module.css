@@ -434,10 +434,9 @@
 }
 
 .creditDrawList {
-  margin-top: 0.6rem;
+  margin-top: 1rem;
   border: 1px dashed rgba(25, 56, 102, 0.2);
-  border-radius: 16px;
-  padding: 0.6rem 0.7rem;
+  padding: 0.9rem 0.7rem 0.6rem;
   background: rgba(255, 255, 255, 0.95);
   display: flex;
   flex-direction: column;
@@ -489,6 +488,10 @@
 .paymentHint {
   font-size: 0.75rem;
   color: rgba(21, 39, 70, 0.65);
+}
+
+.totalPaymentHint {
+  margin-top: 0.4rem;
 }
 
 .emptyPortfolioCard {
