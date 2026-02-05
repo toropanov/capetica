@@ -98,7 +98,8 @@
 .professionLabel {
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 0.55rem;
+  font-size: 0.45rem;
+  line-height: 1.1;
   color: rgba(46, 61, 92, 0.7);
 }
 
@@ -118,10 +119,14 @@
 
 .headerStats span {
   display: block;
-  font-size: 0.55rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(86, 95, 118, 0.85);
+}
+
+.headerStatLabel {
+  font-size: 0.45rem;
+  line-height: 1.1;
 }
 
 .headerStats strong {

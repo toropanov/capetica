@@ -41,8 +41,8 @@ export function getMonthlyExpenses(profession) {
 
 const passiveMultipliers = {
   bonds: 0.0022,
-  stocks: 0.0015,
-  crypto: 0.003,
+  stocks: 0.1,
+  crypto: 0.1,
 };
 
 export function getPassiveMultiplier(type) {

@@ -713,6 +713,8 @@ function Home() {
     return () => clearTimeout(timer);
   }, [highlightData, highlightActive, dismissHighlight]);
 
+  const hasMonthlySection = Boolean(monthlyOffers[0] || visibleActiveOffers.length > 0);
+
   return (
     <div className={styles.screen}>
       {highlightData && (
@@ -741,7 +743,11 @@ function Home() {
         )}
       </Card>
       {primaryGoalProgress ? (
-        <div className={styles.goalProgressBlock}>
+        <div
+          className={`${styles.goalProgressBlock} ${
+            hasMonthlySection ? styles.goalProgressBlockTight : ''
+          }`}
+        >
           {primaryGoalProgress.status ? (
             <div className={styles.goalProgressHead}>
               <em>{primaryGoalProgress.status}</em>
