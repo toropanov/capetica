@@ -1,173 +1,1118 @@
 {
   "events": [
     {
-      "id": "dividend_boost",
-      "title": "Крипто-вознаграждение",
-      "description": "Платформа начислила стейкинг-бонус.",
+      "title": "Возврат налога",
+      "description": "Пришёл возврат по налогам.",
       "effect": {
-        "cashDelta": 320
+        "cashDelta": 900
       },
       "type": "positive",
       "chance": 0.35,
-      "icon": "iconCoins"
+      "id": "pos_cash_01",
+      "icon": "iconWallet"
     },
     {
-      "id": "tax_review",
-      "title": "Налоговая проверка",
-      "description": "Нужно срочно оплатить консультацию.",
+      "title": "Премия за проект",
+      "description": "Команда закрыла квартальный план.",
       "effect": {
-        "cashDelta": -480
+        "cashDelta": 1200
       },
-      "type": "negative",
-      "chance": 0.25,
-      "protectionKey": "legalShield",
+      "type": "positive",
+      "chance": 0.3,
+      "id": "pos_cash_02",
       "icon": "iconCard"
     },
     {
-      "id": "portfolio_award",
-      "title": "Премия за лид-магнит",
-      "description": "Выплата за лучшее решение месяца.",
+      "title": "Возврат от магазина",
+      "description": "Магазин вернул переплату.",
       "effect": {
-        "cashDelta": 650,
-        "salaryBonusDelta": 120
+        "cashDelta": 240
       },
       "type": "positive",
-      "chance": 0.2,
+      "chance": 0.5,
+      "id": "pos_cash_03",
+      "icon": "iconOwl"
+    },
+    {
+      "title": "Надбавка за смены",
+      "description": "Дополнительные смены принесли больше денег.",
+      "effect": {
+        "cashDelta": 480
+      },
+      "type": "positive",
+      "chance": 0.4,
+      "id": "pos_cash_04",
+      "icon": "iconCalculator"
+    },
+    {
+      "title": "Гонорар за подработку",
+      "description": "Разовая подработка принесла доход.",
+      "effect": {
+        "cashDelta": 650
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_cash_05",
+      "icon": "iconStethoscope"
+    },
+    {
+      "title": "Выплата по гарантии",
+      "description": "Страховая компенсировала мелкий ущерб.",
+      "effect": {
+        "cashDelta": 520
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_cash_06",
+      "icon": "iconSmile"
+    },
+    {
+      "title": "Подарок от родственников",
+      "description": "Семья помогла деньгами.",
+      "effect": {
+        "cashDelta": 400
+      },
+      "type": "positive",
+      "chance": 0.45,
+      "id": "pos_cash_07",
+      "icon": "iconGrowth"
+    },
+    {
+      "title": "Бонус от поставщика",
+      "description": "Поставщик вернул часть средств.",
+      "effect": {
+        "cashDelta": 300
+      },
+      "type": "positive",
+      "chance": 0.45,
+      "id": "pos_cash_08",
+      "icon": "iconHardhat"
+    },
+    {
+      "title": "Премия за отзывы",
+      "description": "Клиенты оставили отзывы — начислена премия.",
+      "effect": {
+        "cashDelta": 380
+      },
+      "type": "positive",
+      "chance": 0.4,
+      "id": "pos_cash_09",
+      "icon": "iconPiggy"
+    },
+    {
+      "title": "Возврат комиссии",
+      "description": "Банк отменил комиссию и вернул средства.",
+      "effect": {
+        "cashDelta": 220
+      },
+      "type": "positive",
+      "chance": 0.5,
+      "id": "pos_cash_10",
       "icon": "iconGift"
     },
     {
-      "id": "hardware_failure",
-      "title": "Поломка оборудования",
-      "description": "Ремонт за твой счёт.",
+      "title": "Возврат по подписке",
+      "description": "Сервис вернул деньги за сбой.",
       "effect": {
-        "cashDelta": -550
+        "cashDelta": 180
+      },
+      "type": "positive",
+      "chance": 0.55,
+      "id": "pos_cash_11",
+      "icon": "iconCoins"
+    },
+    {
+      "title": "Подарочная карта",
+      "description": "Получена подарочная карта.",
+      "effect": {
+        "cashDelta": 260
+      },
+      "type": "positive",
+      "chance": 0.45,
+      "id": "pos_cash_12",
+      "icon": "iconPlant"
+    },
+    {
+      "title": "Компенсация перевозчика",
+      "description": "Перевозчик компенсировал задержку.",
+      "effect": {
+        "cashDelta": 310
+      },
+      "type": "positive",
+      "chance": 0.45,
+      "id": "pos_cash_13",
+      "icon": "iconBulb"
+    },
+    {
+      "title": "Реферальная выплата",
+      "description": "Пришла выплата по рекомендации.",
+      "effect": {
+        "cashDelta": 420
+      },
+      "type": "positive",
+      "chance": 0.4,
+      "id": "pos_cash_14",
+      "icon": "iconCart"
+    },
+    {
+      "title": "Премия за инициативу",
+      "description": "За инициативу на работе начислена премия.",
+      "effect": {
+        "cashDelta": 700
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_cash_15",
+      "icon": "iconWallet"
+    },
+    {
+      "title": "Экономия на аренде",
+      "description": "Удалось снизить платёж за аренду.",
+      "effect": {
+        "cashDelta": 500
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_cash_16",
+      "icon": "iconCard"
+    },
+    {
+      "title": "Выгодная перепродажа",
+      "description": "Продажа ненужных вещей принесла доход.",
+      "effect": {
+        "cashDelta": 360
+      },
+      "type": "positive",
+      "chance": 0.45,
+      "id": "pos_cash_17",
+      "icon": "iconOwl"
+    },
+    {
+      "title": "Выплата по гарантии",
+      "description": "Производитель компенсировал брак.",
+      "effect": {
+        "cashDelta": 280
+      },
+      "type": "positive",
+      "chance": 0.45,
+      "id": "pos_cash_18",
+      "icon": "iconCalculator"
+    },
+    {
+      "title": "Сезонная подработка",
+      "description": "Сезонная работа дала дополнительный доход.",
+      "effect": {
+        "cashDelta": 900
+      },
+      "type": "positive",
+      "chance": 0.3,
+      "id": "pos_cash_19",
+      "icon": "iconStethoscope"
+    },
+    {
+      "title": "Компенсация от работодателя",
+      "description": "Работодатель компенсировал расходы.",
+      "effect": {
+        "cashDelta": 550
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_cash_20",
+      "icon": "iconSmile"
+    },
+    {
+      "title": "Возврат за коммуналку",
+      "description": "Пришёл возврат за переплату по ЖКХ.",
+      "effect": {
+        "cashDelta": 260
+      },
+      "type": "positive",
+      "chance": 0.45,
+      "id": "pos_cash_21",
+      "icon": "iconGrowth"
+    },
+    {
+      "title": "Скидка на обучение",
+      "description": "Вернули часть оплаты за курс.",
+      "effect": {
+        "cashDelta": 340
+      },
+      "type": "positive",
+      "chance": 0.4,
+      "id": "pos_cash_22",
+      "icon": "iconHardhat"
+    },
+    {
+      "title": "Мелкая продажа",
+      "description": "Продал ненужные вещи.",
+      "effect": {
+        "cashDelta": 210
+      },
+      "type": "positive",
+      "chance": 0.5,
+      "id": "pos_cash_23",
+      "icon": "iconPiggy"
+    },
+    {
+      "title": "Ремонт автомобиля",
+      "description": "Неожиданный ремонт обошёлся дорого.",
+      "effect": {
+        "cashDelta": -900
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "id": "neg_cash_01",
+      "icon": "iconGift"
+    },
+    {
+      "title": "Срочный визит к врачу",
+      "description": "Оплата срочного приёма и лекарств.",
+      "effect": {
+        "cashDelta": -700
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "protectionKey": "healthPlan",
+      "id": "neg_cash_02",
+      "icon": "iconCoins"
+    },
+    {
+      "title": "Поломка техники",
+      "description": "Сломалась важная техника.",
+      "effect": {
+        "cashDelta": -650
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "protectionKey": "techShield",
+      "id": "neg_cash_03",
+      "icon": "iconPlant"
+    },
+    {
+      "title": "Штраф за парковку",
+      "description": "Получен штраф.",
+      "effect": {
+        "cashDelta": -180
+      },
+      "type": "negative",
+      "chance": 0.5,
+      "id": "neg_cash_04",
+      "icon": "iconBulb"
+    },
+    {
+      "title": "Коммунальный перерасчёт",
+      "description": "Пришёл перерасчёт за услуги.",
+      "effect": {
+        "cashDelta": -320
+      },
+      "type": "negative",
+      "chance": 0.45,
+      "id": "neg_cash_05",
+      "icon": "iconCart"
+    },
+    {
+      "title": "Срыв поставки",
+      "description": "Компенсация клиенту за срыв сроков.",
+      "effect": {
+        "cashDelta": -520
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "id": "neg_cash_06",
+      "icon": "iconWallet"
+    },
+    {
+      "title": "Оплата госпошлины",
+      "description": "Неожиданная госпошлина.",
+      "effect": {
+        "cashDelta": -240
+      },
+      "type": "negative",
+      "chance": 0.45,
+      "id": "neg_cash_07",
+      "icon": "iconCard"
+    },
+    {
+      "title": "Потеря оборудования",
+      "description": "Часть оборудования утрачена.",
+      "effect": {
+        "cashDelta": -800
       },
       "type": "negative",
       "chance": 0.3,
       "protectionKey": "techShield",
-      "icon": "iconHardhat"
+      "id": "neg_cash_08",
+      "icon": "iconOwl"
     },
     {
-      "id": "clinic_invoice",
-      "title": "Счёт из клиники",
-      "description": "Без страховки дорого лечиться.",
+      "title": "Лекарства",
+      "description": "Траты на лечение.",
       "effect": {
-        "cashDelta": -620
+        "cashDelta": -450
       },
       "type": "negative",
-      "chance": 0.3,
+      "chance": 0.4,
       "protectionKey": "healthPlan",
+      "id": "neg_cash_09",
+      "icon": "iconCalculator"
+    },
+    {
+      "title": "Юридические расходы",
+      "description": "Нужно оплатить консультацию.",
+      "effect": {
+        "cashDelta": -600
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "protectionKey": "legalShield",
+      "id": "neg_cash_10",
       "icon": "iconStethoscope"
     },
     {
-      "id": "mentor_call",
-      "title": "Совет ментора",
-      "description": "Знания повышают доход.",
+      "title": "Плата за обслуживание",
+      "description": "Повышенная плата за обслуживание счёта.",
+      "effect": {
+        "cashDelta": -210
+      },
+      "type": "negative",
+      "chance": 0.45,
+      "id": "neg_cash_11",
+      "icon": "iconSmile"
+    },
+    {
+      "title": "Задержка рейса",
+      "description": "Пришлось оплатить дополнительную ночь.",
+      "effect": {
+        "cashDelta": -360
+      },
+      "type": "negative",
+      "chance": 0.4,
+      "id": "neg_cash_12",
+      "icon": "iconGrowth"
+    },
+    {
+      "title": "Замена шин",
+      "description": "Сезонная замена шин дороже обычного.",
+      "effect": {
+        "cashDelta": -480
+      },
+      "type": "negative",
+      "chance": 0.4,
+      "id": "neg_cash_13",
+      "icon": "iconHardhat"
+    },
+    {
+      "title": "Аварийный сантехник",
+      "description": "Срочный вызов мастера.",
+      "effect": {
+        "cashDelta": -540
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "id": "neg_cash_14",
+      "icon": "iconPiggy"
+    },
+    {
+      "title": "Повреждение жилья",
+      "description": "Нужен срочный ремонт.",
+      "effect": {
+        "cashDelta": -950
+      },
+      "type": "negative",
+      "chance": 0.25,
+      "id": "neg_cash_15",
+      "icon": "iconGift"
+    },
+    {
+      "title": "Сервисный сбор",
+      "description": "Сервис поднял комиссию.",
+      "effect": {
+        "cashDelta": -260
+      },
+      "type": "negative",
+      "chance": 0.45,
+      "id": "neg_cash_16",
+      "icon": "iconCoins"
+    },
+    {
+      "title": "Штраф по контракту",
+      "description": "Нарушение сроков — штраф.",
+      "effect": {
+        "cashDelta": -700
+      },
+      "type": "negative",
+      "chance": 0.3,
+      "id": "neg_cash_17",
+      "icon": "iconPlant"
+    },
+    {
+      "title": "Переезд",
+      "description": "Переезд оказался дороже.",
+      "effect": {
+        "cashDelta": -1100
+      },
+      "type": "negative",
+      "chance": 0.2,
+      "id": "neg_cash_18",
+      "icon": "iconBulb"
+    },
+    {
+      "title": "Утеря документа",
+      "description": "Оформление документов стоит денег.",
+      "effect": {
+        "cashDelta": -300
+      },
+      "type": "negative",
+      "chance": 0.45,
+      "id": "neg_cash_19",
+      "icon": "iconCart"
+    },
+    {
+      "title": "Платная диагностика",
+      "description": "Диагностика и мелкий ремонт.",
+      "effect": {
+        "cashDelta": -390
+      },
+      "type": "negative",
+      "chance": 0.4,
+      "id": "neg_cash_20",
+      "icon": "iconWallet"
+    },
+    {
+      "title": "Замена смартфона",
+      "description": "Поломка телефона потребовала срочной замены.",
+      "effect": {
+        "cashDelta": -800
+      },
+      "type": "negative",
+      "chance": 0.3,
+      "protectionKey": "techShield",
+      "id": "neg_cash_21",
+      "icon": "iconCard"
+    },
+    {
+      "title": "Срочный анализ",
+      "description": "Нужны платные анализы.",
+      "effect": {
+        "cashDelta": -420
+      },
+      "type": "negative",
+      "chance": 0.4,
+      "protectionKey": "healthPlan",
+      "id": "neg_cash_22",
+      "icon": "iconOwl"
+    },
+    {
+      "title": "Штраф за документы",
+      "description": "Штраф за нарушение сроков подачи.",
+      "effect": {
+        "cashDelta": -230
+      },
+      "type": "negative",
+      "chance": 0.45,
+      "id": "neg_cash_23",
+      "icon": "iconCalculator"
+    },
+    {
+      "title": "Скидка на интернет",
+      "description": "Провайдер снизил тариф.",
+      "effect": {
+        "recurringDelta": -60
+      },
+      "type": "positive",
+      "chance": 0.3,
+      "id": "pos_rec_01",
+      "icon": "iconStethoscope"
+    },
+    {
+      "title": "Снижение страховки",
+      "description": "Страховка стала дешевле.",
+      "effect": {
+        "recurringDelta": -80
+      },
+      "type": "positive",
+      "chance": 0.28,
+      "id": "pos_rec_02",
+      "icon": "iconSmile"
+    },
+    {
+      "title": "Пересмотр аренды",
+      "description": "Удалось снизить аренду.",
+      "effect": {
+        "recurringDelta": -120
+      },
+      "type": "positive",
+      "chance": 0.22,
+      "id": "pos_rec_03",
+      "icon": "iconGrowth"
+    },
+    {
+      "title": "Снижение коммуналки",
+      "description": "Расходы на коммуналку снизились.",
+      "effect": {
+        "recurringDelta": -50
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_rec_04",
+      "icon": "iconHardhat"
+    },
+    {
+      "title": "Новый тариф связи",
+      "description": "Связь стала дешевле.",
+      "effect": {
+        "recurringDelta": -40
+      },
+      "type": "positive",
+      "chance": 0.4,
+      "id": "pos_rec_05",
+      "icon": "iconPiggy"
+    },
+    {
+      "title": "Снижение комиссий",
+      "description": "Банк снизил комиссии.",
+      "effect": {
+        "recurringDelta": -45
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_rec_06",
+      "icon": "iconGift"
+    },
+    {
+      "title": "Скидка на транспорт",
+      "description": "Абонемент на транспорт дешевле.",
+      "effect": {
+        "recurringDelta": -55
+      },
+      "type": "positive",
+      "chance": 0.35,
+      "id": "pos_rec_07",
+      "icon": "iconCoins"
+    },
+    {
+      "title": "Пакет семейных услуг",
+      "description": "Пакетные услуги дешевле.",
+      "effect": {
+        "recurringDelta": -70
+      },
+      "type": "positive",
+      "chance": 0.3,
+      "id": "pos_rec_08",
+      "icon": "iconPlant"
+    },
+    {
+      "title": "Оптимизация подписок",
+      "description": "Подписки урезаны.",
+      "effect": {
+        "recurringDelta": -90
+      },
+      "type": "positive",
+      "chance": 0.25,
+      "id": "pos_rec_09",
+      "icon": "iconBulb"
+    },
+    {
+      "title": "Перенос кредита",
+      "description": "Платёж снизился.",
+      "effect": {
+        "recurringDelta": -110
+      },
+      "type": "positive",
+      "chance": 0.22,
+      "id": "pos_rec_10",
+      "icon": "iconCart"
+    },
+    {
+      "title": "Рост аренды",
+      "description": "Арендодатель поднял цену.",
+      "effect": {
+        "recurringDelta": 180
+      },
+      "type": "negative",
+      "chance": 0.2,
+      "id": "neg_rec_01",
+      "icon": "iconWallet"
+    },
+    {
+      "title": "Рост страховки",
+      "description": "Страховая подняла тариф.",
+      "effect": {
+        "recurringDelta": 90
+      },
+      "type": "negative",
+      "chance": 0.28,
+      "id": "neg_rec_02",
+      "icon": "iconCard"
+    },
+    {
+      "title": "Подорожание услуг",
+      "description": "Пакет услуг стал дороже.",
+      "effect": {
+        "recurringDelta": 70
+      },
+      "type": "negative",
+      "chance": 0.32,
+      "id": "neg_rec_03",
+      "icon": "iconOwl"
+    },
+    {
+      "title": "Увеличение коммуналки",
+      "description": "Коммунальные платежи выросли.",
+      "effect": {
+        "recurringDelta": 120
+      },
+      "type": "negative",
+      "chance": 0.25,
+      "id": "neg_rec_04",
+      "icon": "iconCalculator"
+    },
+    {
+      "title": "Рост стоимости связи",
+      "description": "Оператор поднял тариф.",
+      "effect": {
+        "recurringDelta": 50
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "id": "neg_rec_05",
+      "icon": "iconStethoscope"
+    },
+    {
+      "title": "Рост стоимости транспорта",
+      "description": "Проезд подорожал.",
+      "effect": {
+        "recurringDelta": 60
+      },
+      "type": "negative",
+      "chance": 0.33,
+      "id": "neg_rec_06",
+      "icon": "iconSmile"
+    },
+    {
+      "title": "Повышение сервисного сбора",
+      "description": "Сервис ввёл новый сбор.",
+      "effect": {
+        "recurringDelta": 55
+      },
+      "type": "negative",
+      "chance": 0.35,
+      "id": "neg_rec_07",
+      "icon": "iconGrowth"
+    },
+    {
+      "title": "Дорожают продукты",
+      "description": "Ежемесячные расходы выросли.",
+      "effect": {
+        "recurringDelta": 140
+      },
+      "type": "negative",
+      "chance": 0.22,
+      "id": "neg_rec_08",
+      "icon": "iconHardhat"
+    },
+    {
+      "title": "Новые требования ЖКХ",
+      "description": "Добавили обязательный сбор.",
+      "effect": {
+        "recurringDelta": 80
+      },
+      "type": "negative",
+      "chance": 0.3,
+      "id": "neg_rec_09",
+      "icon": "iconPiggy"
+    },
+    {
+      "title": "Подорожание детсада",
+      "description": "Оплата детсада выросла.",
+      "effect": {
+        "recurringDelta": 150
+      },
+      "type": "negative",
+      "chance": 0.2,
+      "id": "neg_rec_10",
+      "icon": "iconGift"
+    },
+    {
+      "title": "Надбавка за результат",
+      "description": "Руководство повысило надбавку.",
+      "effect": {
+        "salaryBonusDelta": 120
+      },
+      "type": "positive",
+      "chance": 0.3,
+      "id": "pos_salary_01",
+      "icon": "iconCoins"
+    },
+    {
+      "title": "Повышение квалификации",
+      "description": "Сертификат дал прирост дохода.",
+      "effect": {
+        "salaryBonusDelta": 150
+      },
+      "type": "positive",
+      "chance": 0.28,
+      "id": "pos_salary_02",
+      "icon": "iconPlant"
+    },
+    {
+      "title": "Надбавка за наставничество",
+      "description": "Оплата наставничества увеличилась.",
+      "effect": {
+        "salaryBonusDelta": 100
+      },
+      "type": "positive",
+      "chance": 0.3,
+      "id": "pos_salary_03",
+      "icon": "iconBulb"
+    },
+    {
+      "title": "Реферальная программа",
+      "description": "Выплаты за рекомендации выросли.",
+      "effect": {
+        "salaryBonusDelta": 130
+      },
+      "type": "positive",
+      "chance": 0.28,
+      "id": "pos_salary_04",
+      "icon": "iconCart"
+    },
+    {
+      "title": "Бонус за продажи",
+      "description": "Повышен процент за сделки.",
       "effect": {
         "salaryBonusDelta": 180
       },
       "type": "positive",
       "chance": 0.25,
-      "icon": "iconBulb"
-    },
-    {
-      "id": "utility_spike",
-      "title": "Коммунальный скачок",
-      "description": "Расходы выросли на месяц.",
-      "effect": {
-        "cashDelta": -300
-      },
-      "type": "negative",
-      "chance": 0.2,
-      "icon": "iconCart"
-    },
-    {
-      "id": "low_utilities",
-      "title": "Скидки на энергорынке",
-      "description": "Постоянно снижаешь фиксированные расходы.",
-      "effect": {
-        "recurringDelta": -60
-      },
-      "type": "positive",
-      "chance": 0.15,
-      "icon": "iconPlant"
-    },
-    {
-      "id": "job_loss",
-      "title": "Сокращение отдела",
-      "description": "Направление закрыли — остаёшься без зарплаты на несколько месяцев.",
-      "effect": {
-        "joblessMonths": 3
-      },
-      "type": "negative",
-      "chance": 0.08,
-      "icon": "iconHardhat"
-    },
-    {
-      "id": "salary_cut",
-      "title": "Антикризисное снижение",
-      "description": "Компания урезает зарплату, пока рынок не стабилизируется.",
-      "effect": {
-        "salaryCutMonths": 3,
-        "salaryCutAmount": 400
-      },
-      "type": "negative",
-      "chance": 0.12,
+      "id": "pos_salary_05",
       "icon": "iconWallet"
     },
     {
-      "id": "rate_hike",
-      "title": "Рост ставки",
-      "description": "Обслуживание долга дорожает.",
+      "title": "Расширение зоны ответственности",
+      "description": "Доплаты за новые задачи.",
       "effect": {
-        "recurringDelta": 110
+        "salaryBonusDelta": 200
       },
-      "type": "negative",
+      "type": "positive",
       "chance": 0.22,
+      "id": "pos_salary_06",
+      "icon": "iconCard"
+    },
+    {
+      "title": "Оплата дежурств",
+      "description": "Добавлены оплачиваемые дежурства.",
+      "effect": {
+        "salaryBonusDelta": 90
+      },
+      "type": "positive",
+      "chance": 0.32,
+      "id": "pos_salary_07",
+      "icon": "iconOwl"
+    },
+    {
+      "title": "Новые клиенты",
+      "description": "Рост клиентской базы дал надбавку.",
+      "effect": {
+        "salaryBonusDelta": 160
+      },
+      "type": "positive",
+      "chance": 0.25,
+      "id": "pos_salary_08",
       "icon": "iconCalculator"
     },
     {
-      "id": "currency_devaluation",
-      "title": "Девальвация валюты",
-      "description": "Свободные деньги обесценились.",
+      "title": "Переаттестация",
+      "description": "Успешная аттестация повысила доход.",
       "effect": {
-        "cashDelta": -400
+        "salaryBonusDelta": 140
       },
-      "type": "negative",
-      "chance": 0.18,
-      "icon": "iconWallet"
+      "type": "positive",
+      "chance": 0.28,
+      "id": "pos_salary_09",
+      "icon": "iconStethoscope"
     },
     {
-      "id": "tenant_failure",
-      "title": "Сбой арендатора",
-      "description": "Один из арендаторов сорвал платёж.",
+      "title": "Локальное повышение",
+      "description": "Небольшое повышение в отделе.",
       "effect": {
-        "cashDelta": -350
+        "salaryBonusDelta": 110
+      },
+      "type": "positive",
+      "chance": 0.3,
+      "id": "pos_salary_10",
+      "icon": "iconSmile"
+    },
+    {
+      "title": "Урезание бонусов",
+      "description": "Компания временно урезала бонусы.",
+      "effect": {
+        "salaryCutMonths": 3,
+        "salaryCutAmount": 250
       },
       "type": "negative",
       "chance": 0.2,
+      "id": "neg_salary_01",
+      "icon": "iconGrowth"
+    },
+    {
+      "title": "Сокращение часов",
+      "description": "Сократили оплачиваемые часы.",
+      "effect": {
+        "salaryCutMonths": 2,
+        "salaryCutAmount": 300
+      },
+      "type": "negative",
+      "chance": 0.22,
+      "id": "neg_salary_02",
       "icon": "iconHardhat"
     },
     {
-      "id": "career_shift",
-      "title": "Смена профессии",
-      "description": "Получаешь оффер в смежной нише — повышает доход.",
+      "title": "Снижение премий",
+      "description": "Премии временно уменьшены.",
       "effect": {
-        "salaryBonusDelta": 220
+        "salaryCutMonths": 4,
+        "salaryCutAmount": 220
       },
-      "type": "positive",
-      "chance": 0.12,
-      "icon": "iconBulb"
+      "type": "negative",
+      "chance": 0.2,
+      "id": "neg_salary_03",
+      "icon": "iconPiggy"
     },
     {
-      "id": "income_loss",
-      "title": "Потеря дохода",
-      "description": "Контракт закрыт, нужен запас прочности.",
+      "title": "Сезонный спад",
+      "description": "Снижен объём работ и доплаты.",
+      "effect": {
+        "salaryCutMonths": 3,
+        "salaryCutAmount": 280
+      },
+      "type": "negative",
+      "chance": 0.2,
+      "id": "neg_salary_04",
+      "icon": "iconGift"
+    },
+    {
+      "title": "Оптимизация затрат",
+      "description": "Урезали надбавки отдела.",
+      "effect": {
+        "salaryCutMonths": 5,
+        "salaryCutAmount": 200
+      },
+      "type": "negative",
+      "chance": 0.18,
+      "id": "neg_salary_05",
+      "icon": "iconCoins"
+    },
+    {
+      "title": "Перерыв в работе",
+      "description": "Проект завершился, пауза в выплатах.",
+      "effect": {
+        "joblessMonths": 1
+      },
+      "type": "negative",
+      "chance": 0.18,
+      "id": "neg_job_01",
+      "icon": "iconPlant"
+    },
+    {
+      "title": "Временное сокращение",
+      "description": "Несколько месяцев без зарплаты.",
       "effect": {
         "joblessMonths": 2
       },
       "type": "negative",
       "chance": 0.15,
+      "id": "neg_job_02",
+      "icon": "iconBulb"
+    },
+    {
+      "title": "Приостановка деятельности",
+      "description": "Работы нет на время.",
+      "effect": {
+        "joblessMonths": 3
+      },
+      "type": "negative",
+      "chance": 0.12,
+      "id": "neg_job_03",
+      "icon": "iconCart"
+    },
+    {
+      "title": "Перерасчёт процентов",
+      "description": "Банк пересчитал проценты в твою пользу.",
+      "effect": {
+        "debtDelta": -600
+      },
+      "type": "positive",
+      "chance": 0.2,
+      "id": "pos_debt_01",
+      "icon": "iconWallet"
+    },
+    {
+      "title": "Списание штрафа",
+      "description": "Штраф по кредиту отменён.",
+      "effect": {
+        "debtDelta": -350
+      },
+      "type": "positive",
+      "chance": 0.25,
+      "id": "pos_debt_02",
+      "icon": "iconCard"
+    },
+    {
+      "title": "Компенсация комиссии",
+      "description": "Часть долга списана по акции.",
+      "effect": {
+        "debtDelta": -500
+      },
+      "type": "positive",
+      "chance": 0.22,
+      "id": "pos_debt_03",
+      "icon": "iconOwl"
+    },
+    {
+      "title": "Банковский штраф",
+      "description": "Банк начислил штраф по просрочке.",
+      "effect": {
+        "debtDelta": 420
+      },
+      "type": "negative",
+      "chance": 0.25,
+      "id": "neg_debt_01",
+      "icon": "iconCalculator"
+    },
+    {
+      "title": "Комиссия за обслуживание долга",
+      "description": "Начислена дополнительная комиссия.",
+      "effect": {
+        "debtDelta": 300
+      },
+      "type": "negative",
+      "chance": 0.3,
+      "id": "neg_debt_02",
+      "icon": "iconStethoscope"
+    },
+    {
+      "title": "Техническая ошибка банка",
+      "description": "Выписана корректировка по долгу.",
+      "effect": {
+        "debtDelta": 520
+      },
+      "type": "negative",
+      "chance": 0.22,
+      "id": "neg_debt_03",
+      "icon": "iconSmile"
+    },
+    {
+      "title": "Годовой бонус",
+      "description": "Начислен годовой бонус.",
+      "effect": {
+        "cashDelta": 3500
+      },
+      "type": "positive",
+      "chance": 0.18,
+      "id": "pos_big_01",
+      "icon": "iconGrowth"
+    },
+    {
+      "title": "Крупный заказ",
+      "description": "Крупный заказ принёс существенный доход.",
+      "effect": {
+        "cashDelta": 4200
+      },
+      "type": "positive",
+      "chance": 0.15,
+      "id": "pos_big_02",
+      "icon": "iconHardhat"
+    },
+    {
+      "title": "Компенсация страховки",
+      "description": "Страховая выплатила крупную сумму.",
+      "effect": {
+        "cashDelta": 2800
+      },
+      "type": "positive",
+      "chance": 0.2,
+      "id": "pos_big_03",
+      "icon": "iconPiggy"
+    },
+    {
+      "title": "Продажа техники",
+      "description": "Удалось выгодно продать технику.",
+      "effect": {
+        "cashDelta": 2600
+      },
+      "type": "positive",
+      "chance": 0.22,
+      "id": "pos_big_04",
+      "icon": "iconGift"
+    },
+    {
+      "title": "Бонус за участие в проекте",
+      "description": "Проект завершён с выплатой бонуса.",
+      "effect": {
+        "cashDelta": 3000
+      },
+      "type": "positive",
+      "chance": 0.2,
+      "id": "pos_big_05",
+      "icon": "iconCoins"
+    },
+    {
+      "title": "Крупный ремонт жилья",
+      "description": "Срочный ремонт вышел дорого.",
+      "effect": {
+        "cashDelta": -3200
+      },
+      "type": "negative",
+      "chance": 0.18,
+      "id": "neg_big_01",
+      "icon": "iconPlant"
+    },
+    {
+      "title": "Судебные расходы",
+      "description": "Неожиданные судебные расходы.",
+      "effect": {
+        "cashDelta": -2800
+      },
+      "type": "negative",
+      "chance": 0.2,
+      "protectionKey": "legalShield",
+      "id": "neg_big_02",
+      "icon": "iconBulb"
+    },
+    {
+      "title": "Серьёзное лечение",
+      "description": "Медицинские расходы выросли.",
+      "effect": {
+        "cashDelta": -3500
+      },
+      "type": "negative",
+      "chance": 0.15,
+      "protectionKey": "healthPlan",
+      "id": "neg_big_03",
+      "icon": "iconCart"
+    },
+    {
+      "title": "Кража оборудования",
+      "description": "Потеря части оборудования.",
+      "effect": {
+        "cashDelta": -3000
+      },
+      "type": "negative",
+      "chance": 0.18,
+      "protectionKey": "techShield",
+      "id": "neg_big_04",
+      "icon": "iconWallet"
+    },
+    {
+      "title": "Срыв крупного заказа",
+      "description": "Компенсация за срыв контракта.",
+      "effect": {
+        "cashDelta": -2600
+      },
+      "type": "negative",
+      "chance": 0.2,
+      "id": "neg_big_05",
       "icon": "iconCard"
     }
   ]
