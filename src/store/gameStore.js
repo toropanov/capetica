@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { seedPriceState, simulateMarkets } from '../domain/marketSimulator';
 import {
   getProfessionById,
+  computeLivingCost,
   computeCreditLimit,
   calculateHoldingsValue,
   calculatePassiveIncome,
