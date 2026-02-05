@@ -726,6 +726,10 @@ function Home() {
       {highlightData && (
         <TurnHighlightOverlay data={highlightData} active={highlightActive} onDismiss={dismissHighlight} />
       )}
+      <div className={styles.analyticsWarning}>
+        <strong>Высокая долговая нагрузка</strong>
+        <span>Риск проигрыша через 3 хода без улучшения показателей.</span>
+      </div>
       <Card className={styles.card}>
         <LastTurn
           data={lastTurn}

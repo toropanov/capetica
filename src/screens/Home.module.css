@@ -323,6 +323,24 @@
   margin-top: 0.8rem;
 }
 
+.analyticsWarning {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0;
+  background: rgba(255, 221, 214, 0.55);
+  color: rgba(78, 22, 14, 0.95);
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.analyticsWarning strong {
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .infoSection {
   padding: 0;
   display: flex;

@@ -20,6 +20,6 @@
   "lose":[
     {"id":"bankruptcy","type":"no_liquidity_no_credit","consecutiveMonths":1},
     {"id":"insolvency","type":"negative_cashflow_debt_growing","consecutiveMonths":3},
-    {"id":"debt_over_networth","type":"debt_ratio","minDebtToNetWorth":1.0,"consecutiveMonths":1}
+    {"id":"debt_over_networth","type":"debt_ratio","minDebtToNetWorth":2.0,"consecutiveMonths":6}
   ]
 }
