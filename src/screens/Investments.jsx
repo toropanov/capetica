@@ -271,8 +271,8 @@ function Investments() {
           <div className={styles.totalPaymentHint}>
             <small className={styles.paymentHint}>
               {paymentChanged
-                ? `Платёж по кредитам ≈ ${formatUSD(Math.round(currentMonthlyPayment || 0))} → ${formatUSD(Math.round(previewMonthlyPayment || 0))}/мес`
-                : `Платёж по кредитам ≈ ${formatUSD(Math.round(paymentValue))}/мес`}
+                ? `Платёж по кредитам: ${formatUSD(Math.round(currentMonthlyPayment || 0))} → ${formatUSD(Math.round(previewMonthlyPayment || 0))}/мес`
+                : `Платёж по кредитам: ${formatUSD(Math.round(paymentValue))}/мес`}
             </small>
           </div>
         )}

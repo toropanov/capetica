@@ -909,7 +909,7 @@ function MainLayout() {
                   </div>
                   {rollPassiveRate > 0 && (
                     <p className={styles.rollCardPassiveHint}>
-                      Пассив ≈ +{formatUSD(Math.round(rollBuyAmount * rollPassiveRate))}/мес
+                      Пассивный доход: {formatUSD(Math.round(rollBuyAmount * rollPassiveRate))}/мес
                     </p>
                   )}
                   <Slider
@@ -930,7 +930,7 @@ function MainLayout() {
                     </div>
                     {rollPassiveRate > 0 && (
                       <p className={styles.rollCardPassiveHint}>
-                        Пассив снизится ≈ {formatUSD(-Math.round(rollSellAmount * rollPassiveRate))}/мес
+                        Пассивный доход: {formatUSD(-Math.round(rollSellAmount * rollPassiveRate))}/мес
                       </p>
                     )}
                     <Slider
