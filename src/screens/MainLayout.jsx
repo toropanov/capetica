@@ -561,7 +561,7 @@ function MainLayout() {
 
   useEffect(() => {
     if (!metricAnimation) return undefined;
-    const duration = 1250;
+    const duration = 1800;
     const start = performance.now();
     setAnimatedMetrics(metricAnimation.prev);
     const step = (timestamp) => {
