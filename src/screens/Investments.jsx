@@ -52,9 +52,7 @@ function Investments() {
   const navigate = useNavigate();
   const [creditAmount, setCreditAmount] = useState(1000);
   const [creditConfirm, setCreditConfirm] = useState(null);
-  const [lastDrawAmount, setLastDrawAmount] = useState(null);
   const creditConfirmRef = useRef(null);
-  const creditLocked = useGameStore((state) => state.creditLockedMonth === state.month);
   const aprLabel = loanRules?.apr != null ? formatPercent(loanRules.apr) : null;
   const minTerm = loanRules?.minTermMonths || loanRules?.maxTermMonths || 0;
   const maxTerm = loanRules?.maxTermMonths || loanRules?.minTermMonths || 0;
@@ -86,15 +84,14 @@ function Investments() {
 
   const handleDrawCredit = () => {
     const amount = Math.min(creditAmount, Math.max(availableCredit, 0));
-    if (amount <= 0 || creditLocked) return;
+    if (amount <= 0) return;
     drawCredit(amount);
-    setLastDrawAmount(amount);
     flashCreditConfirm('draw');
   };
 
   const handleRepay = (options = {}) => {
     const targetAmount = options.amount ?? creditAmount;
-    if (targetAmount <= 0 || creditLocked || debt <= 0 || cash <= 0) return;
+    if (targetAmount <= 0 || debt <= 0 || cash <= 0) return;
     serviceDebt(targetAmount, { drawId: options.drawId });
     flashCreditConfirm('repay');
   };
@@ -186,7 +183,6 @@ function Investments() {
                 step={sliderStep}
                 value={Math.min(creditAmount, sliderMax)}
                 onChange={(value) => setCreditAmount(Math.round(value))}
-                disabled={creditLocked}
               />
             );
           })()
@@ -198,13 +194,11 @@ function Investments() {
             <Button
               variant="primary"
               onClick={handleDrawCredit}
-              disabled={availableCredit <= 0 || creditLocked}
-              className={creditLocked && lastDrawAmount ? styles.creditTakenButton : ''}
+              disabled={availableCredit <= 0}
+              className={creditConfirm === 'draw' ? styles.creditTakenButton : ''}
             >
               {creditConfirm === 'draw'
                 ? 'Готово'
-                : creditLocked && lastDrawAmount
-                ? `Взято ${formatUSD(lastDrawAmount)}`
                 : `Взять ${formatUSD(creditAmount)}`}
             </Button>
           </div>
@@ -221,7 +215,7 @@ function Investments() {
                   type="button"
                   className={styles.creditDrawButton}
                   onClick={() => handleRepay({ amount: draw.balance, drawId: draw.id })}
-                  disabled={creditLocked || cash <= 0}
+                  disabled={cash <= 0}
                 >
                   Погасить
                 </button>
@@ -287,7 +281,9 @@ function Investments() {
                   </div>
                 ))
               ) : (
-                <p className={styles.emptyHint}>Активов пока нет.</p>
+                <div className={styles.emptyDeals}>
+                  <p>Активы появляются волнами — жди ход с карточкой и сразу входи, пока окно не закрылось.</p>
+                </div>
               )}
             </Card>
           </div>

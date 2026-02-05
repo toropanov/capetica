@@ -1354,9 +1354,6 @@ const useGameStore = create(
       },
       drawCredit: (amount = 1200) =>
         set((state) => {
-          if (state.creditLockedMonth === state.month) {
-            return {};
-          }
           const available = Math.max(0, state.creditLimit - state.debt);
           const draw = Math.min(roundMoney(amount), available);
           if (draw <= 0) return {};
@@ -1365,11 +1362,13 @@ const useGameStore = create(
             draw,
             state.month,
           );
+          const nextDebt = roundMoney(state.debt + draw);
+          const nextAvailableCredit = Math.max(0, state.creditLimit - nextDebt);
           return {
             cash: roundMoney(state.cash + draw),
-            debt: roundMoney(state.debt + draw),
+            debt: nextDebt,
+            availableCredit: nextAvailableCredit,
             creditBucket: roundMoney((state.creditBucket || 0) + draw),
-            creditLockedMonth: state.month,
             actionsThisTurn: (state.actionsThisTurn || 0) + 1,
             badgeActionsThisTurn: (state.badgeActionsThisTurn || 0) + 1,
             creditDraws,
@@ -1377,9 +1376,6 @@ const useGameStore = create(
         }),
       serviceDebt: (amount = 600, options = {}) =>
         set((state) => {
-          if (state.creditLockedMonth === state.month) {
-            return {};
-          }
           if (state.debt <= 0 || state.cash <= 0) return {};
           const payment = Math.min(roundMoney(amount), state.cash, state.debt);
           if (payment <= 0) return {};
@@ -1388,10 +1384,11 @@ const useGameStore = create(
           if (result.paid <= 0) return {};
           const fee = Math.min(state.cash - result.paid, Math.round(result.paid * 0.08));
           const nextDebt = Math.max(0, roundMoney(state.debt - result.paid));
+          const nextAvailableCredit = Math.max(0, state.creditLimit - nextDebt);
           return {
             cash: roundMoney(state.cash - result.paid - fee),
             debt: nextDebt,
-            creditLockedMonth: state.month,
+            availableCredit: nextAvailableCredit,
             actionsThisTurn: (state.actionsThisTurn || 0) + 1,
             badgeActionsThisTurn: (state.badgeActionsThisTurn || 0) + 1,
             creditDraws: normalizeCreditDraws(result.draws, nextDebt),

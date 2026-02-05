@@ -494,33 +494,35 @@
 
 .emptyPortfolioCard {
   text-align: center;
-  padding: 2rem 1.5rem;
+  padding: 1.2rem 1rem;
   border-radius: 0;
   background: #ffffff;
-  border: none;
+  border: 1px solid rgba(24, 46, 90, 0.08);
   box-shadow: 0 12px 28px rgba(18, 32, 64, 0.08);
 }
 
 .emptyIllustration {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1rem;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 0.6rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
 .emptyPortfolioCard h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
   color: #14274c;
+  font-weight: 600;
 }
 
 .emptyPortfolioCard p {
   margin: 0;
-  color: rgba(20, 39, 78, 0.75);
-  font-size: 0.95rem;
+  color: rgba(20, 39, 78, 0.68);
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
