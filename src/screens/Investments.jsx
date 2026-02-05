@@ -25,6 +25,8 @@ const gcd = (a, b) => {
   return x || 1;
 };
 
+const CREDIT_DRAW_DEFAULT_LABEL = 'Кредитная линия';
+
 const getCreditSliderStep = (min, max) => {
   const range = Math.max(0, Math.round(max - min));
   if (range === 0) {
@@ -249,7 +251,7 @@ function Investments() {
                   className={`${styles.creditDrawRow} ${isRepaying ? styles.creditDrawRowRepaying : ''}`}
                 >
                   <div>
-                    <span>{draw.label || 'Кредит'}</span>
+                    {draw.label && draw.label !== CREDIT_DRAW_DEFAULT_LABEL && <span>{draw.label}</span>}
                     <strong>{formatUSD(draw.balance)}</strong>
                   </div>
                   <button
