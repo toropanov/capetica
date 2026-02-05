@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -23,7 +24,11 @@ function Investments() {
   const serviceDebt = useGameStore((state) => state.serviceDebt);
   const debt = useGameStore((state) => state.debt);
   const availableCredit = useGameStore((state) => state.availableCredit);
+  const creditDraws = useGameStore((state) => state.creditDraws || []);
+  const lastPurchases = useGameStore((state) => state.lastPurchases || {});
+  const month = useGameStore((state) => state.month);
   const loanRules = useGameStore((state) => state.configs?.rules?.loans);
+  const navigate = useNavigate();
   const [creditAmount, setCreditAmount] = useState(1000);
   const [creditConfirm, setCreditConfirm] = useState(null);
   const [lastDrawAmount, setLastDrawAmount] = useState(null);
@@ -66,9 +71,10 @@ function Investments() {
     flashCreditConfirm('draw');
   };
 
-  const handleRepay = () => {
-    if (creditAmount <= 0 || creditLocked || debt <= 0 || cash <= 0) return;
-    serviceDebt(creditAmount);
+  const handleRepay = (options = {}) => {
+    const targetAmount = options.amount ?? creditAmount;
+    if (targetAmount <= 0 || creditLocked || debt <= 0 || cash <= 0) return;
+    serviceDebt(targetAmount, { drawId: options.drawId });
     flashCreditConfirm('repay');
   };
 
@@ -95,7 +101,10 @@ function Investments() {
         if (!holding || (holding.units || 0) <= 0) return null;
         const price = priceState[instrument.id]?.price ?? instrument.initialPrice ?? 0;
         const value = (holding.units || 0) * price;
-        const changePct = Math.round((priceState[instrument.id]?.lastReturn || 0) * 100);
+        const changeRaw = Math.round((priceState[instrument.id]?.lastReturn || 0) * 100);
+        const purchaseMeta = lastPurchases[instrument.id];
+        const isFresh = purchaseMeta && purchaseMeta.turn === month;
+        const changePct = isFresh ? null : changeRaw;
         return {
           instrument,
           holding,
@@ -105,7 +114,7 @@ function Investments() {
         };
       })
       .filter(Boolean);
-  }, [instruments, holdings, priceState]);
+  }, [instruments, holdings, priceState, lastPurchases, month]);
 
   const activeDeals = useMemo(
     () => dealParticipations.filter((deal) => !deal.completed),
@@ -157,6 +166,26 @@ function Investments() {
         ) : (
           <Slider min={0} max={0} step={1} value={0} onChange={() => {}} disabled />
         )}
+        {creditDraws.length > 0 && (
+          <div className={styles.creditDrawList}>
+            {creditDraws.map((draw) => (
+              <div key={draw.id} className={styles.creditDrawRow}>
+                <div>
+                  <span>{draw.label || 'Кредит'}</span>
+                  <strong>{formatUSD(draw.balance)}</strong>
+                </div>
+                <button
+                  type="button"
+                  className={styles.creditDrawButton}
+                  onClick={() => handleRepay({ amount: draw.balance, drawId: draw.id })}
+                  disabled={creditLocked || cash <= 0}
+                >
+                  Погасить
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         <div className={styles.creditActions}>
           <div className={styles.creditActionColumn}>
             <Button
@@ -181,7 +210,7 @@ function Investments() {
             <div className={styles.creditActionColumn}>
               <Button
                 variant="danger"
-                onClick={handleRepay}
+                onClick={() => handleRepay()}
                 disabled={cash <= 0 || creditLocked}
               >
                 {creditConfirm === 'repay' ? 'Готово' : 'Погасить'}
@@ -191,85 +220,102 @@ function Investments() {
         </div>
       </Card>
 
-      <div className={styles.listCompact}>
-        <Card className={styles.blockCard}>
-          <header className={styles.sectionHeader}>
-            <h2>Акции и криптовалюта</h2>
-            <p>Текущие инструменты в портфеле</p>
-          </header>
-          {holdingsList.length ? (
-            holdingsList.map((item) => (
-              <div key={item.instrument.id} className={styles.instrumentRow}>
-                <div className={styles.instrumentHeader}>
-                  <div>
-                    <span>{item.instrument.title}</span>
-                    <p>{item.instrument.type === 'crypto' ? 'Криптовалюта' : 'Акция'}</p>
-                  </div>
-                  <div className={styles.priceBlock}>
-                    <strong>{formatUSD(item.price)}</strong>
-                    <span className={item.changePct >= 0 ? styles.positive : styles.negative}>
-                      {item.changePct >= 0 ? '+' : ''}{item.changePct}%
-                    </span>
-                  </div>
-                </div>
-                <div className={styles.assetStats}>
-                  <div>
-                    <span>Позиция</span>
-                    <strong>{formatUSD(item.value)}</strong>
-                  </div>
-                  <div>
-                    <span>Лоты</span>
-                    <strong>{item.holding.units.toFixed(2)}</strong>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className={styles.emptyHint}>Активов пока нет.</p>
-          )}
+      {holdingsList.length === 0 && activeDeals.length === 0 ? (
+        <Card className={styles.emptyPortfolioCard}>
+          <div className={styles.emptyIllustration}>
+            <span role="img" aria-label="spark">✨</span>
+          </div>
+          <h2>Портфель ждёт первых активов</h2>
+          <p>Жди карточку актива и прямо во время хода решай: покупать или фиксировать прибыль.</p>
         </Card>
-      </div>
+      ) : (
+        <>
+          <div className={styles.listCompact}>
+            <Card className={styles.blockCard}>
+              <header className={styles.sectionHeader}>
+                <h2>Акции и криптовалюта</h2>
+                <p>Текущие инструменты в портфеле</p>
+              </header>
+              {holdingsList.length ? (
+                holdingsList.map((item) => (
+                  <div key={item.instrument.id} className={styles.instrumentRow}>
+                    <div className={styles.instrumentHeader}>
+                      <div>
+                        <span>{item.instrument.title}</span>
+                        <p>{item.instrument.type === 'crypto' ? 'Криптовалюта' : 'Акция'}</p>
+                      </div>
+                      <div className={styles.priceBlock}>
+                        <strong>{formatUSD(item.price)}</strong>
+                        {item.changePct === null ? (
+                          <span className={styles.neutral}>—</span>
+                        ) : (
+                          <span className={item.changePct >= 0 ? styles.positive : styles.negative}>
+                            {item.changePct >= 0 ? '+' : ''}
+                            {item.changePct}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.assetStats}>
+                      <div>
+                        <span>Позиция</span>
+                        <strong>{formatUSD(item.value)}</strong>
+                      </div>
+                      <div>
+                        <span>Лоты</span>
+                        <strong>{item.holding.units.toFixed(2)}</strong>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.emptyHint}>Активов пока нет.</p>
+              )}
+            </Card>
+          </div>
 
-      <div className={styles.listWithBottom}>
-        <Card className={styles.blockCard}>
-          <header className={styles.sectionHeader}>
-            <h2>Контракты</h2>
-            <p>Текущие участия и выплаты</p>
-          </header>
-          {activeDeals.length ? (
-            activeDeals.map((deal) => {
-              const remaining = Math.max(0, (deal.durationMonths || 0) - (deal.elapsedMonths || 0));
-              return (
-                <div key={deal.participationId} className={styles.instrumentRow}>
-                  <div className={styles.dealHeader}>
-                    <div>
-                      <span>{deal.title}</span>
-                      <p>В работе</p>
+          <div className={styles.listWithBottom}>
+            <Card className={styles.blockCard}>
+              <header className={styles.sectionHeader}>
+                <h2>Контракты</h2>
+                <p>Текущие участия и выплаты</p>
+              </header>
+              {activeDeals.length ? (
+                activeDeals.map((deal) => {
+                  const remaining = Math.max(0, (deal.durationMonths || 0) - (deal.elapsedMonths || 0));
+                  return (
+                    <div key={deal.participationId} className={styles.instrumentRow}>
+                      <div className={styles.dealHeader}>
+                        <div>
+                          <span>{deal.title}</span>
+                          <p>В работе</p>
+                        </div>
+                        <strong>{formatUSD(deal.invested)}</strong>
+                      </div>
+                      <div className={styles.assetStats}>
+                        <div>
+                          <span>Пассивно</span>
+                          <strong>{formatUSD(deal.monthlyPayout)}/мес</strong>
+                        </div>
+                        <div>
+                          <span>Осталось</span>
+                          <strong>{remaining} мес.</strong>
+                        </div>
+                        <div>
+                          <span>Получено</span>
+                          <strong>{formatUSD(deal.profitEarned || 0)}</strong>
+                        </div>
+                      </div>
                     </div>
-                    <strong>{formatUSD(deal.invested)}</strong>
-                  </div>
-                  <div className={styles.assetStats}>
-                    <div>
-                      <span>Пассивно</span>
-                      <strong>{formatUSD(deal.monthlyPayout)}/мес</strong>
-                    </div>
-                    <div>
-                      <span>Осталось</span>
-                      <strong>{remaining} мес.</strong>
-                    </div>
-                    <div>
-                      <span>Получено</span>
-                      <strong>{formatUSD(deal.profitEarned || 0)}</strong>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <p className={styles.emptyHint}>Активных контрактов пока нет.</p>
-          )}
-        </Card>
-      </div>
+                  );
+                })
+              ) : (
+                <p className={styles.emptyHint}>Активных контрактов пока нет.</p>
+              )}
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }

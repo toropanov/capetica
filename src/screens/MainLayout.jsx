@@ -6,7 +6,7 @@ import BottomNav from '../components/BottomNav';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import Slider from '../components/Slider';
-import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/finance';
+import { calculateHoldingsValue, calculatePassiveIncome, getPassiveMultiplier } from '../domain/finance';
 import { DEAL_TEMPLATES } from '../domain/deals';
 import styles from './MainLayout.module.css';
 import { spriteStyle, getProfessionIcon } from '../utils/iconSprite';
@@ -225,6 +225,7 @@ function MainLayout() {
   );
   const advanceMonth = useGameStore((state) => state.advanceMonth);
   const buyInstrument = useGameStore((state) => state.buyInstrument);
+  const sellInstrument = useGameStore((state) => state.sellInstrument);
   const participateInDeal = useGameStore((state) => state.participateInDeal);
   const actionsCount = useGameStore((state) => state.badgeActionsThisTurn || 0);
   const month = useGameStore((state) => state.month);
@@ -254,7 +255,9 @@ function MainLayout() {
   const beginTransition = useGameStore((state) => state.beginTransition);
   const completeTransition = useGameStore((state) => state.completeTransition);
   const resetGame = useGameStore((state) => state.resetGame);
+  const armTurnHighlight = useGameStore((state) => state.armTurnHighlight);
   const [rollBuyAmount, setRollBuyAmount] = useState(0);
+  const [rollSellAmount, setRollSellAmount] = useState(0);
   const [rollFeedback, setRollFeedback] = useState('');
 
   useEffect(() => () => {
@@ -382,24 +385,42 @@ function MainLayout() {
     const instrument = instruments.find((item) => item.id === rollCard.instrumentId);
     if (!instrument) return null;
     const price = storeData.priceState?.[instrument.id]?.price ?? instrument.initialPrice;
+    const holding = storeData.investments?.[instrument.id];
     return {
       type: rollCard.type,
       instrument,
       price,
       range: rollCard.range,
+      holding,
     };
-  }, [rollCard, storeData.configs, storeData.priceState, storeData.dealWindows]);
+  }, [rollCard, storeData.configs, storeData.priceState, storeData.dealWindows, storeData.investments]);
+  const rollPassiveRate =
+    !rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event'
+      ? 0
+      : getPassiveMultiplier(rollCardData.instrument.type);
+  const rollHoldingValue =
+    rollCardData && rollCardData.holding?.units
+      ? rollCardData.holding.units * (rollCardData.price || 0)
+      : 0;
 
   useEffect(() => {
     setRollFeedback('');
     if (!rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event') {
       setRollBuyAmount(0);
+      setRollSellAmount(0);
       return;
     }
     const minOrder = rollCardData.instrument.trading?.minOrder || 10;
     const maxSpend = Math.max(minOrder, Math.round(storeData.cash || 0));
     const initial = Math.min(maxSpend, Math.max(minOrder, Math.round(maxSpend * 0.35)));
     setRollBuyAmount(initial);
+    if (rollCardData.holding && rollCardData.holding.units > 0) {
+      const holdingValue = Math.max(0, rollCardData.holding.units * (rollCardData.price || 0));
+      const baseSell = Math.round(Math.min(holdingValue, holdingValue * 0.5));
+      setRollSellAmount(baseSell);
+    } else {
+      setRollSellAmount(0);
+    }
   }, [rollCardData, storeData.cash]);
 
   useEffect(() => {
@@ -464,6 +485,22 @@ function MainLayout() {
     buyInstrument(rollCardData.instrument.id, amount);
     closeRollCard();
   };
+  const handleRollSell = () => {
+    if (!rollCardData || !rollCardData.instrument) return;
+    const holding = rollCardData.holding;
+    if (!holding || !holding.units) {
+      setRollFeedback('Нет позиции для продажи.');
+      return;
+    }
+    const maxValue = Math.round(holding.units * (rollCardData.price || 0));
+    const amount = Math.min(Math.round(rollSellAmount || 0), maxValue);
+    if (amount <= 0) {
+      setRollFeedback('Выбери сумму продажи.');
+      return;
+    }
+    sellInstrument(rollCardData.instrument.id, amount);
+    closeRollCard();
+  };
   const handleRollDeal = () => {
     if (!rollCardData || rollCardData.type !== 'deal') return;
     const result = participateInDeal(rollCardData.deal);
@@ -505,7 +542,11 @@ function MainLayout() {
       setHideProgressCard(true);
     }
     acknowledgeOutcome();
+    armTurnHighlight();
     handleCloseSummary();
+    if (location.pathname !== '/app') {
+      navigate('/app');
+    }
     beginTransition('Переходим к следующему ходу');
     startNextMoveLoader(() => {
       completeTransition();
@@ -856,11 +897,21 @@ function MainLayout() {
                 <div className={styles.rollCardPrice}>
                   Сейчас стоят <strong>{formatUSD(rollCardData.price)}</strong>
                 </div>
+                {rollCardData.holding && rollCardData.holding.units > 0 && (
+                  <p className={styles.rollCardPassiveHint}>
+                    В портфеле {rollCardData.holding.units.toFixed(2)} лотов ≈ {formatUSD(rollHoldingValue)}
+                  </p>
+                )}
                 <div className={styles.rollCardSlider}>
                   <div>
                     <span>Сумма покупки</span>
                     <strong>{formatUSD(rollBuyAmount)}</strong>
                   </div>
+                  {rollPassiveRate > 0 && (
+                    <p className={styles.rollCardPassiveHint}>
+                      Пассив ≈ +{formatUSD(Math.round(rollBuyAmount * rollPassiveRate))}/мес
+                    </p>
+                  )}
                   <Slider
                     min={rollCardData.instrument.trading?.minOrder || 10}
                     max={Math.max(rollCardData.instrument.trading?.minOrder || 10, Math.round(storeData.cash || 0))}
@@ -871,8 +922,30 @@ function MainLayout() {
                     variant="rollCard"
                   />
                 </div>
+                {rollHoldingValue > 0 && (
+                  <div className={styles.rollCardSlider}>
+                    <div>
+                      <span>Продать на</span>
+                      <strong>{formatUSD(rollSellAmount)}</strong>
+                    </div>
+                    {rollPassiveRate > 0 && (
+                      <p className={styles.rollCardPassiveHint}>
+                        Пассив снизится ≈ {formatUSD(-Math.round(rollSellAmount * rollPassiveRate))}/мес
+                      </p>
+                    )}
+                    <Slider
+                      min={0}
+                      max={Math.max(0, Math.round(rollHoldingValue))}
+                      step={10}
+                      value={Math.min(rollSellAmount, Math.max(0, Math.round(rollHoldingValue)))}
+                      onChange={(value) => setRollSellAmount(Math.round(value))}
+                      disabled={rollHoldingValue <= 0}
+                      variant="rollCard"
+                    />
+                  </div>
+                )}
                 {rollFeedback && <p className={styles.rollCardFeedback}>{rollFeedback}</p>}
-                <div className={styles.rollCardActions}>
+                <div className={`${styles.rollCardActions} ${rollHoldingValue > 0 ? styles.rollCardActionsExpanded : ''}`}>
                   <Button
                     variant="primary"
                     onClick={handleRollBuy}
@@ -881,6 +954,15 @@ function MainLayout() {
                   >
                     Купить
                   </Button>
+                  {rollHoldingValue > 0 && (
+                    <Button
+                      variant="secondary"
+                      onClick={handleRollSell}
+                      className={styles.rollCardSecondaryButton}
+                    >
+                      Продать
+                    </Button>
+                  )}
                   <Button
                     variant="secondary"
                     onClick={closeRollCard}

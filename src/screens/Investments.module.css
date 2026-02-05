@@ -229,6 +229,10 @@
   color: #ff6c87;
 }
 
+.neutral {
+  color: rgba(26, 43, 74, 0.5);
+}
+
 .sparkline {
   margin: 0.2rem -1rem 0.4rem;
 }
@@ -429,6 +433,53 @@
   white-space: normal;
 }
 
+.creditDrawList {
+  margin-top: 0.6rem;
+  border: 1px dashed rgba(25, 56, 102, 0.2);
+  border-radius: 16px;
+  padding: 0.6rem 0.7rem;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.creditDrawRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.creditDrawRow span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(21, 35, 65, 0.65);
+}
+
+.creditDrawRow strong {
+  display: block;
+  font-size: 1rem;
+  color: #0b132b;
+}
+
+.creditDrawButton {
+  border: none;
+  background: rgba(42, 104, 208, 0.12);
+  color: #1f3d78;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.creditDrawButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
   .creditActions {
     flex-direction: row;
@@ -438,4 +489,37 @@
 .paymentHint {
   font-size: 0.75rem;
   color: rgba(21, 39, 70, 0.65);
+}
+
+.emptyPortfolioCard {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border-radius: 0;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 12px 28px rgba(18, 32, 64, 0.08);
+}
+
+.emptyIllustration {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.emptyPortfolioCard h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: #14274c;
+}
+
+.emptyPortfolioCard p {
+  margin: 0;
+  color: rgba(20, 39, 78, 0.75);
+  font-size: 0.95rem;
 }

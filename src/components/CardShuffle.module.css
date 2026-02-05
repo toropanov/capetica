@@ -1,0 +1,73 @@
+.wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.3rem;
+}
+
+.deck {
+  position: relative;
+  width: 100%;
+  min-height: 240px;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transform: translateY(0) rotate(4deg) translateX(18px) scale(1);
+  transform-origin: 0 0;
+  transition: transform 0.6s cubic-bezier(0.8, 0.2, 0.1, 0.8) 0.1s;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.cardContent {
+  width: 100%;
+  height: 100%;
+}
+
+.cardNext {
+  z-index: 5;
+  transform: translateY(-25px) rotate(4deg) translateX(18px) scale(1);
+}
+
+.cardCurrent {
+  z-index: 10;
+  transform: rotate(-1deg) translateX(0) scale(1);
+}
+
+.cardOut {
+  animation: cardShuffleOut 0.6s cubic-bezier(0.8, 0.2, 0.1, 0.8);
+  transform: translateY(-50px) rotate(8deg) translateX(55px) scale(0.95);
+  z-index: 1;
+}
+
+@keyframes cardShuffleOut {
+  0% {
+    z-index: 20;
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-120%) rotate(-5deg) translateX(-40px);
+  }
+  80% {
+    z-index: 1;
+  }
+  100% {
+    transform: translateY(-50px) rotate(8deg) translateX(55px) scale(0.95);
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(51, 34, 10, 0.75);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

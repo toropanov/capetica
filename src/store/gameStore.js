@@ -8,6 +8,7 @@ import {
   calculateHoldingsValue,
   calculatePassiveIncome,
   evaluateGoals,
+  getPassiveMultiplier,
 } from '../domain/finance';
 import { ensureSeed, uniformFromSeed } from '../domain/rng';
 import { DEAL_WINDOW_RULES } from '../domain/deals';
@@ -152,6 +153,17 @@ function applyOutcomeToState(state, outcome = {}) {
   if (typeof outcome.debtDelta === 'number') {
     const nextDebt = Math.max(0, roundMoney(state.debt + outcome.debtDelta));
     patch.debt = nextDebt;
+    if (Array.isArray(state.creditDraws)) {
+      const delta = roundMoney(outcome.debtDelta);
+      let nextDraws = normalizeCreditDraws(state.creditDraws, state.debt);
+      if (delta > 0) {
+        nextDraws = appendCreditDraw(nextDraws, delta, state.month);
+      } else if (delta < 0) {
+        const reduced = consumeCreditDraws(nextDraws, Math.abs(delta));
+        nextDraws = reduced.draws;
+      }
+      patch.creditDraws = normalizeCreditDraws(nextDraws, nextDebt);
+    }
   }
   if (typeof outcome.joblessMonths === 'number') {
     patch.joblessMonths = Math.max(0, Math.round(outcome.joblessMonths));
@@ -161,6 +173,168 @@ function applyOutcomeToState(state, outcome = {}) {
     patch.salaryCutAmount = Math.max(0, Math.round(outcome.salaryCutAmount || 0));
   }
   return patch;
+}
+
+const CREDIT_DRAW_MIN_BALANCE = 5;
+const CREDIT_DRAW_LABEL = 'Кредитная линия';
+const HIGHLIGHT_METRIC_LABELS = {
+  cash: 'Наличные',
+  netWorth: 'Чистый капитал',
+  passiveIncome: 'Пассивный доход',
+  availableCredit: 'Кредитный лимит',
+};
+
+function createCreditDraw(amount, month, label = CREDIT_DRAW_LABEL) {
+  return {
+    id: `draw-${month}-${Math.random().toString(36).slice(2, 10)}`,
+    balance: roundMoney(amount),
+    createdMonth: month,
+    label,
+  };
+}
+
+function sumCreditDraws(draws = []) {
+  return (draws || []).reduce((sum, entry) => sum + (entry.balance || 0), 0);
+}
+
+function normalizeCreditDraws(draws = [], targetDebt = 0) {
+  const filtered = (draws || []).filter((entry) => (entry.balance || 0) > CREDIT_DRAW_MIN_BALANCE);
+  if (targetDebt <= CREDIT_DRAW_MIN_BALANCE) {
+    return [];
+  }
+  if (!filtered.length) {
+    return [createCreditDraw(targetDebt, 0)];
+  }
+  const total = sumCreditDraws(filtered);
+  if (Math.abs(total - targetDebt) < CREDIT_DRAW_MIN_BALANCE) {
+    return filtered.map((entry) => ({ ...entry }));
+  }
+  if (total <= 0) {
+    return [createCreditDraw(targetDebt, 0)];
+  }
+  return filtered.map((entry) => ({
+    ...entry,
+    balance: roundMoney((entry.balance / total) * targetDebt),
+  }));
+}
+
+function applyInterestToDraws(draws = [], interest = 0) {
+  if (interest <= 0 || !draws?.length) {
+    return draws || [];
+  }
+  const total = sumCreditDraws(draws);
+  if (total <= 0) {
+    return draws;
+  }
+  return draws.map((entry) => ({
+    ...entry,
+    balance: roundMoney(entry.balance + (entry.balance / total) * interest),
+  }));
+}
+
+function appendCreditDraw(draws = [], amount = 0, month = 0, label = CREDIT_DRAW_LABEL) {
+  if (amount <= 0) return draws || [];
+  return [...(draws || []), createCreditDraw(amount, month, label)];
+}
+
+function consumeCreditDraws(draws = [], payment = 0, targetId) {
+  if (payment <= 0 || !draws?.length) {
+    return { draws: draws || [], paid: 0 };
+  }
+  const next = draws.map((entry) => ({ ...entry }));
+  let remaining = payment;
+  const applyToEntry = (entry) => {
+    if (!remaining) return;
+    const paid = Math.min(entry.balance, remaining);
+    if (paid > 0) {
+      entry.balance = roundMoney(entry.balance - paid);
+      remaining -= paid;
+    }
+  };
+  if (targetId) {
+    const target = next.find((entry) => entry.id === targetId);
+    if (target) {
+      applyToEntry(target);
+    }
+  } else {
+    next.forEach((entry) => applyToEntry(entry));
+  }
+  const paid = payment - remaining;
+  const filtered = next.filter((entry) => entry.balance > CREDIT_DRAW_MIN_BALANCE);
+  return { draws: filtered, paid: roundMoney(paid) };
+}
+
+function buildTurnHighlight(state, nextMetrics, instrumentMap) {
+  if (!state) return null;
+  const { cash: nextCash, netWorth: nextNetWorth, passiveIncome: nextPassive, availableCredit: nextCredit } =
+    nextMetrics || {};
+  const holdingsBefore = calculateHoldingsValue(state.investments, state.priceState);
+  const passiveBeforeInvestments = calculatePassiveIncome(
+    state.investments,
+    state.priceState,
+    instrumentMap,
+  );
+  const passiveBeforeDeals = (state.dealParticipations || []).reduce((sum, deal) => {
+    if (deal.completed) return sum;
+    return sum + (deal.monthlyPayout || 0);
+  }, 0);
+  const passiveBefore = roundMoney(passiveBeforeInvestments + passiveBeforeDeals);
+  const prevMetrics = {
+    cash: roundMoney(state.cash),
+    netWorth: roundMoney(state.cash + holdingsBefore - state.debt),
+    passiveIncome: passiveBefore,
+    availableCredit: roundMoney(state.availableCredit ?? Math.max(0, state.creditLimit - state.debt)),
+  };
+  const metricList = [
+    ['cash', nextCash],
+    ['netWorth', nextNetWorth],
+    ['passiveIncome', nextPassive],
+    ['availableCredit', nextCredit],
+  ]
+    .map(([key, value]) => ({
+      key,
+      label: HIGHLIGHT_METRIC_LABELS[key] || key,
+      prev: prevMetrics[key] ?? 0,
+      next: Math.round(value ?? prevMetrics[key] ?? 0),
+    }))
+    .map((metric) => ({
+      ...metric,
+      delta: Math.round((metric.next ?? 0) - (metric.prev ?? 0)),
+    }));
+
+  const purchases = Object.entries(state.lastPurchases || {})
+    .filter(([, info]) => info?.turn === state.month)
+    .map(([instrumentId, info]) => ({
+      id: `${instrumentId}-${info.turn}`,
+      instrumentId,
+      title: instrumentMap[instrumentId]?.title || instrumentId,
+      amount: info.amount || 0,
+      passiveGain: info.passiveGain || 0,
+      type: instrumentMap[instrumentId]?.type || 'stocks',
+    }));
+  const newDeals = (state.dealParticipations || [])
+    .filter((deal) => !deal.completed && deal.startedTurn === state.month)
+    .map((deal) => ({
+      id: deal.participationId,
+      title: deal.title,
+      payout: deal.monthlyPayout || 0,
+    }));
+  const hasMeaningfulDelta =
+    metricList.some((metric) => Math.abs(metric.delta) >= CREDIT_DRAW_MIN_BALANCE) ||
+    purchases.length > 0 ||
+    newDeals.length > 0;
+  if (!hasMeaningfulDelta) {
+    return null;
+  }
+  return {
+    id: `turn-${state.month}`,
+    month: state.month,
+    metrics: metricList,
+    acquisitions: purchases,
+    deals: newDeals,
+    createdAt: Date.now(),
+    seen: false,
+  };
 }
 
 function rollRandomEvent(state, seed, events = []) {
@@ -274,6 +448,7 @@ function buildProfessionState(baseState, profession) {
   const selectedGoalId =
     baseState.selectedGoalId || baseState.configs?.rules?.win?.[0]?.id || null;
   const difficulty = baseState.difficulty || DEFAULT_DIFFICULTY;
+  const creditDraws = debt > 0 ? [createCreditDraw(debt, 0, 'Стартовый долг')] : [];
   return {
     profession,
     professionId: profession.id,
@@ -304,6 +479,7 @@ function buildProfessionState(baseState, profession) {
     creditLimit,
     availableCredit: creditLimit - debt,
     creditBucket: 0,
+    creditDraws,
     lastTurn: null,
     recentLog: [],
     currentEvent: null,
@@ -321,6 +497,8 @@ function buildProfessionState(baseState, profession) {
     salaryProgression,
     selectedGoalId,
     difficulty,
+    turnHighlight: null,
+    turnHighlightArmed: false,
   };
 }
 
@@ -338,11 +516,21 @@ function handleHomeAction(actionId, state, seed, actions = []) {
     }
     const budget = Math.min(Math.round(state.cash * 0.3), state.cash);
     const payment = Math.min(budget, state.debt);
-    const nextCash = roundMoney(state.cash - payment);
-    const nextDebt = Math.max(0, roundMoney(state.debt - payment));
+    const drawState = normalizeCreditDraws(state.creditDraws, state.debt);
+    const result = consumeCreditDraws(drawState, payment);
+    if (result.paid <= 0) {
+      return { patch: {}, message: 'Нечего гасить.' };
+    }
+    const actual = result.paid;
+    const nextCash = roundMoney(state.cash - actual);
+    const nextDebt = Math.max(0, roundMoney(state.debt - actual));
     return {
-      patch: { cash: nextCash, debt: nextDebt },
-      message: `Закрыто $${payment.toFixed(0)} долга`,
+      patch: {
+        cash: nextCash,
+        debt: nextDebt,
+        creditDraws: normalizeCreditDraws(result.draws, nextDebt),
+      },
+      message: `Закрыто $${actual.toFixed(0)} долга`,
     };
   }
   if (action.cost && state.cash < action.cost) {
@@ -395,6 +583,12 @@ function handleHomeAction(actionId, state, seed, actions = []) {
       }
       patch.cash = roundMoney(state.cash + draw);
       patch.debt = roundMoney(state.debt + draw);
+      patch.creditDraws = appendCreditDraw(
+        normalizeCreditDraws(state.creditDraws, state.debt),
+        draw,
+        state.month,
+        action.title || 'Кредит',
+      );
       message = `Получено $${draw} кредита`;
       break;
     }
@@ -409,7 +603,7 @@ function handleHomeAction(actionId, state, seed, actions = []) {
     nextSeed = roll.seed;
     const success = roll.value < (action.chanceSuccess ?? 0.5);
     const afterCost = roundMoney(state.cash - (action.cost || 0));
-    const baseState = { ...state, cash: afterCost };
+    const baseState = { ...state, cash: afterCost, creditDraws: state.creditDraws };
     const outcomeEffect = success ? action.success : action.fail;
     const outcomePatch = applyOutcomeToState(baseState, outcomeEffect);
     if (typeof outcomePatch.cash !== 'number') {
@@ -454,6 +648,7 @@ const useGameStore = create(
       creditLimit: 0,
       availableCredit: 0,
       creditBucket: 0,
+      creditDraws: [],
       lastTurn: null,
       recentLog: [],
       currentEvent: null,
@@ -480,7 +675,23 @@ const useGameStore = create(
       salaryCutMonths: 0,
       salaryCutAmount: 0,
       dealWindows: {},
+      turnHighlight: null,
+      turnHighlightArmed: false,
       acknowledgeOutcome: () => set(() => ({ winCondition: null, loseCondition: null })),
+      armTurnHighlight: () =>
+        set((state) => {
+          if (!state.turnHighlight || state.turnHighlight.seen) {
+            return {};
+          }
+          return { turnHighlightArmed: true };
+        }),
+      acknowledgeTurnHighlight: () =>
+        set((state) => {
+          if (!state.turnHighlight) {
+            return { turnHighlightArmed: false };
+          }
+          return { turnHighlight: null, turnHighlightArmed: false };
+        }),
       salaryProgression: null,
       bootstrapFromConfigs: (bundle) =>
         set((state) => {
@@ -609,6 +820,7 @@ const useGameStore = create(
             acc[instrumentId] = { ...holding };
             return acc;
           }, {});
+          let creditDraws = normalizeCreditDraws(state.creditDraws, state.debt);
           let autoLiquidation = 0;
           const stopLossWarnings = [];
           Object.entries(baseInvestments).forEach(([instrumentId, holding]) => {
@@ -707,10 +919,18 @@ const useGameStore = create(
           }
           const livingCost = 0;
           const recurringExpenses = roundMoney(state.recurringExpenses || 0);
-          const monthlyRate =
-            (state.configs.rules?.loans?.apr || 0) / 12;
-          const debtInterest = roundMoney(state.debt * monthlyRate);
-          const debt = Math.max(0, roundMoney(state.debt + debtInterest));
+          const monthlyRate = (state.configs.rules?.loans?.apr || 0) / 12;
+          const baseDebt = Math.max(0, roundMoney(state.debt));
+          const debtInterest = roundMoney(baseDebt * monthlyRate);
+          const debt = Math.max(0, roundMoney(baseDebt + debtInterest));
+          if (debtInterest > 0 && debt > 0) {
+            creditDraws = applyInterestToDraws(creditDraws, debtInterest);
+          }
+          if (!creditDraws?.length && debt > 0) {
+            creditDraws = [createCreditDraw(debt, state.month)];
+          } else {
+            creditDraws = normalizeCreditDraws(creditDraws, debt);
+          }
           const cash = roundMoney(
             state.cash + salary + passiveIncome - livingCost - recurringExpenses + autoLiquidation,
           );
@@ -743,6 +963,19 @@ const useGameStore = create(
           const dealWindowRoll = advanceDealWindows(state.dealWindows, actionsRoll.seed);
           const patchedCash = eventRoll.patch.cash ?? cash;
           const patchedDebt = eventRoll.patch.debt ?? debt;
+          if (eventRoll.patch.creditDraws) {
+            creditDraws = normalizeCreditDraws(eventRoll.patch.creditDraws, patchedDebt);
+          } else if (patchedDebt !== debt) {
+            const delta = patchedDebt - debt;
+            if (delta > 0) {
+              creditDraws = appendCreditDraw(creditDraws, delta, state.month);
+            } else if (delta < 0) {
+              creditDraws = consumeCreditDraws(creditDraws, Math.abs(delta)).draws;
+            }
+            creditDraws = normalizeCreditDraws(creditDraws, patchedDebt);
+          } else {
+            creditDraws = normalizeCreditDraws(creditDraws, patchedDebt);
+          }
           const patchedSalaryBonus = eventRoll.patch.salaryBonus ?? state.salaryBonus;
           const patchedRecurring = eventRoll.patch.recurringExpenses ?? state.recurringExpenses;
           const patchedProtections = eventRoll.protections || state.protections;
@@ -828,6 +1061,16 @@ const useGameStore = create(
             };
             recentLog = [entry, ...recentLog].slice(0, 5);
           });
+          const highlightPayload = buildTurnHighlight(
+            state,
+            {
+              cash: patchedCash,
+              netWorth,
+              passiveIncome,
+              availableCredit,
+            },
+            instrumentMap,
+          );
           return {
             month: state.month + 1,
             cash: patchedCash,
@@ -851,6 +1094,7 @@ const useGameStore = create(
             },
             creditLimit,
             availableCredit,
+            creditDraws,
             trackers: goalState.trackers,
             winCondition: state.winCondition || goalState.win,
             loseCondition: state.loseCondition || goalState.lose,
@@ -881,6 +1125,8 @@ const useGameStore = create(
               stopLossWarnings,
             },
             recentLog,
+            turnHighlight: highlightPayload || null,
+            turnHighlightArmed: false,
           };
         }),
       buyInstrument: (instrumentId, desiredAmount) =>
@@ -948,6 +1194,8 @@ const useGameStore = create(
             month: state.month,
             text: `Куплено ${instrument.title} на $${Math.round(spend).toLocaleString('en-US')}`,
           };
+          const passiveRate = getPassiveMultiplier(instrument.type);
+          const passiveGain = roundMoney(spend * passiveRate);
           const recentLog = [logEntry, ...(state.recentLog || [])].slice(0, 5);
           const updates = {
             investments: nextInvestments,
@@ -965,6 +1213,8 @@ const useGameStore = create(
               [instrumentId]: {
                 turn: state.month,
                 amount: Math.round(spend),
+                passiveGain,
+                units: Number(units.toFixed(4)),
               },
             },
           };
@@ -1086,6 +1336,7 @@ const useGameStore = create(
           profitEarned: 0,
           completed: false,
           risk: dealMeta.risk,
+          startedTurn: state.month,
         };
         set((prev) => ({
           cash: roundMoney(prev.cash - entryCost),
@@ -1109,6 +1360,11 @@ const useGameStore = create(
           const available = Math.max(0, state.creditLimit - state.debt);
           const draw = Math.min(roundMoney(amount), available);
           if (draw <= 0) return {};
+          const creditDraws = appendCreditDraw(
+            normalizeCreditDraws(state.creditDraws, state.debt),
+            draw,
+            state.month,
+          );
           return {
             cash: roundMoney(state.cash + draw),
             debt: roundMoney(state.debt + draw),
@@ -1116,9 +1372,10 @@ const useGameStore = create(
             creditLockedMonth: state.month,
             actionsThisTurn: (state.actionsThisTurn || 0) + 1,
             badgeActionsThisTurn: (state.badgeActionsThisTurn || 0) + 1,
+            creditDraws,
           };
         }),
-      serviceDebt: (amount = 600) =>
+      serviceDebt: (amount = 600, options = {}) =>
         set((state) => {
           if (state.creditLockedMonth === state.month) {
             return {};
@@ -1126,13 +1383,18 @@ const useGameStore = create(
           if (state.debt <= 0 || state.cash <= 0) return {};
           const payment = Math.min(roundMoney(amount), state.cash, state.debt);
           if (payment <= 0) return {};
-          const fee = Math.min(state.cash - payment, Math.round(payment * 0.08));
+          const drawState = normalizeCreditDraws(state.creditDraws, state.debt);
+          const result = consumeCreditDraws(drawState, payment, options.drawId);
+          if (result.paid <= 0) return {};
+          const fee = Math.min(state.cash - result.paid, Math.round(result.paid * 0.08));
+          const nextDebt = Math.max(0, roundMoney(state.debt - result.paid));
           return {
-            cash: roundMoney(state.cash - payment - fee),
-            debt: roundMoney(state.debt - payment),
+            cash: roundMoney(state.cash - result.paid - fee),
+            debt: nextDebt,
             creditLockedMonth: state.month,
             actionsThisTurn: (state.actionsThisTurn || 0) + 1,
             badgeActionsThisTurn: (state.badgeActionsThisTurn || 0) + 1,
+            creditDraws: normalizeCreditDraws(result.draws, nextDebt),
           };
         }),
       applyHomeAction: (actionId, options = {}) =>
@@ -1275,9 +1537,12 @@ const useGameStore = create(
         salaryCutMonths: state.salaryCutMonths,
         salaryCutAmount: state.salaryCutAmount,
         creditBucket: state.creditBucket,
+        creditDraws: state.creditDraws,
         monthlyOfferUsed: state.monthlyOfferUsed,
         settingsDirty: state.settingsDirty,
         hideContinueAfterSettings: state.hideContinueAfterSettings,
+        turnHighlight: state.turnHighlight,
+        turnHighlightArmed: state.turnHighlightArmed,
       }),
     },
   ),

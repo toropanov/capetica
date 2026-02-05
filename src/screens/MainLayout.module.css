@@ -724,6 +724,12 @@
   text-align: center;
 }
 
+.rollCardPassiveHint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(59, 42, 16, 0.75);
+}
+
 .rollCardSlider {
   display: flex;
   flex-direction: column;
@@ -738,21 +744,27 @@
 }
 
 .rollCardActions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 2.4rem;
+  display: flex;
   gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rollCardActionsExpanded {
+  justify-content: flex-start;
 }
 
 .rollCardActions button {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .rollCardActionsSingle {
-  grid-template-columns: 1fr;
-  justify-items: center;
+  justify-content: center;
 }
 
 .rollCardActionsSingle button {
+  flex: 0 0 auto;
   width: auto;
   min-width: 120px;
 }

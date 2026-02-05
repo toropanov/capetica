@@ -133,6 +133,9 @@
   position: relative;
   color: #1f2c48;
   overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   overscroll-behavior-y: contain;
 }
 

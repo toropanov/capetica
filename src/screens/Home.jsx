@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { calculateHoldingsValue, calculatePassiveIncome } from '../domain/finance';
+import { calculateHoldingsValue, calculatePassiveIncome, getPassiveMultiplier } from '../domain/finance';
 import styles from './Home.module.css';
 import { spriteStyle } from '../utils/iconSprite';
 import teacherImg from '../assets/proffesions/teacher.png';
@@ -11,12 +11,6 @@ import lawyerImg from '../assets/proffesions/low.png';
 import doctorImg from '../assets/proffesions/doctor.png';
 import fireImg from '../assets/proffesions/fire.png';
 import managerImg from '../assets/proffesions/manager.png';
-
-const PASSIVE_MULTIPLIERS = {
-  bonds: 0.0022,
-  stocks: 0.0015,
-  crypto: 0.003,
-};
 
 const FORECAST_TURNS = 6;
 const PROFESSION_IMAGES = {
@@ -291,6 +285,75 @@ function LastTurn({ data, summary, passiveBreakdown = [] }) {
   );
 }
 
+function formatDelta(value) {
+  const rounded = Math.round(Math.abs(value) || 0).toLocaleString('en-US');
+  return `${value >= 0 ? '+' : '-'}$${rounded}`;
+}
+
+function TurnHighlightOverlay({ data, active, onDismiss }) {
+  if (!data) return null;
+  const monthLabel = typeof data.month === 'number' ? data.month + 1 : '';
+  return (
+    <div className={`${styles.turnHighlight} ${active ? styles.turnHighlightVisible : styles.turnHighlightHidden}`}>
+      <div className={styles.turnHighlightHead}>
+        <div>
+          <span>Изменения после хода</span>
+          {monthLabel ? <strong>Ход #{monthLabel}</strong> : null}
+        </div>
+        <button type="button" onClick={onDismiss} className={styles.turnHighlightClose} aria-label="Закрыть">
+          ×
+        </button>
+      </div>
+      <div className={styles.turnHighlightMetrics}>
+        {data.metrics?.map((metric) => (
+          <div key={metric.key} className={styles.turnHighlightMetric}>
+            <span>{metric.label}</span>
+            <strong>{formatUSD(metric.next)}</strong>
+            {metric.delta !== 0 && (
+              <em className={metric.delta >= 0 ? styles.turnHighlightDeltaPositive : styles.turnHighlightDeltaNegative}>
+                {formatDelta(metric.delta)}
+              </em>
+            )}
+          </div>
+        ))}
+      </div>
+      {data.acquisitions?.length ? (
+        <div className={styles.turnHighlightGroup}>
+          <span>Новые активы</span>
+          <div className={styles.turnHighlightBadges}>
+            {data.acquisitions.map((asset) => (
+              <span key={asset.id}>
+                {asset.title}
+                {asset.passiveGain ? (
+                  <small>{`≈ +${formatUSD(asset.passiveGain)}/мес`}</small>
+                ) : null}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {data.deals?.length ? (
+        <div className={styles.turnHighlightGroup}>
+          <span>Контракты</span>
+          <div className={styles.turnHighlightBadges}>
+            {data.deals.map((deal) => (
+              <span key={deal.id}>
+                {deal.title}
+                {deal.payout ? <small>{`${formatUSD(deal.payout)}/мес`}</small> : null}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      <div className={styles.turnHighlightFooter}>
+        <Button variant="secondary" onClick={onDismiss} className={styles.turnHighlightButton}>
+          Отлично
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function Home() {
   const applyHomeAction = useGameStore((state) => state.applyHomeAction);
   const lastTurn = useGameStore((state) => state.lastTurn);
@@ -312,6 +375,12 @@ function Home() {
   const salaryCutMonths = useGameStore((state) => state.salaryCutMonths || 0);
   const salaryCutAmount = useGameStore((state) => state.salaryCutAmount || 0);
   const profession = useGameStore((state) => state.profession);
+  const turnHighlight = useGameStore((state) => state.turnHighlight);
+  const turnHighlightArmed = useGameStore((state) => state.turnHighlightArmed);
+  const acknowledgeTurnHighlight = useGameStore((state) => state.acknowledgeTurnHighlight);
+  const [highlightData, setHighlightData] = useState(null);
+  const [highlightActive, setHighlightActive] = useState(false);
+  const highlightTimerRef = useRef(null);
   const instrumentMap = useMemo(() => {
     const list = configs?.instruments?.instruments || [];
     return list.reduce((acc, instrument) => {
@@ -406,7 +475,7 @@ function Home() {
       const price = priceState[instrumentId]?.price || info.initialPrice || 0;
       const units = holding?.units || 0;
       const value = units * price;
-      const amount = value * (PASSIVE_MULTIPLIERS[info.type] || 0.001);
+      const amount = value * getPassiveMultiplier(info.type);
       if (amount > 0.01) {
         rows.push({ id: `inv-${instrumentId}`, label: info.title, amount });
       }
@@ -478,8 +547,43 @@ function Home() {
     [filteredGoals, trackers, goalMetrics],
   );
 
+  useEffect(() => {
+    if (turnHighlight && turnHighlightArmed) {
+      setHighlightData(turnHighlight);
+      setHighlightActive(true);
+    }
+  }, [turnHighlight, turnHighlightArmed]);
+
+  useEffect(() => () => {
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = null;
+    }
+  }, []);
+
+  const dismissHighlight = useCallback(() => {
+    setHighlightActive(false);
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+    }
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightData(null);
+      acknowledgeTurnHighlight();
+      highlightTimerRef.current = null;
+    }, 260);
+  }, [acknowledgeTurnHighlight]);
+
+  useEffect(() => {
+    if (!highlightData || !highlightActive) return undefined;
+    const timer = setTimeout(() => dismissHighlight(), 6500);
+    return () => clearTimeout(timer);
+  }, [highlightData, highlightActive, dismissHighlight]);
+
   return (
     <div className={styles.screen}>
+      {highlightData && (
+        <TurnHighlightOverlay data={highlightData} active={highlightActive} onDismiss={dismissHighlight} />
+      )}
       <Card className={styles.card}>
         <LastTurn data={lastTurn} summary={summary} passiveBreakdown={passiveBreakdown} />
         {salaryProgression && (

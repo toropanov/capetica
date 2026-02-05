@@ -34,13 +34,18 @@ const passiveMultipliers = {
   crypto: 0.003,
 };
 
+export function getPassiveMultiplier(type) {
+  if (!type) return passiveMultipliers.stocks;
+  return passiveMultipliers[type] || 0.001;
+}
+
 export function calculatePassiveIncome(investments = {}, priceState = {}, instrumentMap = {}) {
   return Object.entries(investments).reduce((total, [instrumentId, position]) => {
     const info = instrumentMap[instrumentId];
     const price = priceState[instrumentId]?.price || 0;
     const value = position.units * price;
     const type = info?.type || 'stocks';
-    const multiplier = passiveMultipliers[type] || 0.001;
+    const multiplier = getPassiveMultiplier(type);
     return total + value * multiplier;
   }, 0);
 }
