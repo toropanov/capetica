@@ -299,7 +299,6 @@ function MainLayout() {
   const buyInstrument = useGameStore((state) => state.buyInstrument);
   const sellInstrument = useGameStore((state) => state.sellInstrument);
   const participateInDeal = useGameStore((state) => state.participateInDeal);
-  const actionsCount = useGameStore((state) => state.badgeActionsThisTurn || 0);
   const month = useGameStore((state) => state.month);
   const lastTurn = useGameStore((state) => state.lastTurn);
   const recentLog = useGameStore((state) => state.recentLog || []);
@@ -910,7 +909,6 @@ function MainLayout() {
         confirmingFinish={confirmingFinish}
         diceAnimating={diceAnimating}
         actionRef={confirmButtonRef}
-        actionsCount={actionsCount}
       />
       <Modal
         open={turnSummaryOpen && Boolean(turnSummary)}

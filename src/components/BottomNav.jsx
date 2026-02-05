@@ -50,7 +50,6 @@ function BottomNav({
   confirmingFinish = false,
   diceAnimating = false,
   actionRef,
-  actionsCount = 0,
 }) {
   const renderNavButton = (item) => (
     <button
@@ -76,7 +75,6 @@ function BottomNav({
         className={`${styles.action} ${confirmingFinish ? styles.actionConfirm : ''} ${diceAnimating ? styles.actionRolling : ''}`}
         onClick={onAdvance}
       >
-        {actionsCount > 0 && <span className={styles.actionBadge}>{actionsCount}</span>}
         <span className={`${styles.icon} ${styles.actionIcon}`}>
           <DiceIcon />
         </span>
