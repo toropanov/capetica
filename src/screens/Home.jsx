@@ -621,6 +621,20 @@ function Home() {
       }),
     [filteredGoals, trackers, goalMetrics],
   );
+  const primaryGoalProgress = useMemo(() => {
+    if (!goalRows.length) return null;
+    const primary = goalRows[0];
+    const percent = Math.min(100, Math.round((primary.progress / primary.target) * 100));
+    const status = primary.active ? 'Готово!' : null;
+    return {
+      title: primary.title,
+      detail: primary.detail,
+      progress: primary.progress,
+      target: primary.target,
+      percent,
+      status,
+    };
+  }, [goalRows]);
 
   useEffect(() => {
     if (turnHighlight && turnHighlightArmed) {
@@ -675,6 +689,27 @@ function Home() {
           </div>
         )}
       </Card>
+      {primaryGoalProgress ? (
+        <div className={styles.goalProgressBlock}>
+          {primaryGoalProgress.status ? (
+            <div className={styles.goalProgressHead}>
+              <em>{primaryGoalProgress.status}</em>
+            </div>
+          ) : null}
+          <strong className={styles.goalProgressTitle}>{primaryGoalProgress.title}</strong>
+          {primaryGoalProgress.detail ? (
+            <p className={styles.goalProgressDetail}>{primaryGoalProgress.detail}</p>
+          ) : null}
+          <div className={styles.goalProgressMeter}>
+            <div>
+              <div style={{ width: `${primaryGoalProgress.percent}%` }} />
+            </div>
+            <small>
+              {primaryGoalProgress.progress}/{primaryGoalProgress.target} ходов
+            </small>
+          </div>
+        </div>
+      ) : null}
       {!hideGoalCard && goalRows.length > 0 && (
         <Card className={styles.goalCard}>
           <div className={styles.goalHeader}>
