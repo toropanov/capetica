@@ -591,7 +591,7 @@ function Home() {
       id: key,
       label: EXPENSE_LABELS[key] || key,
       amount: Math.round((Number(raw[key]) || 0) * ratio),
-    }));
+    })).sort((a, b) => (b.amount || 0) - (a.amount || 0));
     const total = rows.reduce((sum, item) => sum + (item.amount || 0), 0);
     const diff = Math.round((recurringExpenses || 0) - total);
     if (rows.length && diff !== 0 && baseTotal > 0) {

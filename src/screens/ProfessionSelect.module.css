@@ -227,7 +227,7 @@
 
 .sectionHeader h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #1f2c48;
@@ -330,12 +330,13 @@
 
 .profCard h3 {
   margin: 0;
+  font-size: 0.95rem;
 }
 
 .sub {
   margin-top: 0.1rem;
   opacity: 0.65;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .metrics {
@@ -345,7 +346,7 @@
 }
 
 .metrics span {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   opacity: 0.65;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -353,7 +354,7 @@
 
 .metrics strong {
   display: block;
-  font-size: 1rem;
+  font-size: 0.9rem;
   margin-top: 0.15rem;
 }
 
