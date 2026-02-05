@@ -1,3 +1,5 @@
+import { BALANCE_DEFAULTS, PASSIVE_MULTIPLIERS } from './balanceConfig';
+
 export function getProfessionById(config, id) {
   return config?.professions?.find((item) => item.id === id);
 }
@@ -15,8 +17,15 @@ export function computeCreditLimit({ profession, netWorth, salary, rules }) {
     return profession?.creditLimitBase || 0;
   }
   const base = profession.creditLimitBase || 0;
-  const formulaValue = Math.max(base, 0.35 * netWorth + 1.5 * salary);
-  const capMultiplier = rules.loans.creditLimit.capMultiplier || 6;
+  const netWorthMultiplier =
+    rules.loans.creditLimit.netWorthMultiplier ??
+    BALANCE_DEFAULTS.creditLimit.netWorthMultiplier;
+  const salaryMultiplier =
+    rules.loans.creditLimit.salaryMultiplier ??
+    BALANCE_DEFAULTS.creditLimit.salaryMultiplier;
+  const formulaValue = Math.max(base, netWorthMultiplier * netWorth + salaryMultiplier * salary);
+  const capMultiplier =
+    rules.loans.creditLimit.capMultiplier ?? BALANCE_DEFAULTS.creditLimit.capMultiplier;
   const maxLimit = base * capMultiplier;
   return Math.min(formulaValue, maxLimit || formulaValue);
 }
@@ -39,15 +48,9 @@ export function getMonthlyExpenses(profession) {
   return profession.monthlyExpenses || 0;
 }
 
-const passiveMultipliers = {
-  bonds: 0.0022,
-  stocks: 0.1,
-  crypto: 0.1,
-};
-
 export function getPassiveMultiplier(type) {
-  if (!type) return passiveMultipliers.stocks;
-  return passiveMultipliers[type] || 0.001;
+  if (!type) return PASSIVE_MULTIPLIERS.stocks;
+  return PASSIVE_MULTIPLIERS[type] || 0.001;
 }
 
 export function calculatePassiveIncome(investments = {}, priceState = {}, instrumentMap = {}) {

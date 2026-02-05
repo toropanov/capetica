@@ -1,25 +1,76 @@
 {
   "schemaVersion": 1,
   "tick": "month",
-  "livingCost":{
-    "mode":"byProfession",
-    "defaultMonthly":1800,
-    "professionOverrides":{"teacher":1600,"programmer":2600,"lawyer":2400,"dentist":3200,"firefighter":1800,"sales_manager":2100}
+  "livingCost": {
+    "mode": "byProfession",
+    "defaultMonthly": 2100,
+    "professionOverrides": {
+      "teacher": 1900,
+      "programmer": 2900,
+      "lawyer": 2700,
+      "dentist": 3500,
+      "firefighter": 2100,
+      "sales_manager": 2400
+    }
   },
-  "loans":{
-    "apr":0.10,
-    "maxTermMonths":60,
-    "minTermMonths":6,
-    "creditLimit":{"formula":"max(creditLimitBase,0.35*netWorth+1.5*salaryMonthly)","capMultiplier":6.0},
-    "payment":{"type":"annuity"}
+  "loans": {
+    "apr": 0.012,
+    "maxTermMonths": 60,
+    "minTermMonths": 6,
+    "creditLimit": {
+      "formula": "max(creditLimitBase,0.25*netWorth+1.4*salaryMonthly)",
+      "capMultiplier": 6.5,
+      "netWorthMultiplier": 0.25,
+      "salaryMultiplier": 1.4
+    },
+    "payment": {
+      "type": "annuity"
+    }
   },
-  "win":[
-    {"id":"financial_independence","type":"passive_income_cover_costs","requiredStreakMonths":6},
-    {"id":"net_worth_1m","type":"net_worth_reach","target":1000000,"requiredStreakMonths":3}
+  "win": [
+    {
+      "id": "financial_independence",
+      "type": "passive_income_cover_costs",
+      "requiredStreakMonths": 6
+    },
+    {
+      "id": "net_worth_1m",
+      "type": "net_worth_reach",
+      "target": 1000000,
+      "requiredStreakMonths": 3
+    }
   ],
-  "lose":[
-    {"id":"bankruptcy","type":"no_liquidity_no_credit","consecutiveMonths":1},
-    {"id":"insolvency","type":"negative_cashflow_debt_growing","consecutiveMonths":3},
-    {"id":"debt_over_networth","type":"debt_ratio","minDebtToNetWorth":4.5,"consecutiveMonths":6}
-  ]
+  "lose": [
+    {
+      "id": "bankruptcy",
+      "type": "no_liquidity_no_credit",
+      "consecutiveMonths": 3
+    },
+    {
+      "id": "insolvency",
+      "type": "negative_cashflow_debt_growing",
+      "consecutiveMonths": 12
+    },
+    {
+      "id": "debt_over_networth",
+      "type": "debt_ratio",
+      "minDebtToNetWorth": 7,
+      "consecutiveMonths": 12
+    }
+  ],
+  "progressiveExpenses": {
+    "cashThreshold": 10000,
+    "cashRate": 0.001,
+    "incomeRate": 0.14,
+    "capMonthly": 1800
+  },
+  "assetMaintenance": {
+    "rateMonthly": 0.001,
+    "minMonthly": 0
+  },
+  "emergencyCredit": {
+    "enabled": true,
+    "drawPercent": 0.5,
+    "minDraw": 300
+  }
 }

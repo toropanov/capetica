@@ -12,14 +12,11 @@ import {
 } from '../domain/finance';
 import { ensureSeed, uniformFromSeed } from '../domain/rng';
 import { DEAL_WINDOW_RULES } from '../domain/deals';
+import { BALANCE_DEFAULTS } from '../domain/balanceConfig';
 
 const RNG_STORAGE_KEY = 'capetica_rng_seed';
-const DEFAULT_DIFFICULTY = 'normal';
-const DIFFICULTY_PRESETS = {
-  easy: { eventChance: 0.65 },
-  normal: { eventChance: 0.55 },
-  hard: { eventChance: 0.45 },
-};
+const DEFAULT_DIFFICULTY = BALANCE_DEFAULTS.defaultDifficulty;
+const DIFFICULTY_PRESETS = BALANCE_DEFAULTS.difficultyPresets;
 const noopStorage = {
   getItem: () => null,
   setItem: () => {},
@@ -29,8 +26,8 @@ const hydratedStorage = createJSONStorage(() =>
   typeof window === 'undefined' ? noopStorage : window.localStorage,
 );
 
-const DEFAULT_HOME_ACTION_COUNT = 4;
-const DEFAULT_HOME_ACTION_SHOW_CHANCE = 0.55;
+const DEFAULT_HOME_ACTION_COUNT = BALANCE_DEFAULTS.homeAction.defaultCount;
+const DEFAULT_HOME_ACTION_SHOW_CHANCE = BALANCE_DEFAULTS.homeAction.defaultShowChance;
 
 const getHomeActionsConfig = (configs) => configs?.homeActions || {};
 const getHomeActions = (configs) => getHomeActionsConfig(configs).actions || [];
@@ -122,9 +119,35 @@ function describeEffect(effect = {}) {
   return parts.length ? parts.join(', ') : null;
 }
 
+function getActionType(action) {
+  if (!action) return 'other';
+  if (action.type === 'chance') return 'chance';
+  if (action.effect === 'salary_up') return 'salary_up';
+  if (action.effect === 'expense_down') return 'expense_down';
+  if (action.effect === 'cost_down') return 'cost_down';
+  if (action.effect === 'protection') return 'protection';
+  if (action.effect === 'take_credit') return 'take_credit';
+  if (action.id === 'debt_payment') return 'debt_payment';
+  return 'other';
+}
+
+function buildWeightedPool(actions = [], options = {}) {
+  const typeWeights = options.typeWeights || {};
+  const pool = [];
+  actions.forEach((action) => {
+    const type = getActionType(action);
+    const weight = Math.max(0, Math.round(typeWeights[type] ?? 1));
+    if (weight <= 0) return;
+    for (let i = 0; i < weight; i += 1) {
+      pool.push(action.id);
+    }
+  });
+  return pool.length ? pool : actions.map((item) => item.id);
+}
+
 function rollMonthlyActions(seed, actions = [], options = {}) {
   let cursor = seed ?? ensureSeed();
-  const pool = actions.map((item) => item.id);
+  const pool = buildWeightedPool(actions, options);
   const limit = Math.min(options.count ?? DEFAULT_HOME_ACTION_COUNT, pool.length);
   if (!limit) {
     return { actions: [], seed: cursor };
@@ -190,8 +213,8 @@ function applyOutcomeToState(state, outcome = {}) {
   return patch;
 }
 
-const CREDIT_DRAW_MIN_BALANCE = 5;
-const CREDIT_DRAW_LABEL = 'Кредитная линия';
+const CREDIT_DRAW_MIN_BALANCE = BALANCE_DEFAULTS.creditDrawMinBalance;
+const CREDIT_DRAW_LABEL = BALANCE_DEFAULTS.creditDrawLabel;
 const HIGHLIGHT_METRIC_LABELS = {
   cash: 'Наличные',
   netWorth: 'Чистый капитал',
@@ -438,13 +461,16 @@ function buildProfessionState(baseState, profession) {
       costBasis: (seededPrices[instrumentId]?.price || 0) * units,
     };
   });
-  const livingBase = 0;
+  const livingBase = computeLivingCost(profession.id, baseState.configs?.rules);
   const cash = profession.startingMoney || 0;
   const debt = profession.startingDebt || 0;
   const holdingsValue = calculateHoldingsValue(holdings, seededPrices);
   const netWorth = cash + holdingsValue - debt;
   const salary = profession.salaryMonthly || 0;
-  const recurringExpenses = Math.max(0, Math.round(getMonthlyExpenses(profession)));
+  const recurringExpenses = Math.max(
+    0,
+    Math.round(getMonthlyExpenses(profession) + livingBase),
+  );
   const creditLimit = computeCreditLimit({
     profession,
     netWorth,
@@ -942,8 +968,29 @@ const useGameStore = create(
               }
             }
           }
-          const livingCost = 0;
+          const livingCost = state.livingCost || 0;
           const recurringExpenses = roundMoney(state.recurringExpenses || 0);
+          const progressiveRules = state.configs.rules?.progressiveExpenses;
+          const maintenanceRules = state.configs.rules?.assetMaintenance;
+          const incomeBase = salary;
+          const progressiveExpense = progressiveRules
+            ? Math.min(
+                progressiveRules.capMonthly ?? Number.POSITIVE_INFINITY,
+                Math.max(
+                  0,
+                  ((state.cash || 0) > (progressiveRules.cashThreshold || 0)
+                    ? (state.cash || 0) * (progressiveRules.cashRate || 0)
+                    : 0) + incomeBase * (progressiveRules.incomeRate || 0),
+                ),
+              )
+            : 0;
+          const maintenanceExpense = maintenanceRules
+            ? Math.max(
+                maintenanceRules.minMonthly || 0,
+                holdingsValue * (maintenanceRules.rateMonthly || 0),
+              )
+            : 0;
+          const effectiveRecurring = roundMoney(recurringExpenses + progressiveExpense + maintenanceExpense);
           const monthlyRate = state.configs.rules?.loans?.apr || 0;
           const baseDebt = Math.max(0, roundMoney(state.debt));
           const debtInterest = roundMoney(baseDebt * monthlyRate);
@@ -957,7 +1004,7 @@ const useGameStore = create(
             creditDraws = normalizeCreditDraws(creditDraws, debt);
           }
           const cash = roundMoney(
-            state.cash + salary + passiveIncome - recurringExpenses + autoLiquidation,
+            state.cash + salary + passiveIncome - effectiveRecurring + autoLiquidation,
           );
           const netHistoryBase = clampHistory([
             ...(state.history.netWorth || []),
@@ -1004,14 +1051,39 @@ const useGameStore = create(
           }
           const patchedSalaryBonus = eventRoll.patch.salaryBonus ?? state.salaryBonus;
           const patchedRecurring = eventRoll.patch.recurringExpenses ?? state.recurringExpenses;
+          const patchedEffectiveRecurring = roundMoney(
+            (patchedRecurring || 0) + progressiveExpense + maintenanceExpense,
+          );
           const patchedProtections = eventRoll.protections || state.protections;
-          const netWorth = patchedCash + holdingsValue - patchedDebt;
+          let netWorth = patchedCash + holdingsValue - patchedDebt;
           const creditLimit = computeCreditLimit({
             profession: state.profession,
             netWorth,
             salary: (state.profession.salaryMonthly || 0) + patchedSalaryBonus,
             rules: state.configs.rules,
           });
+          let availableCredit = creditLimit - patchedDebt;
+          const emergencyRules = state.configs.rules?.emergencyCredit;
+          let emergencyDraw = 0;
+          if (emergencyRules?.enabled && patchedCash < 0 && availableCredit > 0) {
+            const minDraw = emergencyRules.minDraw || 0;
+            const percent = emergencyRules.drawPercent || 0;
+            const target = Math.max(minDraw, patchedEffectiveRecurring * percent);
+            emergencyDraw = Math.min(availableCredit, Math.max(0, Math.round(target)));
+          }
+          if (emergencyDraw > 0) {
+            patchedCash = roundMoney(patchedCash + emergencyDraw);
+            patchedDebt = roundMoney(patchedDebt + emergencyDraw);
+            creditDraws = appendCreditDraw(
+              normalizeCreditDraws(creditDraws, patchedDebt - emergencyDraw),
+              emergencyDraw,
+              state.month,
+              'Экстренный кредит',
+            );
+            creditDraws = normalizeCreditDraws(creditDraws, patchedDebt);
+            availableCredit = creditLimit - patchedDebt;
+            netWorth = patchedCash + holdingsValue - patchedDebt;
+          }
           const dropThreshold = (state.configs.markets?.global?.significantDrop || -0.15);
           const riseThreshold = state.configs.markets?.global?.significantRise || 0.15;
           const marketWarnings = Object.entries(simResult.returns || {}).reduce((acc, [instrumentId, ret]) => {
@@ -1032,10 +1104,9 @@ const useGameStore = create(
             ...(state.history.cashFlow || []),
             {
               month: state.month + 1,
-              value: salary + passiveIncome - patchedRecurring,
+              value: salary + passiveIncome - patchedEffectiveRecurring,
             },
           ]);
-          const availableCredit = creditLimit - patchedDebt;
           const metrics = {
             passiveIncome,
             livingCost,
@@ -1043,7 +1114,7 @@ const useGameStore = create(
             netWorth,
             cash: patchedCash,
             availableCredit,
-            monthlyCashFlow: salary + passiveIncome - patchedRecurring,
+            monthlyCashFlow: salary + passiveIncome - patchedEffectiveRecurring,
             debtDelta: debtInterest,
             debt: patchedDebt,
           };
@@ -1145,7 +1216,7 @@ const useGameStore = create(
               salary,
               passiveIncome,
               livingCost,
-              recurringExpenses,
+            recurringExpenses: patchedEffectiveRecurring,
               debtInterest,
               returns: simResult.returns,
               stopLossWarnings,
