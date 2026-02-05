@@ -1335,6 +1335,7 @@ const useGameStore = create(
       participateInDeal: (dealMeta) => {
         const state = get();
         const entryCost = roundMoney(dealMeta.entryCost || 0);
+        const availableCash = Number(state.cash);
         if (!dealMeta?.id) {
           return { error: 'Нет данных по сделке.' };
         }
@@ -1348,7 +1349,7 @@ const useGameStore = create(
         if (entryCost <= 0) {
           return { error: 'Неверная стоимость входа.' };
         }
-        if (state.cash < entryCost) {
+        if (!Number.isFinite(availableCash) || availableCash < entryCost) {
           return { error: `Нужно $${entryCost}` };
         }
         const participation = {

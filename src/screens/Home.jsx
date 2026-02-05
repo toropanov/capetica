@@ -233,14 +233,14 @@ function LastTurn({ data, summary, passiveBreakdown = [], expenseBreakdown = [],
     return { value: remaining, label };
   };
   const hasPassiveIncome = (summary.passiveIncome || 0) > 0;
-  const incomeRows = useMemo(() => {
-    const rows = [{ id: 'salary-base', label: 'Зарплата', amount: summary.salary || 0 }];
+  const passiveRows = useMemo(() => {
     if (!hasPassiveIncome) {
-      rows.push({ id: 'passive-zero', label: 'Пассивный заработок', amount: 0 });
+      return [{ id: 'passive-zero', label: 'Пассивные доходы', amount: 0 }];
     }
-    return [...rows, ...passiveBreakdown];
-  }, [summary.salary, passiveBreakdown, hasPassiveIncome]);
-  const totalMonthlyIncome = incomeRows.reduce((sum, item) => sum + (item.amount || 0), 0);
+    return passiveBreakdown;
+  }, [passiveBreakdown, hasPassiveIncome]);
+  const totalPassiveIncome = passiveRows.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const totalMonthlyIncome = (summary.salary || 0) + totalPassiveIncome;
   const expenseRows = useMemo(() => {
     const rows = [];
     const fixedAmount =
@@ -265,7 +265,7 @@ function LastTurn({ data, summary, passiveBreakdown = [], expenseBreakdown = [],
     summary.passiveIncome - summary.recurringExpenses - summary.debtInterest;
   const creditLimit = Math.max(0, (summary.availableCredit || 0) + summary.debt);
   const cashValue = getMetricValue('cash', summary.cash);
-  const incomesValue = getMetricValue('incomes', totalMonthlyIncome);
+  const incomesValue = getMetricValue('passiveIncome', totalPassiveIncome);
   const expensesValue = getMetricValue('expenses', totalMonthlyExpenses);
   const cashDelta = getMetricDelta('cash');
   const renderDelta = (delta) => {
@@ -315,16 +315,24 @@ function LastTurn({ data, summary, passiveBreakdown = [], expenseBreakdown = [],
       </div>
       <div className={styles.analyticsGrid}>
         <div className={`${styles.infoSection} ${styles.infoPositive}`}>
+          <div className={`${styles.infoHeader} ${styles.salaryHeader}`}>
+            <div className={styles.infoHeaderLeft}>
+              <span>Месячная зарплата</span>
+            </div>
+            <div className={styles.metricPulseValue}>
+              <strong>{formatMonthlyValue(summary.salary || 0)}</strong>
+            </div>
+          </div>
           <div className={styles.infoHeader}>
             <div className={styles.infoHeaderLeft}>
-              <span>Месячные доходы</span>
+              <span>Пассивные доходы</span>
             </div>
             <div className={styles.metricPulseValue}>
               <strong>{formatMonthlyValue(incomesValue)}</strong>
             </div>
           </div>
           <div className={styles.infoList}>
-            {incomeRows.map((item) => {
+            {passiveRows.map((item) => {
               const amount = Math.round(item.amount || 0);
               const sign = amount >= 0 ? '+' : '-';
               return (

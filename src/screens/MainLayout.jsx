@@ -1120,6 +1120,7 @@ function MainLayout() {
                       !rollCardData.window ||
                       rollCardData.window.expiresIn <= 0 ||
                       (rollCardData.window.slotsLeft ?? 0) <= 0 ||
+                      !Number.isFinite(storeData.cash) ||
                       storeData.cash < rollCardData.deal.entryCost
                     }
                     className={styles.rollCardPrimaryButton}

@@ -357,6 +357,10 @@
   gap: 0.8rem;
 }
 
+.salaryHeader {
+  margin-bottom: 0.6rem;
+}
+
 .infoHeaderLeft {
   display: flex;
   flex-direction: column;
