@@ -175,7 +175,7 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
     }
     return fallback;
   };
-  const formatMonthlyValue = (value, suffix = '/мес', forceNegative = false) => {
+  const formatMonthlyValue = (value, suffix = '', forceNegative = false) => {
     const rounded = Math.round(value || 0);
     const effective = forceNegative ? -Math.abs(rounded) : rounded;
     const sign = effective >= 0 ? '+' : '-';
@@ -242,8 +242,6 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
   const incomesValue = getMetricValue('incomes', totalMonthlyIncome);
   const expensesValue = getMetricValue('expenses', totalMonthlyExpenses);
   const cashDelta = getMetricDelta('cash');
-  const incomesDelta = getMetricDelta('incomes');
-  const expensesDelta = getMetricDelta('expenses');
   const renderDelta = (delta) => {
     if (!delta) return null;
     return (
@@ -303,7 +301,6 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
           <span>Месячные доходы</span>
           <div className={styles.metricPulseValue}>
             <strong>{formatMonthlyValue(incomesValue)}</strong>
-            {renderDelta(incomesDelta)}
           </div>
         </div>
         {passiveGap >= 0 && <p className={styles.infoHint}>Перекрывает фикс. расходы</p>}
@@ -324,8 +321,7 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
         <div className={styles.infoHeader}>
           <span>Месячные расходы</span>
           <div className={styles.metricPulseValue}>
-            <strong>{formatMonthlyValue(expensesValue, '/мес', true)}</strong>
-            {renderDelta(expensesDelta)}
+            <strong>{formatMonthlyValue(expensesValue, '', true)}</strong>
           </div>
         </div>
         <div className={styles.infoList}>
