@@ -28,6 +28,17 @@ export function calculateHoldingsValue(investments = {}, priceState = {}) {
   }, 0);
 }
 
+export function sumExpenseBreakdown(breakdown = {}) {
+  return Object.values(breakdown || {}).reduce((sum, value) => sum + (Number(value) || 0), 0);
+}
+
+export function getMonthlyExpenses(profession) {
+  if (!profession) return 0;
+  const breakdownTotal = sumExpenseBreakdown(profession.monthlyExpenseBreakdown || {});
+  if (breakdownTotal > 0) return breakdownTotal;
+  return profession.monthlyExpenses || 0;
+}
+
 const passiveMultipliers = {
   bonds: 0.0022,
   stocks: 0.0015,
@@ -87,7 +98,7 @@ export function estimateMonthlyDebtInterest({
 function checkWinCondition(rule, metrics) {
   switch (rule.type) {
     case 'passive_income_cover_costs':
-      return metrics.passiveIncome >= metrics.livingCost;
+      return metrics.passiveIncome >= metrics.recurringExpenses;
     case 'net_worth_reach':
       return metrics.netWorth >= rule.target;
     default:

@@ -111,12 +111,6 @@ function Investments() {
     flashRepayAnimation(options.drawId || 'all');
   };
 
-  const totalCreditBalance = useMemo(() => {
-    const sumDraws = creditDraws.reduce((sum, draw) => sum + Math.max(draw.balance || 0, 0), 0);
-    if (sumDraws > 0) return sumDraws;
-    return Math.max(debt, 0);
-  }, [creditDraws, debt]);
-
   const plannedCreditDraw = useMemo(() => {
     if (availableCredit <= 0) return 0;
     const capped = Math.min(Math.round(creditAmount || 0), Math.round(Math.max(availableCredit, 0)));
@@ -141,12 +135,12 @@ function Investments() {
   );
 
   const currentMonthlyPayment = useMemo(
-    () => calculateMonthlyPayment(totalCreditBalance),
-    [calculateMonthlyPayment, totalCreditBalance],
+    () => calculateMonthlyPayment(Math.max(0, debt)),
+    [calculateMonthlyPayment, debt],
   );
   const previewMonthlyPayment = useMemo(
-    () => calculateMonthlyPayment(totalCreditBalance + plannedCreditDraw),
-    [calculateMonthlyPayment, totalCreditBalance, plannedCreditDraw],
+    () => calculateMonthlyPayment(Math.max(0, debt) + plannedCreditDraw),
+    [calculateMonthlyPayment, debt, plannedCreditDraw],
   );
   const paymentValue = previewMonthlyPayment ?? currentMonthlyPayment;
   const paymentChanged =
@@ -270,7 +264,7 @@ function Investments() {
           <div className={styles.totalPaymentHint}>
             <small className={styles.paymentHint}>
               {paymentChanged
-                ? `Платёж по кредитам: ${formatUSD(Math.round(currentMonthlyPayment || 0))} → ${formatUSD(Math.round(previewMonthlyPayment || 0))}/мес`
+                ? `Платёж сейчас: ${formatUSD(Math.round(currentMonthlyPayment || 0))}/мес. После кредита: ${formatUSD(Math.round(previewMonthlyPayment || 0))}/мес`
                 : `Платёж по кредитам: ${formatUSD(Math.round(paymentValue))}/мес`}
             </small>
           </div>

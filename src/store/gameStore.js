@@ -3,12 +3,12 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { seedPriceState, simulateMarkets } from '../domain/marketSimulator';
 import {
   getProfessionById,
-  computeLivingCost,
   computeCreditLimit,
   calculateHoldingsValue,
   calculatePassiveIncome,
   evaluateGoals,
   getPassiveMultiplier,
+  getMonthlyExpenses,
 } from '../domain/finance';
 import { ensureSeed, uniformFromSeed } from '../domain/rng';
 import { DEAL_WINDOW_RULES } from '../domain/deals';
@@ -105,7 +105,7 @@ function describeEffect(effect = {}) {
   }
   if (typeof effect.recurringDelta === 'number' && effect.recurringDelta !== 0) {
     parts.push(
-      `фикс.расходы ${effect.recurringDelta > 0 ? '+' : '-'}$${Math.abs(
+      `месячные расходы ${effect.recurringDelta > 0 ? '+' : '-'}$${Math.abs(
         Math.round(effect.recurringDelta),
       )}`,
     );
@@ -423,13 +423,13 @@ function buildProfessionState(baseState, profession) {
       costBasis: (seededPrices[instrumentId]?.price || 0) * units,
     };
   });
-  const livingBase = computeLivingCost(profession.id, baseState.configs?.rules);
+  const livingBase = 0;
   const cash = profession.startingMoney || 0;
   const debt = profession.startingDebt || 0;
   const holdingsValue = calculateHoldingsValue(holdings, seededPrices);
   const netWorth = cash + holdingsValue - debt;
   const salary = profession.salaryMonthly || 0;
-  const recurringExpenses = Math.max(0, Math.round(profession.monthlyExpenses || livingBase * 0.4));
+  const recurringExpenses = Math.max(0, Math.round(getMonthlyExpenses(profession)));
   const creditLimit = computeCreditLimit({
     profession,
     netWorth,
@@ -556,14 +556,16 @@ function handleHomeAction(actionId, state, seed, actions = []) {
         roundMoney((patch.recurringExpenses ?? state.recurringExpenses) - drop),
       );
       patch.recurringExpenses = nextRecurring;
-      message = `Фикс.расходы -$${drop}`;
+      message = `Месячные расходы -$${drop}`;
       break;
     }
     case 'cost_down': {
       const relief = action.value || 0;
-      const nextModifier = Math.max(0, state.lifestyleModifier - relief);
-      patch.lifestyleModifier = nextModifier;
-      patch.livingCost = state.baseLivingCost + nextModifier;
+      const nextRecurring = Math.max(
+        0,
+        roundMoney((patch.recurringExpenses ?? state.recurringExpenses) - relief),
+      );
+      patch.recurringExpenses = nextRecurring;
       message = 'Стресс снят — расходы ниже.';
       break;
     }
@@ -932,7 +934,7 @@ const useGameStore = create(
             creditDraws = normalizeCreditDraws(creditDraws, debt);
           }
           const cash = roundMoney(
-            state.cash + salary + passiveIncome - livingCost - recurringExpenses + autoLiquidation,
+            state.cash + salary + passiveIncome - recurringExpenses + autoLiquidation,
           );
           const netHistoryBase = clampHistory([
             ...(state.history.netWorth || []),
@@ -1006,7 +1008,7 @@ const useGameStore = create(
             ...(state.history.cashFlow || []),
             {
               month: state.month + 1,
-              value: salary + passiveIncome - livingCost - patchedRecurring,
+              value: salary + passiveIncome - patchedRecurring,
             },
           ]);
           const availableCredit = creditLimit - patchedDebt;
@@ -1017,7 +1019,7 @@ const useGameStore = create(
             netWorth,
             cash: patchedCash,
             availableCredit,
-            monthlyCashFlow: salary + passiveIncome - livingCost - patchedRecurring,
+            monthlyCashFlow: salary + passiveIncome - patchedRecurring,
             debtDelta: debtInterest,
             debt: patchedDebt,
           };

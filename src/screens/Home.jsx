@@ -8,6 +8,7 @@ import {
   calculatePassiveIncome,
   getPassiveMultiplier,
   estimateMonthlyDebtInterest,
+  sumExpenseBreakdown,
 } from '../domain/finance';
 import styles from './Home.module.css';
 import { spriteStyle } from '../utils/iconSprite';
@@ -34,6 +35,15 @@ const METRIC_SUFFIXES = {
   expenses: '/мес',
   passiveIncome: '/мес',
 };
+const EXPENSE_LABELS = {
+  education: 'Образование',
+  food: 'Питание',
+  entertainment: 'Развлечения',
+  housing: 'Жилье',
+  health: 'Здоровье',
+  insurance: 'Страховка',
+};
+const EXPENSE_KEYS = ['education', 'food', 'entertainment', 'housing', 'health', 'insurance'];
 
 function formatUSD(value) {
   const rounded = Math.round(value || 0);
@@ -45,7 +55,7 @@ function describeGoal(rule) {
   switch (rule.type) {
     case 'passive_income_cover_costs':
       return {
-        title: 'Пассивный доход > фикс. расходов',
+        title: 'Пассивный доход > месячных расходов',
         detail: `Держи ${rule.requiredStreakMonths || 1} мес. подряд`,
         mode: 'Выживание',
       };
@@ -99,10 +109,10 @@ function describeActionConsequences(action) {
       list.push({ icon: '📈', text: `Доход +$${action.value || 0}/мес.` });
       break;
     case 'expense_down':
-      list.push({ icon: '🧱', text: `Фикс. расходы -$${action.value || 0}` });
+      list.push({ icon: '🧱', text: `Месячные расходы -$${action.value || 0}` });
       break;
     case 'cost_down':
-      list.push({ icon: '💰', text: `Бытовые траты -$${action.value || 0}` });
+      list.push({ icon: '💰', text: `Месячные расходы -$${action.value || 0}` });
       break;
     case 'protection':
       list.push({ icon: '⚡', text: 'Добавляет защиту' });
@@ -170,7 +180,7 @@ function ActionCard({ action, onSelect, cash, compact = false, variant = 'defaul
   );
 }
 
-function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
+function LastTurn({ data, summary, passiveBreakdown = [], expenseBreakdown = [], metricPulse }) {
   const formatter = (value) => formatUSD(value);
   const metricValues = metricPulse?.current || null;
   const metricAnimation = metricPulse?.animation || null;
@@ -218,15 +228,12 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
   const totalMonthlyIncome = incomeRows.reduce((sum, item) => sum + (item.amount || 0), 0);
   const expenseRows = useMemo(() => {
     const rows = [];
-    const livingAmount =
-      typeof data?.livingCost === 'number' ? data.livingCost : summary.livingCost || 0;
-    if (livingAmount > 0) {
-      rows.push({ id: 'living', label: 'Стоимость жизни', amount: livingAmount });
-    }
     const fixedAmount =
       typeof data?.recurringExpenses === 'number' ? data.recurringExpenses : summary.recurringExpenses || 0;
-    if (fixedAmount > 0) {
-      rows.push({ id: 'fixed', label: 'Бытовые', amount: fixedAmount });
+    if (expenseBreakdown.length > 0) {
+      rows.push(...expenseBreakdown);
+    } else if (fixedAmount > 0) {
+      rows.push({ id: 'fixed', label: 'Месячные расходы', amount: fixedAmount });
     }
     const interestAmount =
       typeof data?.debtInterest === 'number' ? data.debtInterest : summary.debtInterest || 0;
@@ -234,13 +241,13 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
       rows.push({ id: 'interest', label: 'Проценты по долгу', amount: interestAmount });
     }
     return rows;
-  }, [data, summary.livingCost, summary.recurringExpenses, summary.debtInterest, summary.debt]);
+  }, [data, expenseBreakdown, summary.recurringExpenses, summary.debtInterest, summary.debt]);
   const totalMonthlyExpenses = expenseRows.reduce((sum, item) => sum + (item.amount || 0), 0);
   const net = Math.round(totalMonthlyIncome - totalMonthlyExpenses);
   const netForecast = summary.netWorth + net * FORECAST_TURNS;
   const cashForecast = summary.cash + net * 3;
   const passiveGap =
-    summary.passiveIncome - summary.livingCost - summary.recurringExpenses - summary.debtInterest;
+    summary.passiveIncome - summary.recurringExpenses - summary.debtInterest;
   const creditLimit = Math.max(0, (summary.availableCredit || 0) + summary.debt);
   const cashValue = getMetricValue('cash', summary.cash);
   const incomesValue = getMetricValue('incomes', totalMonthlyIncome);
@@ -333,7 +340,7 @@ function LastTurn({ data, summary, passiveBreakdown = [], metricPulse }) {
               ))
             ) : (
               <div>
-                <span>Бытовые</span>
+                <span>Месячные расходы</span>
                 <strong>-$0</strong>
               </div>
             )}
@@ -565,6 +572,25 @@ function Home() {
   }, [investments, priceState, instrumentMap, dealParticipations, passiveIncomeEffective]);
 
   const recurringExpenses = useGameStore((state) => state.recurringExpenses || 0);
+  const expenseBreakdown = useMemo(() => {
+    const raw = profession?.monthlyExpenseBreakdown || {};
+    const baseTotal = sumExpenseBreakdown(raw);
+    const ratio = baseTotal > 0 && recurringExpenses > 0 ? recurringExpenses / baseTotal : 0;
+    const rows = EXPENSE_KEYS.map((key) => ({
+      id: key,
+      label: EXPENSE_LABELS[key] || key,
+      amount: Math.round((Number(raw[key]) || 0) * ratio),
+    }));
+    const total = rows.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const diff = Math.round((recurringExpenses || 0) - total);
+    if (rows.length && diff !== 0 && baseTotal > 0) {
+      rows[rows.length - 1] = {
+        ...rows[rows.length - 1],
+        amount: rows[rows.length - 1].amount + diff,
+      };
+    }
+    return rows;
+  }, [profession, recurringExpenses]);
   const debtInterestEstimate = useMemo(
     () =>
       estimateMonthlyDebtInterest({
@@ -682,7 +708,13 @@ function Home() {
         <TurnHighlightOverlay data={highlightData} active={highlightActive} onDismiss={dismissHighlight} />
       )}
       <Card className={styles.card}>
-        <LastTurn data={lastTurn} summary={summary} passiveBreakdown={passiveBreakdown} metricPulse={metricPulse} />
+        <LastTurn
+          data={lastTurn}
+          summary={summary}
+          passiveBreakdown={passiveBreakdown}
+          expenseBreakdown={expenseBreakdown}
+          metricPulse={metricPulse}
+        />
       {salaryProgression && (
           <div className={styles.professionGrowth}>
             <span className={styles.professionGrowthLabel}>Рост дохода</span>
@@ -718,32 +750,6 @@ function Home() {
           </div>
         </div>
       ) : null}
-      {!hideGoalCard && goalRows.length > 0 && (
-        <Card className={styles.goalCard}>
-          <div className={styles.goalHeader}>
-            <span>Прогресс партии</span>
-            <small>Сложность: {difficultyLabels[difficulty] || difficulty}</small>
-          </div>
-          <ul className={styles.goalList}>
-            {goalRows.map((goal) => (
-              <li key={goal.id} className={goal.active ? styles.goalItemActive : ''}>
-                <div>
-                  <strong>{goal.title}</strong>
-                  {goal.detail && <span>{goal.detail}</span>}
-                </div>
-                <div className={styles.goalMeter}>
-                  <div>
-                    <div style={{ width: `${Math.round((goal.progress / goal.target) * 100)}%` }} />
-                  </div>
-                  <small>
-                    {goal.progress}/{goal.target}
-                  </small>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
       {(monthlyOffers[0] || visibleActiveOffers.length > 0) && (
         <div className={styles.monthlySection}>
           {monthlyOffers[0] && (

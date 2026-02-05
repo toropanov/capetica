@@ -37,7 +37,7 @@ function getEventMessage(event = {}) {
 }
 
 const WIN_OUTCOME_MESSAGES = {
-  financial_independence: 'Пассивный доход выше фикс. расходов, можешь укреплять империю или начать новую партию.',
+  financial_independence: 'Пассивный доход выше месячных расходов, можешь укреплять империю или начать новую партию.',
   net_worth_1m: 'Чистый капитал превысил $1 000 000, продолжай играть или начни заново.',
 };
 
@@ -204,7 +204,7 @@ function computeMetricSnapshotFromState(snapshotState) {
     preferLastTurn: false,
   });
   const expenses = Math.round(
-    (snapshotState.livingCost || 0) + (snapshotState.recurringExpenses || 0) + debtInterest,
+    (snapshotState.recurringExpenses || 0) + debtInterest,
   );
   return {
     incomes,
@@ -305,7 +305,6 @@ function MainLayout() {
       joblessMonths: state.joblessMonths || 0,
       salaryCutMonths: state.salaryCutMonths || 0,
       salaryCutAmount: state.salaryCutAmount || 0,
-      livingCost: state.livingCost || 0,
     })),
   );
   const advanceMonth = useGameStore((state) => state.advanceMonth);
@@ -501,7 +500,6 @@ function MainLayout() {
       storeData.joblessMonths,
       storeData.salaryCutMonths,
       storeData.salaryCutAmount,
-      storeData.livingCost,
       storeData.configs,
     ],
   );
@@ -626,7 +624,7 @@ function MainLayout() {
     const logs = (recentLog || []).filter((entry) => entry.month === summaryMonth);
     const incomes = Math.round((lastTurn.salary || 0) + (lastTurn.passiveIncome || 0));
     const expenses = Math.round(
-      (lastTurn.livingCost || 0) + (lastTurn.recurringExpenses || 0) + (lastTurn.debtInterest || 0),
+      (lastTurn.recurringExpenses || 0) + (lastTurn.debtInterest || 0),
     );
     const net = incomes - expenses;
     setTurnSummary({
@@ -1047,7 +1045,7 @@ function MainLayout() {
                     ? { label: 'Зарплата', value: effect.salaryBonusDelta }
                     : null,
                   typeof effect.recurringDelta === 'number'
-                    ? { label: 'Фикс. расходы', value: effect.recurringDelta }
+                    ? { label: 'Месячные расходы', value: effect.recurringDelta }
                     : null,
                   typeof effect.debtDelta === 'number'
                     ? { label: 'Долг', value: effect.debtDelta }

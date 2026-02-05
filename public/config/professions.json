@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "baseCurrency": "USD",
   "professions": [
-    {"id":"teacher","title":"Учитель","salaryMonthly":2200,"startingMoney":2500,"creditLimitBase":4500,"startingDebt":0,"startingPortfolio":{},"avatarKey":"teacher_01","monthlyExpenses":900},
-    {"id":"programmer","title":"Программист","salaryMonthly":5200,"startingMoney":6000,"creditLimitBase":12000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"programmer_01","monthlyExpenses":1500},
-    {"id":"lawyer","title":"Юрист","salaryMonthly":4800,"startingMoney":4500,"creditLimitBase":11000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"lawyer_01","monthlyExpenses":1400},
-    {"id":"dentist","title":"Стоматолог","salaryMonthly":6500,"startingMoney":7000,"creditLimitBase":18000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"dentist_01","monthlyExpenses":1800},
-    {"id":"firefighter","title":"Пожарный","salaryMonthly":3000,"startingMoney":2500,"creditLimitBase":6500,"startingDebt":0,"startingPortfolio":{},"avatarKey":"firefighter_01","monthlyExpenses":1000},
-    {"id":"sales_manager","title":"Менеджер","salaryMonthly":3600,"startingMoney":3000,"creditLimitBase":8000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"sales_01","monthlyExpenses":1200,"salaryProgression":{"stepMonths":5,"percent":0.03,"cap":6000}}
+    {"id":"teacher","title":"Учитель","salaryMonthly":2200,"startingMoney":2500,"creditLimitBase":4500,"startingDebt":0,"startingPortfolio":{},"avatarKey":"teacher_01","monthlyExpenses":900,"monthlyExpenseBreakdown":{"education":90,"food":225,"entertainment":90,"housing":270,"health":135,"insurance":90}},
+    {"id":"programmer","title":"Программист","salaryMonthly":5200,"startingMoney":6000,"creditLimitBase":12000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"programmer_01","monthlyExpenses":1500,"monthlyExpenseBreakdown":{"education":150,"food":375,"entertainment":150,"housing":450,"health":225,"insurance":150}},
+    {"id":"lawyer","title":"Юрист","salaryMonthly":4800,"startingMoney":4500,"creditLimitBase":11000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"lawyer_01","monthlyExpenses":1400,"monthlyExpenseBreakdown":{"education":140,"food":350,"entertainment":140,"housing":420,"health":210,"insurance":140}},
+    {"id":"dentist","title":"Стоматолог","salaryMonthly":6500,"startingMoney":7000,"creditLimitBase":18000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"dentist_01","monthlyExpenses":1800,"monthlyExpenseBreakdown":{"education":180,"food":450,"entertainment":180,"housing":540,"health":270,"insurance":180}},
+    {"id":"firefighter","title":"Пожарный","salaryMonthly":3000,"startingMoney":2500,"creditLimitBase":6500,"startingDebt":0,"startingPortfolio":{},"avatarKey":"firefighter_01","monthlyExpenses":1000,"monthlyExpenseBreakdown":{"education":100,"food":250,"entertainment":100,"housing":300,"health":150,"insurance":100}},
+    {"id":"sales_manager","title":"Менеджер","salaryMonthly":3600,"startingMoney":3000,"creditLimitBase":8000,"startingDebt":0,"startingPortfolio":{},"avatarKey":"sales_01","monthlyExpenses":1200,"monthlyExpenseBreakdown":{"education":120,"food":300,"entertainment":120,"housing":360,"health":180,"insurance":120},"salaryProgression":{"stepMonths":5,"percent":0.03,"cap":6000}}
   ]
 }

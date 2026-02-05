@@ -1,6 +1,7 @@
 import Card from './Card';
 import styles from '../screens/ProfessionSelect.module.css';
 import { PROFESSION_IMAGES } from '../utils/professionImages';
+import { getMonthlyExpenses } from '../domain/finance';
 
 const formatMoney = (value) => `$${Math.round(value || 0).toLocaleString('en-US')}`;
 
@@ -8,7 +9,7 @@ function ProfessionCard({ profession, onSelect, isSelected = false }) {
   const stats = [
     { label: 'Зарплата', value: `${formatMoney(profession.salaryMonthly)}/мес` },
     { label: 'Наличные', value: formatMoney(profession.startingMoney) },
-    { label: 'Бытовые расходы', value: `${formatMoney(profession.monthlyExpenses || 0)}/мес` },
+    { label: 'Расходы', value: `${formatMoney(getMonthlyExpenses(profession))}/мес` },
     { label: 'Кредитный лимит', value: formatMoney(profession.creditLimitBase || 0) },
   ];
   const startingDebt = profession.startingDebt || 0;
