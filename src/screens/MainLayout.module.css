@@ -730,6 +730,34 @@
   color: rgba(59, 42, 16, 0.75);
 }
 
+.rollCardPriceDelta {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  margin-left: 0.3rem;
+  font-weight: 600;
+  gap: 0.2rem;
+}
+
+.rollCardDeltaIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rollCardDeltaIcon svg {
+  width: 0.65rem;
+  height: 0.65rem;
+}
+
+.rollCardDeltaPositive {
+  color: #1f7b3a;
+}
+
+.rollCardDeltaNegative {
+  color: #b33e2b;
+}
+
 .rollCardSlider {
   display: flex;
   flex-direction: column;

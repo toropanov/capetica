@@ -563,6 +563,15 @@ function MainLayout() {
     rollCardData && rollCardData.holding?.units
       ? rollCardData.holding.units * (rollCardData.price || 0)
       : 0;
+  const rollAverageEntryPrice =
+    rollCardData && rollCardData.holding?.units
+      ? rollCardData.holding.costBasis || 0
+      : 0;
+  const rollPriceDeltaPercent =
+    rollAverageEntryPrice > 0 && rollCardData?.price
+      ? Math.round(((rollCardData.price - rollAverageEntryPrice) / rollAverageEntryPrice) * 100)
+      : null;
+  const rollHasPriceDelta = typeof rollPriceDeltaPercent === 'number' && Number.isFinite(rollPriceDeltaPercent);
   useEffect(() => {
     if (!rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event') {
       setRollTradeMode('buy');
@@ -1128,7 +1137,33 @@ function MainLayout() {
                   Средний диапазон: {formatUSD(rollCardData.range?.min)}–{formatUSD(rollCardData.range?.max)}
                 </p>
                 <div className={styles.rollCardPrice}>
-                  Сейчас стоят <strong>{formatUSD(rollCardData.price)}</strong>
+                  Цена сейчас <strong>{formatUSD(rollCardData.price)}</strong>
+                  {rollHasPriceDelta && (
+                    <span
+                      className={`${styles.rollCardPriceDelta} ${
+                        rollPriceDeltaPercent > 0
+                          ? styles.rollCardDeltaPositive
+                          : rollPriceDeltaPercent < 0
+                            ? styles.rollCardDeltaNegative
+                            : ''
+                      }`}
+                    >
+                      {rollPriceDeltaPercent !== 0 && (
+                        <span className={styles.rollCardDeltaIcon} aria-hidden="true">
+                          {rollPriceDeltaPercent > 0 ? (
+                            <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M6 2L10 7H2L6 2Z" fill="currentColor" />
+                            </svg>
+                          ) : (
+                            <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M6 10L2 5H10L6 10Z" fill="currentColor" />
+                            </svg>
+                          )}
+                        </span>
+                      )}
+                      {Math.abs(rollPriceDeltaPercent)}%
+                    </span>
+                  )}
                 </div>
                 {rollCardData.holding && rollCardData.holding.units > 0 && (
                   <p className={styles.rollCardPassiveHint}>
