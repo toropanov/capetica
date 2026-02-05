@@ -232,13 +232,7 @@ function LastTurn({ data, summary, passiveBreakdown = [], expenseBreakdown = [],
     if (!label) return null;
     return { value: remaining, label };
   };
-  const hasPassiveIncome = (summary.passiveIncome || 0) > 0;
-  const passiveRows = useMemo(() => {
-    if (!hasPassiveIncome) {
-      return [{ id: 'passive-zero', label: 'Пассивные доходы', amount: 0 }];
-    }
-    return passiveBreakdown;
-  }, [passiveBreakdown, hasPassiveIncome]);
+  const passiveRows = useMemo(() => passiveBreakdown, [passiveBreakdown]);
   const totalPassiveIncome = passiveRows.reduce((sum, item) => sum + (item.amount || 0), 0);
   const totalMonthlyIncome = (summary.salary || 0) + totalPassiveIncome;
   const expenseRows = useMemo(() => {
