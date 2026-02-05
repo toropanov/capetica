@@ -14,6 +14,27 @@ const formatPercent = (value) => {
   return Number.isInteger(rounded) ? `${rounded.toFixed(0)}%` : `${rounded.toFixed(1)}%`;
 };
 
+const gcd = (a, b) => {
+  let x = Math.abs(Math.round(a));
+  let y = Math.abs(Math.round(b));
+  while (y) {
+    const temp = y;
+    y = x % y;
+    x = temp;
+  }
+  return x || 1;
+};
+
+const getCreditSliderStep = (min, max) => {
+  const range = Math.max(0, Math.round(max - min));
+  if (range === 0) {
+    return Math.max(1, Math.round(max || min || 1));
+  }
+  const rawStep = Math.max(10, Math.round(max / 12)) || 10;
+  const normalized = gcd(range, rawStep);
+  return Math.max(1, normalized);
+};
+
 function Investments() {
   const instruments = useGameStore((state) => state.configs?.instruments?.instruments || []);
   const priceState = useGameStore((state) => state.priceState || {});
@@ -157,7 +178,7 @@ function Investments() {
             const maxAvailable = Math.round(Math.max(availableCredit, 0));
             const sliderMin = Math.min(500, maxAvailable);
             const sliderMax = Math.max(sliderMin, maxAvailable);
-            const sliderStep = Math.max(10, Math.round(sliderMax / 12)) || 10;
+            const sliderStep = getCreditSliderStep(sliderMin, sliderMax);
             return (
               <Slider
                 min={sliderMin}
@@ -307,7 +328,9 @@ function Investments() {
                   );
                 })
               ) : (
-                <p className={styles.emptyHint}>Активных контрактов пока нет.</p>
+                <div className={styles.emptyDeals}>
+                  <p>Нужные контракты выстреливают во время ходов. Держи кэш под рукой и реагируй, когда игра подкинет шанс.</p>
+                </div>
               )}
             </Card>
           </div>
