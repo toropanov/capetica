@@ -129,15 +129,15 @@ function Investments() {
 
   return (
     <div className={styles.screen}>
-      <Card className={styles.creditCard}>
-        <div className={styles.creditHeader}>
-          <span>Кредитная линия</span>
+      <Card className={`${styles.blockCard} ${styles.creditCard}`}>
+        <header className={styles.sectionHeader}>
+          <h2>Кредитная линия</h2>
           <p>
             {loanRules
               ? `Выдаётся под ${aprLabel || '—'} на срок ${termLabel}. Лимит растёт вместе с чистым капиталом.`
               : 'Условия выдачи подтягиваются из конфигурации.'}
           </p>
-        </div>
+        </header>
         <div className={styles.creditTerms}>
           <div>
             <span>Ставка</span>
