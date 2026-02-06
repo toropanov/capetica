@@ -3,18 +3,18 @@
   "tick": "month",
   "livingCost": {
     "mode": "byProfession",
-    "defaultMonthly": 2100,
+    "defaultMonthly": 1200,
     "professionOverrides": {
-      "teacher": 1900,
-      "programmer": 2900,
-      "lawyer": 2700,
-      "dentist": 3500,
-      "firefighter": 2100,
-      "sales_manager": 2400
+      "teacher": 800,
+      "programmer": 1600,
+      "lawyer": 1700,
+      "dentist": 2100,
+      "firefighter": 900,
+      "sales_manager": 1200
     }
   },
   "loans": {
-    "apr": 0.012,
+    "apr": 0.02,
     "maxTermMonths": 60,
     "minTermMonths": 6,
     "creditLimit": {
@@ -44,33 +44,33 @@
     {
       "id": "bankruptcy",
       "type": "no_liquidity_no_credit",
-      "consecutiveMonths": 3
+      "consecutiveMonths": 12
     },
     {
       "id": "insolvency",
       "type": "negative_cashflow_debt_growing",
-      "consecutiveMonths": 12
+      "consecutiveMonths": 18
     },
     {
       "id": "debt_over_networth",
       "type": "debt_ratio",
       "minDebtToNetWorth": 7,
-      "consecutiveMonths": 12
+      "consecutiveMonths": 48
     }
   ],
   "progressiveExpenses": {
-    "cashThreshold": 10000,
-    "cashRate": 0.001,
-    "incomeRate": 0.14,
-    "capMonthly": 1800
+    "cashThreshold": 12000,
+    "cashRate": 0.0009,
+    "incomeRate": 0.105,
+    "capMonthly": 1350
   },
   "assetMaintenance": {
     "rateMonthly": 0.001,
     "minMonthly": 0
   },
   "emergencyCredit": {
-    "enabled": true,
-    "drawPercent": 0.5,
+    "enabled": false,
+    "drawPercent": 0.3,
     "minDraw": 300
   }
 }

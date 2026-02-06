@@ -2,7 +2,7 @@ export const BALANCE_DEFAULTS = {
   defaultDifficulty: 'normal',
   difficultyPresets: {
     easy: { eventChance: 0.65 },
-    normal: { eventChance: 0.3 },
+    normal: { eventChance: 0.38 },
     hard: { eventChance: 0.45 },
   },
   homeAction: {

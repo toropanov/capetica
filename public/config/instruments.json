@@ -38,7 +38,7 @@
       "type": "crypto",
       "currency": "USD",
       "initialPrice": 22,
-      "model": {"muMonthly": 0.0075, "sigmaMonthly": 0.16, "cycleRefs": ["crypto_cycle"], "shockRefs": ["crypto_pumpdump", "market_crash"], "maxDrawdownClamp": 0.75},
+      "model": {"muMonthly": 0.012, "sigmaMonthly": 0.28, "cycleRefs": ["crypto_cycle"], "shockRefs": ["crypto_pumpdump", "market_crash"], "maxDrawdownClamp": 0.75},
       "trading": {"buyFeePct": 0.0025, "sellFeePct": 0.0025, "minOrder": 10, "allowSell": true},
       "ui": {"iconKey": "crypto", "colorKey": "violet", "descriptionKey": "crypto_desc", "range": {"min": 8, "max": 42}}
     },
@@ -48,7 +48,7 @@
       "type": "crypto",
       "currency": "USD",
       "initialPrice": 16,
-      "model": {"muMonthly": 0.0078, "sigmaMonthly": 0.18, "cycleRefs": ["crypto_cycle"], "shockRefs": ["crypto_pumpdump", "market_crash"], "maxDrawdownClamp": 0.75},
+      "model": {"muMonthly": 0.013, "sigmaMonthly": 0.3, "cycleRefs": ["crypto_cycle"], "shockRefs": ["crypto_pumpdump", "market_crash"], "maxDrawdownClamp": 0.75},
       "trading": {"buyFeePct": 0.0025, "sellFeePct": 0.0025, "minOrder": 10, "allowSell": true},
       "ui": {"iconKey": "crypto", "colorKey": "violet", "descriptionKey": "crypto_desc", "range": {"min": 6, "max": 36}}
     },

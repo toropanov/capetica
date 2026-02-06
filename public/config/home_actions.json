@@ -1057,7 +1057,7 @@
     "cost_down": 2,
     "protection": 1,
     "chance": 0.7,
-    "take_credit": 0.7,
+    "take_credit": 1.8,
     "debt_payment": 1,
     "other": 1
   }

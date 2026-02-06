@@ -12,7 +12,8 @@
     "cap:sync": "npx cap sync",
     "cap:android": "npx cap open android",
     "cap:ios": "npx cap open ios",
-    "generate:icons": "node scripts/generate-icons.js"
+    "generate:icons": "node scripts/generate-icons.js",
+    "balance:check": "node --experimental-specifier-resolution=node scripts/balance-check.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
