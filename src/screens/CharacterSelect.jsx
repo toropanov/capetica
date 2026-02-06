@@ -100,44 +100,44 @@ function CharacterSelect() {
   const saveDisabled = !pendingProfessionId || saving;
 
   return (
-    <div ref={pageRef} className={styles.selectionPage}>
-      <Card className={`${styles.panelCard} ${styles.strategyCard}`}>
-        <div className={styles.sectionHeader}>
-          <h2>Стратегия партии</h2>
-        </div>
-        <div className={styles.optionListCenter}>
-          {goalButtons.map((rule) => (
-            <button
-              key={rule.id}
-              type="button"
-              className={`${styles.optionButton} ${pendingGoalId === rule.id ? styles.optionButtonActive : ''}`}
-              onClick={() => setPendingGoalId(rule.id)}
-            >
-              <strong>{rule.label}</strong>
-              <small>{rule.detail}</small>
-            </button>
-          ))}
-        </div>
-      </Card>
-      <Card className={styles.panelCard}>
-        <div className={styles.sectionHeader}>
-          <h2>Сложность</h2>
-        </div>
-        <div className={styles.optionListCenter}>
-          {DIFFICULTY_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              className={`${styles.optionButton} ${pendingDifficulty === option.id ? styles.optionButtonActive : ''}`}
-              onClick={() => setPendingDifficulty(option.id)}
-            >
-              <strong>{option.label}</strong>
-              <small>{option.description}</small>
-            </button>
-          ))}
-        </div>
-      </Card>
-      <div className={styles.selectionContent}>
+    <div className={styles.selectionPage}>
+      <div ref={pageRef} className={styles.selectionContent}>
+        <Card className={`${styles.panelCard} ${styles.strategyCard}`}>
+          <div className={styles.sectionHeader}>
+            <h2>Стратегия партии</h2>
+          </div>
+          <div className={styles.optionListCenter}>
+            {goalButtons.map((rule) => (
+              <button
+                key={rule.id}
+                type="button"
+                className={`${styles.optionButton} ${pendingGoalId === rule.id ? styles.optionButtonActive : ''}`}
+                onClick={() => setPendingGoalId(rule.id)}
+              >
+                <strong>{rule.label}</strong>
+                <small>{rule.detail}</small>
+              </button>
+            ))}
+          </div>
+        </Card>
+        <Card className={styles.panelCard}>
+          <div className={styles.sectionHeader}>
+            <h2>Сложность</h2>
+          </div>
+          <div className={styles.optionListCenter}>
+            {DIFFICULTY_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`${styles.optionButton} ${pendingDifficulty === option.id ? styles.optionButtonActive : ''}`}
+                onClick={() => setPendingDifficulty(option.id)}
+              >
+                <strong>{option.label}</strong>
+                <small>{option.description}</small>
+              </button>
+            ))}
+          </div>
+        </Card>
         <div className={styles.characterGrid}>
           {orderedProfessions.map((profession) => (
             <ProfessionCard

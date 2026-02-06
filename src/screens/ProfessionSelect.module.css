@@ -135,17 +135,16 @@
   gap: 1.5rem;
   position: relative;
   color: #1f2c48;
-  overflow: hidden;
-}
-
-.selectionContent {
-  flex: 1;
-  min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
   overscroll-behavior-y: contain;
+}
+
+.selectionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .selectionHeader {
