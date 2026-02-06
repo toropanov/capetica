@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import Card from '../components/Card';
@@ -21,6 +21,7 @@ function CharacterSelect() {
   const [pendingGoalId, setPendingGoalId] = useState(selectedGoalId);
   const [pendingDifficulty, setPendingDifficulty] = useState(difficulty);
   const [saving, setSaving] = useState(false);
+  const pageRef = useRef(null);
   const saveTimeoutRef = useRef(null);
   const winRules = useGameStore((state) => state.configs?.rules?.win || []);
 
@@ -50,6 +51,10 @@ function CharacterSelect() {
   useEffect(() => {
     setPendingProfessionId(currentProfessionId);
   }, [currentProfessionId]);
+
+  useLayoutEffect(() => {
+    pageRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
 
   const hasPendingChanges =
     pendingProfessionId !== currentProfessionId ||
@@ -95,7 +100,7 @@ function CharacterSelect() {
   const saveDisabled = !pendingProfessionId || saving;
 
   return (
-    <div className={styles.selectionPage}>
+    <div ref={pageRef} className={styles.selectionPage}>
       <Card className={`${styles.panelCard} ${styles.strategyCard}`}>
         <div className={styles.sectionHeader}>
           <h2>Стратегия партии</h2>
@@ -132,15 +137,17 @@ function CharacterSelect() {
           ))}
         </div>
       </Card>
-      <div className={styles.characterGrid}>
-        {orderedProfessions.map((profession) => (
-          <ProfessionCard
-            key={profession.id}
-            profession={profession}
-            isSelected={pendingProfessionId === profession.id}
-            onSelect={() => handleSelect(profession.id)}
-          />
-        ))}
+      <div className={styles.selectionContent}>
+        <div className={styles.characterGrid}>
+          {orderedProfessions.map((profession) => (
+            <ProfessionCard
+              key={profession.id}
+              profession={profession}
+              isSelected={pendingProfessionId === profession.id}
+              onSelect={() => handleSelect(profession.id)}
+            />
+          ))}
+        </div>
       </div>
       <div className={styles.diceSection}>
         <button
