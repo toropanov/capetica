@@ -870,17 +870,13 @@ function MainLayout() {
               )}
             </div>
             <div className={styles.headerTitle}>
-              <span className={styles.professionLabel} style={{ fontSize: '0.4rem', lineHeight: 1.1 }}>
-                Профессия
-              </span>
+              <span className={styles.professionLabel}>Профессия</span>
               <strong className={styles.professionTitle}>{storeData.profession?.title || 'Профиль'}</strong>
             </div>
           </div>
           <div className={styles.headerStats}>
             <div>
-              <span className={styles.headerStatLabel} style={{ fontSize: '0.4rem', lineHeight: 1.1 }}>
-                Наличные
-              </span>
+              <span className={styles.headerStatLabel}>Наличные</span>
               <strong>{formatMoney(displayedCash)}</strong>
             </div>
           </div>
