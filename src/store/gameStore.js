@@ -972,7 +972,6 @@ const useGameStore = create(
           const livingCost = state.livingCost || 0;
           const recurringExpenses = roundMoney(state.recurringExpenses || 0);
           const progressiveRules = state.configs.rules?.progressiveExpenses;
-          const maintenanceRules = state.configs.rules?.assetMaintenance;
           const incomeBase = salary;
           const progressiveExpense = progressiveRules
             ? Math.min(
@@ -985,13 +984,7 @@ const useGameStore = create(
                 ),
               )
             : 0;
-          const maintenanceExpense = maintenanceRules
-            ? Math.max(
-                maintenanceRules.minMonthly || 0,
-                holdingsValue * (maintenanceRules.rateMonthly || 0),
-              )
-            : 0;
-          const effectiveRecurring = roundMoney(recurringExpenses + progressiveExpense + maintenanceExpense);
+          const effectiveRecurring = roundMoney(recurringExpenses + progressiveExpense);
           const monthlyRate = state.configs.rules?.loans?.apr || 0;
           const baseDebt = Math.max(0, roundMoney(state.debt));
           const debtInterest = roundMoney(baseDebt * monthlyRate);
@@ -1035,8 +1028,8 @@ const useGameStore = create(
         const eventRoll = rollRandomEvent({ ...state, cash, debt }, rngSeed, eventPool);
         const actionsRoll = rollMonthlyActions(eventRoll.seed, homeActionList, homeActionsConfig);
         const dealWindowRoll = advanceDealWindows(state.dealWindows, actionsRoll.seed);
-          const patchedCash = eventRoll.patch.cash ?? cash;
-          const patchedDebt = eventRoll.patch.debt ?? debt;
+          let patchedCash = eventRoll.patch.cash ?? cash;
+          let patchedDebt = eventRoll.patch.debt ?? debt;
           if (eventRoll.patch.creditDraws) {
             creditDraws = normalizeCreditDraws(eventRoll.patch.creditDraws, patchedDebt);
           } else if (patchedDebt !== debt) {
@@ -1053,7 +1046,7 @@ const useGameStore = create(
           const patchedSalaryBonus = eventRoll.patch.salaryBonus ?? state.salaryBonus;
           const patchedRecurring = eventRoll.patch.recurringExpenses ?? state.recurringExpenses;
           const patchedEffectiveRecurring = roundMoney(
-            (patchedRecurring || 0) + progressiveExpense + maintenanceExpense,
+            (patchedRecurring || 0) + progressiveExpense,
           );
           const patchedProtections = eventRoll.protections || state.protections;
           let netWorth = patchedCash + holdingsValue - patchedDebt;

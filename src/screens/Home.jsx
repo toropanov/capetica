@@ -260,7 +260,7 @@ function LastTurn({ data, summary, passiveBreakdown = [], expenseBreakdown = [],
   const creditLimit = Math.max(0, (summary.availableCredit || 0) + summary.debt);
   const cashValue = getMetricValue('cash', summary.cash);
   const incomesValue = getMetricValue('passiveIncome', totalPassiveIncome);
-  const expensesValue = getMetricValue('expenses', totalMonthlyExpenses);
+  const expensesValue = totalMonthlyExpenses;
   const cashDelta = getMetricDelta('cash');
   const renderDelta = (delta) => {
     if (!delta) return null;
@@ -602,24 +602,52 @@ function Home() {
 
   const recurringExpenses = useGameStore((state) => state.recurringExpenses || 0);
   const expenseBreakdown = useMemo(() => {
+    const progressiveRules = configs?.rules?.progressiveExpenses;
+    const incomeBase = currentSalary || 0;
+    const progressiveExpense = progressiveRules
+      ? Math.min(
+          progressiveRules.capMonthly ?? Number.POSITIVE_INFINITY,
+          Math.max(
+            0,
+            ((cash || 0) > (progressiveRules.cashThreshold || 0)
+              ? (cash || 0) * (progressiveRules.cashRate || 0)
+              : 0) + incomeBase * (progressiveRules.incomeRate || 0),
+          ),
+        )
+      : 0;
+    const progressiveRounded = Math.round(progressiveExpense || 0);
     const raw = profession?.monthlyExpenseBreakdown || {};
     const baseTotal = sumExpenseBreakdown(raw);
     const ratio = baseTotal > 0 && recurringExpenses > 0 ? recurringExpenses / baseTotal : 0;
-    const rows = EXPENSE_KEYS.map((key) => ({
+    const baseRows = EXPENSE_KEYS.map((key) => ({
       id: key,
       label: EXPENSE_LABELS[key] || key,
       amount: Math.round((Number(raw[key]) || 0) * ratio),
-    })).sort((a, b) => (b.amount || 0) - (a.amount || 0));
-    const total = rows.reduce((sum, item) => sum + (item.amount || 0), 0);
-    const diff = Math.round((recurringExpenses || 0) - total);
-    if (rows.length && diff !== 0 && baseTotal > 0) {
-      rows[rows.length - 1] = {
-        ...rows[rows.length - 1],
-        amount: rows[rows.length - 1].amount + diff,
+    }));
+    if (progressiveRounded > 0) {
+      const taxesRow = baseRows.find((row) => row.id === 'taxes');
+      if (taxesRow) {
+        taxesRow.amount += progressiveRounded;
+      } else {
+        baseRows.push({
+          id: 'taxes',
+          label: EXPENSE_LABELS.taxes || 'Налоги',
+          amount: progressiveRounded,
+        });
+      }
+    }
+    const baseTotalSum = baseRows.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const targetTotal = Math.round((recurringExpenses || 0) + progressiveRounded);
+    const diff = targetTotal - baseTotalSum;
+    if (baseRows.length && diff !== 0 && baseTotal > 0) {
+      baseRows[baseRows.length - 1] = {
+        ...baseRows[baseRows.length - 1],
+        amount: baseRows[baseRows.length - 1].amount + diff,
       };
     }
+    const rows = [...baseRows].sort((a, b) => (b.amount || 0) - (a.amount || 0));
     return rows;
-  }, [profession, recurringExpenses]);
+  }, [cash, configs, currentSalary, profession, recurringExpenses]);
   const debtInterestEstimate = useMemo(
     () =>
       estimateMonthlyDebtInterest({
