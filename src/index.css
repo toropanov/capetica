@@ -9,7 +9,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --header-height: 64px;
-  --footer-height: 72px;
+  --footer-height: 60px;
 }
 
 html {

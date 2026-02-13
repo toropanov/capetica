@@ -47,119 +47,7 @@ const LOSE_OUTCOME_MESSAGES = {
   debt_over_networth: 'Долг превысил чистый капитал, игра закончена.',
 };
 
-const ROLL_LOADER_PREVIEW_DELAY = 260;
-const ROLL_LOADER_ROLL_DURATION = 1800;
-const ROLL_LOADER_RESULT_DELAY = 1000;
-const ROLL_LOADER_TOTAL_DELAY =
-  ROLL_LOADER_PREVIEW_DELAY + ROLL_LOADER_ROLL_DURATION + ROLL_LOADER_RESULT_DELAY;
-const DICE_PIP_KEYS = ['tl', 'tr', 'ml', 'mr', 'bl', 'br', 'center'];
-const DICE_FACE_MAP = {
-  1: ['center'],
-  2: ['tl', 'br'],
-  3: ['tl', 'center', 'br'],
-  4: ['tl', 'tr', 'bl', 'br'],
-  5: ['tl', 'tr', 'center', 'bl', 'br'],
-  6: ['tl', 'tr', 'ml', 'mr', 'bl', 'br'],
-};
-
-const clampDiceValue = (val) => {
-  if (typeof val !== 'number' || Number.isNaN(val)) return 1;
-  const normalized = Math.round(val);
-  return Math.min(Math.max(normalized, 1), 6);
-};
-
-function TurnLoader({ message, previousValue, size = 'normal' }) {
-  const initialValue = clampDiceValue(previousValue);
-  const [value, setValue] = useState(initialValue);
-  const [rolling, setRolling] = useState(false);
-  const [finalValue, setFinalValue] = useState(initialValue);
-  const timing =
-    size === 'roll'
-      ? {
-          preview: ROLL_LOADER_PREVIEW_DELAY,
-          roll: ROLL_LOADER_ROLL_DURATION,
-        }
-      : { preview: 160, roll: 800 };
-
-  useEffect(() => {
-    const baseValue = clampDiceValue(previousValue);
-    setValue(baseValue);
-    setFinalValue(baseValue);
-    setRolling(false);
-    let startTimer;
-    let rollInterval;
-    let stopTimer;
-
-    startTimer = setTimeout(() => {
-      setRolling(true);
-      rollInterval = setInterval(() => {
-        setValue((prev) => {
-          let next = Math.floor(Math.random() * 6) + 1;
-          if (next === prev) {
-            next = (next % 6) + 1;
-          }
-          return next;
-        });
-      }, 180);
-    }, timing.preview);
-
-    stopTimer = setTimeout(() => {
-      if (rollInterval) {
-        clearInterval(rollInterval);
-      }
-      const target = Math.floor(Math.random() * 6) + 1;
-      setFinalValue(target);
-      setValue(target);
-      setRolling(false);
-    }, timing.preview + timing.roll);
-
-    return () => {
-      clearTimeout(startTimer);
-      clearTimeout(stopTimer);
-      if (rollInterval) {
-        clearInterval(rollInterval);
-      }
-    };
-  }, [previousValue]);
-
-  const displayValue = rolling ? value : finalValue;
-  const activeDots = DICE_FACE_MAP[displayValue] || DICE_FACE_MAP[1];
-
-  return (
-    <div className={styles.nextMoveLoader}>
-      <div
-        className={`${styles.nextMoveDice} ${size === 'roll' ? styles.rollDice : ''} ${
-          rolling ? styles.nextMoveDiceRolling : styles.nextMoveDiceResult
-        }`}
-        role="img"
-        aria-label={`Выбираем число ${displayValue}`}
-      >
-        {DICE_PIP_KEYS.map((key) => {
-          const classKey = `diceDot${key.charAt(0).toUpperCase()}${key.slice(1)}`;
-          const positionClass = styles[classKey] || '';
-          const active = activeDots.includes(key);
-          const dotClassName = `${styles.diceDot} ${positionClass} ${active ? styles.diceDotVisible : ''}`;
-          return <span key={key} className={dotClassName} />;
-        })}
-      </div>
-      <div className={styles.nextMoveProgress}>
-        <span />
-      </div>
-      <p className={styles.nextMoveMessage}>{message}</p>
-    </div>
-  );
-}
-
-function SimpleLoader({ message }) {
-  return (
-    <div className={styles.nextMoveLoader}>
-      <div className={styles.nextMoveProgress}>
-        <span />
-      </div>
-      <p className={styles.nextMoveMessage}>{message}</p>
-    </div>
-  );
-}
+const ROLL_LOADER_TOTAL_DELAY = 3060;
 
 const formatUSD = (value) => `$${Math.round(value || 0).toLocaleString('en-US')}`;
 const METRIC_DELTA_DEFS = [
@@ -315,24 +203,20 @@ function MainLayout() {
   const lastTurn = useGameStore((state) => state.lastTurn);
   const recentLog = useGameStore((state) => state.recentLog || []);
   const currentEvent = useGameStore((state) => state.currentEvent);
-  const [confirmingFinish, setConfirmingFinish] = useState(false);
   const [diceAnimating, setDiceAnimating] = useState(false);
   const [pendingSummary, setPendingSummary] = useState(false);
   const [summaryReady, setSummaryReady] = useState(false);
   const [turnSummaryOpen, setTurnSummaryOpen] = useState(false);
   const [turnSummary, setTurnSummary] = useState(null);
-  const [rollOverlay, setRollOverlay] = useState(false);
   const [rollCard, setRollCard] = useState(null);
   const [rollCardOpen, setRollCardOpen] = useState(false);
-  const confirmButtonRef = useRef(null);
+  const [rollCardClosing, setRollCardClosing] = useState(false);
   const contentRef = useRef(null);
   const diceTimerRef = useRef(null);
   const homeTimerRef = useRef(null);
   const newGameTimerRef = useRef(null);
   const nextMoveTimerRef = useRef(null);
-  const rollCloseTimerRef = useRef(null);
-  const [nextMoveLoading, setNextMoveLoading] = useState(false);
-  const [rollCloseLoading, setRollCloseLoading] = useState(false);
+  const rollCardClosingTimerRef = useRef(null);
   const transitionState = useGameStore((state) => state.transitionState);
   const beginTransition = useGameStore((state) => state.beginTransition);
   const completeTransition = useGameStore((state) => state.completeTransition);
@@ -377,8 +261,8 @@ function MainLayout() {
     if (nextMoveTimerRef.current) {
       clearTimeout(nextMoveTimerRef.current);
     }
-    if (rollCloseTimerRef.current) {
-      clearTimeout(rollCloseTimerRef.current);
+    if (rollCardClosingTimerRef.current) {
+      clearTimeout(rollCardClosingTimerRef.current);
     }
     if (newGameTimerRef.current) {
       clearTimeout(newGameTimerRef.current);
@@ -392,16 +276,6 @@ function MainLayout() {
   }, []);
 
   useEffect(() => {
-    if (!confirmingFinish) return undefined;
-    const handleOutside = (event) => {
-      if (confirmButtonRef.current?.contains(event.target)) return;
-      setConfirmingFinish(false);
-    };
-    document.addEventListener('pointerdown', handleOutside);
-    return () => document.removeEventListener('pointerdown', handleOutside);
-  }, [confirmingFinish]);
-
-  useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }
@@ -409,16 +283,10 @@ function MainLayout() {
 
   const handleAdvanceRequest = () => {
     if (diceAnimating) return;
-    if (!confirmingFinish) {
-      setConfirmingFinish(true);
-      return;
-    }
     if (location.pathname !== '/app') {
       navigate('/app');
     }
-    setConfirmingFinish(false);
     setDiceAnimating(true);
-    setRollOverlay(true);
     setRollCard(null);
     setRollCardOpen(false);
     if (diceTimerRef.current) {
@@ -432,7 +300,6 @@ function MainLayout() {
       const hasOutcome = Boolean(latestState.winCondition || latestState.loseCondition);
       setRollCard(nextCard);
       setDiceAnimating(false);
-      setRollOverlay(false);
       setRollCardOpen(Boolean(nextCard) && !hasOutcome);
       if (!nextCard || hasOutcome) {
         releaseFrozenMetrics({ animate: true });
@@ -640,10 +507,10 @@ function MainLayout() {
   }, [pendingSummary, month, lastTurn, recentLog, currentEvent]);
 
   useEffect(() => {
-    if (rollCloseLoading || !pendingMetricDelta) return;
+    if (!pendingMetricDelta) return;
     setMetricAnimation(pendingMetricDelta);
     setPendingMetricDelta(null);
-  }, [rollCloseLoading, pendingMetricDelta]);
+  }, [pendingMetricDelta]);
 
   useEffect(() => {
     if (!metricAnimation) return undefined;
@@ -692,15 +559,15 @@ function MainLayout() {
     setRollCardOpen(false);
     setRollCard(null);
     setRollFeedback('');
-    setRollCloseLoading(true);
-    if (rollCloseTimerRef.current) {
-      clearTimeout(rollCloseTimerRef.current);
+    setRollCardClosing(true);
+    if (rollCardClosingTimerRef.current) {
+      clearTimeout(rollCardClosingTimerRef.current);
     }
-    rollCloseTimerRef.current = setTimeout(() => {
-      setRollCloseLoading(false);
-      rollCloseTimerRef.current = null;
-      releaseFrozenMetrics({ animate: true });
-    }, 450);
+    rollCardClosingTimerRef.current = setTimeout(() => {
+      setRollCardClosing(false);
+      rollCardClosingTimerRef.current = null;
+    }, 480);
+    releaseFrozenMetrics({ animate: true });
   };
   const handleRollBuy = () => {
     if (!rollCardData || !rollCardData.instrument) return;
@@ -777,17 +644,9 @@ function MainLayout() {
     }, 650);
   };
   const startNextMoveLoader = (onFinish) => {
-    setNextMoveLoading(true);
-    if (nextMoveTimerRef.current) {
-      clearTimeout(nextMoveTimerRef.current);
+    if (typeof onFinish === 'function') {
+      onFinish();
     }
-    nextMoveTimerRef.current = setTimeout(() => {
-      setNextMoveLoading(false);
-      nextMoveTimerRef.current = null;
-      if (typeof onFinish === 'function') {
-        onFinish();
-      }
-    }, 400);
   };
   const handleContinue = () => {
     if (outcomeState === 'win') {
@@ -913,13 +772,12 @@ function MainLayout() {
       <BottomNav
         current={location.pathname}
         onChange={(path) => {
-          setConfirmingFinish(false);
           navigate(path);
         }}
         onAdvance={handleAdvanceRequest}
-        confirmingFinish={confirmingFinish}
         diceAnimating={diceAnimating}
-        actionRef={confirmButtonRef}
+        hideLabel={rollCardOpen || rollCardClosing}
+        rollCardClosing={rollCardClosing}
       />
       <Modal
         open={turnSummaryOpen && Boolean(turnSummary)}
@@ -1005,28 +863,29 @@ function MainLayout() {
           </>
         )}
       </Modal>
-      <Modal open={rollCardOpen && Boolean(rollCardData)} onClose={closeRollCard}>
-        {rollCardData && (
-          <Card className={styles.rollCard} glow={false}>
-            <div className={styles.rollCardFrame}>
-              <div className={styles.rollCardHeader}>
-                <span className={styles.rollCardBadge}>
-                {rollCardData.type === 'event'
-                  ? 'Событие'
-                  : rollCardData.type === 'deal'
-                    ? 'Сделка'
-                    : rollCardData.type === 'crypto'
-                      ? 'Криптовалюта'
-                      : 'Акции'}
-                </span>
-                <strong className={styles.rollCardTitle}>
-                {rollCardData.type === 'event'
-                  ? rollCardData.event?.title || 'Событие'
-                  : rollCardData.type === 'deal'
-                    ? rollCardData.deal.title
-                    : rollCardData.instrument.title}
-                </strong>
-              </div>
+      {rollCardOpen && rollCardData && (
+        <div className={styles.rollCardOverlay} onClick={closeRollCard} role="presentation">
+          <div className={styles.rollCardModal} onClick={(event) => event.stopPropagation()}>
+            <Card className={styles.rollCard} glow={false}>
+              <div className={styles.rollCardFrame}>
+                <div className={styles.rollCardHeader}>
+                  <span className={styles.rollCardBadge}>
+                  {rollCardData.type === 'event'
+                    ? 'Событие'
+                    : rollCardData.type === 'deal'
+                      ? 'Сделка'
+                      : rollCardData.type === 'crypto'
+                        ? 'Криптовалюта'
+                        : 'Акции'}
+                  </span>
+                  <strong className={styles.rollCardTitle}>
+                  {rollCardData.type === 'event'
+                    ? rollCardData.event?.title || 'Событие'
+                    : rollCardData.type === 'deal'
+                      ? rollCardData.deal.title
+                      : rollCardData.instrument.title}
+                  </strong>
+                </div>
             {rollCardData.type === 'event' ? (
               (() => {
                 const message = getEventMessage(rollCardData.event);
@@ -1089,7 +948,7 @@ function MainLayout() {
                   </>
                 );
               })()
-            ) : rollCardData.type === 'deal' ? (
+              ) : rollCardData.type === 'deal' ? (
               <>
                 <p className={styles.rollCardDesc}>{rollCardData.deal.description}</p>
                 <div className={styles.rollCardFacts}>
@@ -1141,7 +1000,7 @@ function MainLayout() {
                   </Button>
                 </div>
               </>
-            ) : (
+              ) : (
               <>
                 <p className={styles.rollCardDesc}>
                   Средний диапазон: {formatUSD(rollCardData.range?.min)}–{formatUSD(rollCardData.range?.max)}
@@ -1264,28 +1123,10 @@ function MainLayout() {
                   </Button>
                 </div>
               </>
-            )}
-            </div>
-          </Card>
-        )}
-      </Modal>
-      {rollOverlay && (
-        <div className={`${styles.nextMoveOverlay} ${styles.rollOverlay}`} aria-hidden="true">
-          <TurnLoader message="Кидаю кубик..." previousValue={lastTurn?.diceRoll || 1} size="roll" />
-        </div>
-      )}
-      {rollCloseLoading && (
-        <div className={`${styles.nextMoveOverlay} ${styles.rollOverlay}`} aria-hidden="true">
-          <div className={styles.nextMoveLoader}>
-            <div className={styles.nextMoveProgress}>
-              <span />
-            </div>
+              )}
+              </div>
+            </Card>
           </div>
-        </div>
-      )}
-      {nextMoveLoading && (
-        <div className={styles.nextMoveOverlay} aria-hidden="true">
-          <SimpleLoader message="Готовим следующий ход..." />
         </div>
       )}
     </div>

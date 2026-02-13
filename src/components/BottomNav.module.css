@@ -5,7 +5,7 @@
   gap: 0.4rem;
   border-top: 1px solid rgba(18, 42, 86, 0.08);
   margin-top: auto;
-  padding: 0.2rem 0.2rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+  padding: 0.1rem 0.2rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
   min-height: var(--footer-height);
   background: #ffffff;
   position: sticky;
@@ -50,24 +50,31 @@
   flex: 1.6;
   border: none;
   border-radius: 16px;
-  padding: 0.2rem 0.4rem;
+  padding: 0.1rem 0.35rem 20px;
   background: linear-gradient(120deg, #ffe498, #ffc877);
   color: #06060c;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
   font-weight: 600;
   box-shadow: 0 12px 28px rgba(254, 196, 74, 0.35);
   cursor: pointer;
   position: relative;
+  overflow: hidden;
 }
 
 .actionLabel {
-  font-size: 0.95rem;
-  margin-top: -5px;
-  margin-bottom: 5px;
+  font-size: 0.9rem;
+  margin: 0;
+  height: 18px;
+  line-height: 18px;
+  white-space: nowrap;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  text-align: center;
+  transform: translateY(var(--label-shift, 0));
 }
 
 .action:active {
@@ -75,27 +82,178 @@
 }
 
 .actionIcon {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -55%);
 }
 
-.actionConfirm {
-  background: linear-gradient(120deg, #ffe4dc, #ffc2b5);
-  box-shadow: 0 10px 20px rgba(255, 141, 99, 0.32);
+
+.actionIconRollNext {
+  animation: diceRollNext 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.actionRolling .actionIcon svg {
-  animation: diceSpin 0.9s ease-in-out infinite;
+.actionIconRollClose {
+  animation: diceRollClose 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-@keyframes diceSpin {
+.actionDice {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: #00000014;
+  border: 1px solid #ffffff82;
+  box-shadow: none;
+  position: relative;
+  display: block;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.actionDiceRolling {
+  background: transparent;
+  border: none;
+  animation: diceShake 0.7s ease-in-out infinite;
+}
+
+.actionDiceResult {
+  background: transparent;
+  border: none;
+  animation: diceSettle 0.35s ease-out forwards;
+}
+
+.actionDiceSmall {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #00000014;
+  border: 1px solid #ffffff82;
+  box-shadow: none;
+}
+
+.actionDiceSmall .diceDot {
+  width: 3.8px;
+  height: 3.8px;
+}
+
+.diceDot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0.3;
+  transition: opacity 0.18s ease;
+}
+
+.diceDotVisible {
+  opacity: 1;
+}
+
+.diceDotTl {
+  top: 18%;
+  left: 18%;
+}
+
+.diceDotTr {
+  top: 18%;
+  right: 18%;
+}
+
+.diceDotMl {
+  top: 50%;
+  left: 18%;
+  transform: translateY(-50%);
+}
+
+.diceDotMr {
+  top: 50%;
+  right: 18%;
+  transform: translateY(-50%);
+}
+
+.diceDotBl {
+  bottom: 18%;
+  left: 18%;
+}
+
+.diceDotBr {
+  bottom: 18%;
+  right: 18%;
+}
+
+.diceDotCenter {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes diceShake {
   0% {
-    transform: rotate(0deg);
+    transform: translateX(-3px) rotate(-5deg);
   }
   50% {
-    transform: rotate(180deg) scale(1.05);
+    transform: translateX(3px) rotate(5deg);
   }
   100% {
-    transform: rotate(360deg);
+    transform: translateX(-3px) rotate(-5deg);
+  }
+}
+
+@keyframes diceRollNext {
+  0% {
+    transform: translateX(0) scale(0.7);
+  }
+  50% {
+    transform: translateX(-8px) scale(0.7);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes diceRollClose {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  50% {
+    transform: translateX(8px) scale(1);
+  }
+  100% {
+    transform: translateX(0) scale(0.7);
+  }
+}
+
+.actionLabel {
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.5s ease;
+}
+
+.actionLabelDown {
+  --label-shift: 10px;
+  opacity: 0;
+}
+
+.actionLabelUp {
+  --label-shift: -10px;
+  opacity: 0;
+}
+
+.actionLabelHidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@keyframes diceSettle {
+  0% {
+    transform: translateY(-6px) rotate(-2deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0);
   }
 }

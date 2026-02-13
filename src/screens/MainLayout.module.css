@@ -543,6 +543,32 @@
   }
 }
 
+.rollCardOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.2rem 1.2rem calc(var(--footer-height) + 0.6rem);
+  background: transparent;
+  backdrop-filter: none;
+  z-index: 2;
+}
+
+.rollCardModal {
+  animation: rollCardRise 0.45s ease-out;
+}
+
+@keyframes rollCardRise {
+  0% {
+    transform: translateY(80px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .rollCard {
   padding: 0.2rem;
   display: flex;

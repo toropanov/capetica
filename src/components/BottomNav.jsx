@@ -1,11 +1,19 @@
-import DiceIcon from './DiceIcon';
+import { useEffect, useState } from 'react';
 import styles from './BottomNav.module.css';
 
 const NAV_ITEMS = [
   { id: 'analytics', label: 'Аналитика', path: '/app' },
   { id: 'assets', label: 'Активы', path: '/app/bank' },
 ];
-
+const DICE_PIP_KEYS = ['tl', 'tr', 'ml', 'mr', 'bl', 'br', 'center'];
+const DICE_FACE_MAP = {
+  1: ['center'],
+  2: ['tl', 'br'],
+  3: ['tl', 'center', 'br'],
+  4: ['tl', 'tr', 'bl', 'br'],
+  5: ['tl', 'tr', 'center', 'bl', 'br'],
+  6: ['tl', 'tr', 'ml', 'mr', 'bl', 'br'],
+};
 function NavIcon({ id }) {
   switch (id) {
     case 'analytics':
@@ -47,10 +55,31 @@ function BottomNav({
   current,
   onChange,
   onAdvance,
-  confirmingFinish = false,
   diceAnimating = false,
-  actionRef,
+  hideLabel = false,
+  rollCardClosing = false,
 }) {
+  const [diceValue, setDiceValue] = useState(1);
+  const [rolling, setRolling] = useState(false);
+
+  useEffect(() => {
+    if (!diceAnimating) {
+      setRolling(false);
+      return;
+    }
+    setRolling(true);
+    const rollInterval = setInterval(() => {
+      setDiceValue((prev) => {
+        let next = Math.floor(Math.random() * 6) + 1;
+        if (next === prev) {
+          next = (next % 6) + 1;
+        }
+        return next;
+      });
+    }, 160);
+    return () => clearInterval(rollInterval);
+  }, [diceAnimating]);
+
   const renderNavButton = (item) => (
     <button
       key={item.id}
@@ -66,21 +95,49 @@ function BottomNav({
     </button>
   );
 
+  const actionIconClass = `${styles.icon} ${styles.actionIcon} ${
+    diceAnimating ? styles.actionIconRollNext : rollCardClosing ? styles.actionIconRollClose : ''
+  }`;
+  const actionLabelClass = `${styles.actionLabel} ${
+    diceAnimating
+      ? styles.actionLabelDown
+      : rollCardClosing
+        ? styles.actionLabelUp
+        : hideLabel
+          ? styles.actionLabelHidden
+          : ''
+  }`;
+
   return (
     <nav className={styles.nav}>
       {renderNavButton(NAV_ITEMS[0])}
       <button
         type="button"
-        ref={actionRef}
-        className={`${styles.action} ${confirmingFinish ? styles.actionConfirm : ''} ${diceAnimating ? styles.actionRolling : ''}`}
+        className={`${styles.action} ${!hideLabel ? styles.actionWithLabel : ''} ${
+          diceAnimating ? styles.actionRolling : ''
+        }`}
         onClick={onAdvance}
       >
-        <span className={`${styles.icon} ${styles.actionIcon}`}>
-          <DiceIcon />
+        <span className={actionIconClass}>
+          <span
+            className={`${styles.actionDice} ${!diceAnimating && !hideLabel ? styles.actionDiceSmall : ''} ${
+              rolling ? styles.actionDiceRolling : styles.actionDiceResult
+            }`}
+            role="img"
+            aria-label={`Кубик показывает ${diceValue}`}
+          >
+            {DICE_PIP_KEYS.map((key) => {
+              const active = DICE_FACE_MAP[diceValue]?.includes(key);
+              const classKey = `diceDot${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+              const positionClass = styles[classKey] || '';
+              const dotClassName = `${styles.diceDot} ${positionClass} ${
+                active ? styles.diceDotVisible : ''
+              }`;
+              return <span key={key} className={dotClassName} />;
+            })}
+          </span>
         </span>
-        <span className={styles.actionLabel}>
-          {confirmingFinish ? 'Подтвердить' : 'Следующий ход'}
-        </span>
+        <span className={actionLabelClass}>Следующий ход</span>
       </button>
       {renderNavButton(NAV_ITEMS[1])}
     </nav>
