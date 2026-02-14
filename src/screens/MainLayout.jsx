@@ -284,6 +284,9 @@ function MainLayout() {
 
   const handleAdvanceRequest = () => {
     if (diceAnimating) return;
+    if (rollCardOpen && rollCardData) {
+      closeRollCard();
+    }
     if (location.pathname !== '/app') {
       navigate('/app');
     }
