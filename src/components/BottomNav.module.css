@@ -184,6 +184,7 @@
   border-radius: 50%;
   background: #ffffff;
   opacity: 0.4;
+  box-shadow: 0 1px 1px #0002;
   transition: opacity 0.18s ease;
 }
 
