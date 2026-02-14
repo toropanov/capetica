@@ -204,6 +204,7 @@ function MainLayout() {
   const recentLog = useGameStore((state) => state.recentLog || []);
   const currentEvent = useGameStore((state) => state.currentEvent);
   const [diceAnimating, setDiceAnimating] = useState(false);
+  const [actionLocked, setActionLocked] = useState(false);
   const [pendingSummary, setPendingSummary] = useState(false);
   const [summaryReady, setSummaryReady] = useState(false);
   const [turnSummaryOpen, setTurnSummaryOpen] = useState(false);
@@ -286,6 +287,7 @@ function MainLayout() {
     if (location.pathname !== '/app') {
       navigate('/app');
     }
+    setActionLocked(true);
     setDiceAnimating(true);
     setRollCard(null);
     setRollCardOpen(false);
@@ -300,7 +302,11 @@ function MainLayout() {
       const hasOutcome = Boolean(latestState.winCondition || latestState.loseCondition);
       setRollCard(nextCard);
       setDiceAnimating(false);
-      setRollCardOpen(Boolean(nextCard) && !hasOutcome);
+      const shouldOpen = Boolean(nextCard) && !hasOutcome;
+      setRollCardOpen(shouldOpen);
+      if (!shouldOpen) {
+        setActionLocked(false);
+      }
       if (!nextCard || hasOutcome) {
         releaseFrozenMetrics({ animate: true });
       }
@@ -560,6 +566,7 @@ function MainLayout() {
     setRollCard(null);
     setRollFeedback('');
     setRollCardClosing(true);
+    setActionLocked(false);
     if (rollCardClosingTimerRef.current) {
       clearTimeout(rollCardClosingTimerRef.current);
     }
@@ -776,6 +783,7 @@ function MainLayout() {
         }}
         onAdvance={handleAdvanceRequest}
         diceAnimating={diceAnimating}
+        actionLocked={actionLocked}
         hideLabel={rollCardOpen || rollCardClosing}
         rollCardClosing={rollCardClosing}
       />

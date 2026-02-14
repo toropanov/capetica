@@ -429,11 +429,11 @@
 }
 
 .nextMoveDiceRolling {
-  animation: diceShake 0.65s ease-in-out infinite;
+  animation: none;
 }
 
 .nextMoveDiceResult {
-  animation: diceSettle 0.35s ease forwards;
+  animation: none;
 }
 
 .diceDot {
@@ -524,22 +524,22 @@
 
 @keyframes diceShake {
   0% {
-    transform: translateX(-4px) rotate(-6deg);
+    transform: rotate(-8deg);
   }
   50% {
-    transform: translateX(4px) rotate(6deg);
+    transform: rotate(8deg);
   }
   100% {
-    transform: translateX(-4px) rotate(-6deg);
+    transform: rotate(-8deg);
   }
 }
 
 @keyframes diceSettle {
   0% {
-    transform: translateX(-2px) rotate(-2deg);
+    transform: rotate(-2deg);
   }
   100% {
-    transform: translateX(0) rotate(0);
+    transform: rotate(0);
   }
 }
 
@@ -548,6 +548,7 @@
   inset: 0;
   display: flex;
   align-items: flex-end;
+  justify-content: center;
   padding: 1.2rem 1.2rem calc(var(--footer-height) + 0.6rem);
   background: transparent;
   backdrop-filter: none;
@@ -555,12 +556,13 @@
 }
 
 .rollCardModal {
-  animation: rollCardRise 0.45s ease-out;
+  position: relative;
+  animation: rollCardRise 0.6s ease-out 0.02s both;
 }
 
 @keyframes rollCardRise {
   0% {
-    transform: translateY(80px);
+    transform: translateY(140px);
     opacity: 0;
   }
   100% {
@@ -569,12 +571,15 @@
   }
 }
 
+
 .rollCard {
   padding: 0.2rem;
   display: flex;
   flex-direction: column;
   gap: 0;
   min-width: min(360px, 86vw);
+  position: relative;
+  z-index: 1;
   background:
     radial-gradient(circle at top, rgba(255, 237, 193, 0.7), rgba(255, 255, 255, 0.6)),
     linear-gradient(135deg, #fff7df, #f7f2e8);
@@ -582,6 +587,16 @@
   box-shadow:
     0 22px 40px rgba(42, 31, 8, 0.22),
     inset 0 1px rgba(255, 255, 255, 0.9);
+}
+
+.rollCard::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  background: radial-gradient(circle, rgba(60, 44, 18, 0.28), transparent 70%);
+  filter: blur(24px);
+  opacity: 0.7;
+  z-index: -1;
 }
 
 .rollCardFrame {

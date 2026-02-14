@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './BottomNav.module.css';
 
 const NAV_ITEMS = [
@@ -56,11 +56,14 @@ function BottomNav({
   onChange,
   onAdvance,
   diceAnimating = false,
+  actionLocked = false,
   hideLabel = false,
   rollCardClosing = false,
 }) {
   const [diceValue, setDiceValue] = useState(1);
   const [rolling, setRolling] = useState(false);
+  const [shrinkActive, setShrinkActive] = useState(false);
+  const shrinkTimerRef = useRef(null);
 
   useEffect(() => {
     if (!diceAnimating) {
@@ -79,6 +82,30 @@ function BottomNav({
     }, 160);
     return () => clearInterval(rollInterval);
   }, [diceAnimating]);
+
+  useEffect(() => {
+    if (!actionLocked) {
+      setShrinkActive(false);
+      if (shrinkTimerRef.current) {
+        clearTimeout(shrinkTimerRef.current);
+        shrinkTimerRef.current = null;
+      }
+      return;
+    }
+    if (shrinkTimerRef.current) {
+      clearTimeout(shrinkTimerRef.current);
+    }
+    shrinkTimerRef.current = setTimeout(() => {
+      setShrinkActive(true);
+      shrinkTimerRef.current = null;
+    }, 180);
+    return () => {
+      if (shrinkTimerRef.current) {
+        clearTimeout(shrinkTimerRef.current);
+        shrinkTimerRef.current = null;
+      }
+    };
+  }, [actionLocked]);
 
   const renderNavButton = (item) => (
     <button
@@ -114,8 +141,8 @@ function BottomNav({
       <button
         type="button"
         className={`${styles.action} ${!hideLabel ? styles.actionWithLabel : ''} ${
-          diceAnimating ? styles.actionRolling : ''
-        }`}
+          shrinkActive ? styles.actionRolling : ''
+        } ${diceAnimating ? styles.actionShaking : ''}`}
         onClick={onAdvance}
       >
         <span className={actionIconClass}>
