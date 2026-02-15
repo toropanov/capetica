@@ -973,7 +973,11 @@ function MainLayout() {
                   </div>
                   <div>
                     <span>Срок</span>
-                    <strong>{rollCardData.deal.durationMonths} мес.</strong>
+                    <strong>
+                      {Number.isFinite(rollCardData.deal.durationMonths)
+                        ? `${rollCardData.deal.durationMonths} мес.`
+                        : 'Бессрочно'}
+                    </strong>
                   </div>
                 </div>
                 <p className={styles.rollCardHint}>{rollCardData.deal.riskNote}</p>

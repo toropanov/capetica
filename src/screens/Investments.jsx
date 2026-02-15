@@ -335,7 +335,10 @@ function Investments() {
               </header>
               {activeDeals.length ? (
                 activeDeals.map((deal) => {
-                  const remaining = Math.max(0, (deal.durationMonths || 0) - (deal.elapsedMonths || 0));
+                  const hasDuration = Number.isFinite(deal.durationMonths);
+                  const remaining = hasDuration
+                    ? Math.max(0, deal.durationMonths - (deal.elapsedMonths || 0))
+                    : null;
                   return (
                     <div key={deal.participationId} className={styles.instrumentRow}>
                       <div className={styles.dealHeader}>
@@ -352,7 +355,7 @@ function Investments() {
                         </div>
                         <div>
                           <span>Осталось</span>
-                          <strong>{remaining} мес.</strong>
+                          <strong>{hasDuration ? `${remaining} мес.` : 'Бессрочно'}</strong>
                         </div>
                         <div>
                           <span>Получено</span>

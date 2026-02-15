@@ -1,4 +1,20 @@
-export const DEAL_TEMPLATES = [
+const TERM_DEAL_IDS = new Set([
+  'venture',
+  'equity',
+  'short_term_sublet',
+  'mortgage_refi',
+  'taxi_lease',
+  'municipal_bond_pool',
+  'dividend_note',
+  'structured_note',
+  'p2p_loans',
+  'invoice_factoring',
+  'equipment_leasing',
+  'fintech_microloan',
+  'franchise_buyback',
+]);
+
+const RAW_DEAL_TEMPLATES = [
   {
     id: 'venture',
     title: 'Конвертируемый займ в SaaS',
@@ -2000,6 +2016,16 @@ export const DEAL_TEMPLATES = [
     window: { minTurns: 4, maxTurns: 7, slots: 1 },
   },
 ];
+
+export const DEAL_TEMPLATES = RAW_DEAL_TEMPLATES.map((deal) =>
+  TERM_DEAL_IDS.has(deal.id)
+    ? deal
+    : {
+        ...deal,
+        durationMonths: null,
+        lockMonths: null,
+      },
+);
 
 export const DEAL_WINDOW_RULES = DEAL_TEMPLATES.reduce((acc, deal) => {
   acc[deal.id] = {

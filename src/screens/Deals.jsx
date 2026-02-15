@@ -135,7 +135,10 @@ function Deals() {
         <section className={styles.participations}>
           <h3>Мои сделки</h3>
           {participations.map((deal) => {
-            const percent = Math.min(100, Math.round((deal.elapsedMonths / deal.durationMonths) * 100));
+            const hasDuration = Number.isFinite(deal.durationMonths);
+            const percent = hasDuration
+              ? Math.min(100, Math.round((deal.elapsedMonths / deal.durationMonths) * 100))
+              : 0;
             return (
               <div
                 key={deal.participationId}
@@ -146,16 +149,21 @@ function Deals() {
                   <span>
                     {deal.completed
                       ? 'Завершена'
-                      : `Прогресс ${deal.elapsedMonths}/${deal.durationMonths}`}
+                      : hasDuration
+                        ? `Прогресс ${deal.elapsedMonths}/${deal.durationMonths}`
+                        : 'В работе'}
                   </span>
                 </div>
                 <p>
                   Заработано: {formatMoney(deal.profitEarned)} · Ежемесячно{' '}
-                  {deal.monthlyPayout > 0 ? `+${formatMoney(deal.monthlyPayout)}` : '0'} · Срок {deal.durationMonths} мес.
+                  {deal.monthlyPayout > 0 ? `+${formatMoney(deal.monthlyPayout)}` : '0'} · Срок{' '}
+                  {hasDuration ? `${deal.durationMonths} мес.` : 'бессрочно'}
                 </p>
-                <div className={styles.progressBar}>
-                  <div style={{ width: `${percent}%` }} />
-                </div>
+                {hasDuration && (
+                  <div className={styles.progressBar}>
+                    <div style={{ width: `${percent}%` }} />
+                  </div>
+                )}
               </div>
             );
           })}

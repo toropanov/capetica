@@ -1012,12 +1012,14 @@ const useGameStore = create(
             if (deal.completed) {
               return deal;
             }
-            const nextElapsed = Math.min(deal.durationMonths || 1, (deal.elapsedMonths || 0) + 1);
-            const completed = nextElapsed >= (deal.durationMonths || 1);
+            const durationMonths = Number.isFinite(deal.durationMonths) ? deal.durationMonths : null;
+            const nextElapsed = (deal.elapsedMonths || 0) + 1;
+            const clampedElapsed = durationMonths ? Math.min(durationMonths, nextElapsed) : nextElapsed;
+            const completed = durationMonths ? clampedElapsed >= durationMonths : false;
             const profitEarned = roundMoney((deal.profitEarned || 0) + (deal.monthlyPayout || 0));
             return {
               ...deal,
-              elapsedMonths: nextElapsed,
+              elapsedMonths: clampedElapsed,
               profitEarned,
               completed,
             };
@@ -1423,7 +1425,7 @@ const useGameStore = create(
           title: dealMeta.title,
           invested: entryCost,
           monthlyPayout: dealMeta.monthlyPayout || 0,
-          durationMonths: dealMeta.durationMonths || 1,
+          durationMonths: Number.isFinite(dealMeta.durationMonths) ? dealMeta.durationMonths : null,
           elapsedMonths: 0,
           profitEarned: 0,
           completed: false,
