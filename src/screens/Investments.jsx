@@ -58,9 +58,6 @@ function Investments() {
   const [repayingDrawId, setRepayingDrawId] = useState(null);
   const repayAnimationRef = useRef(null);
   const aprLabel = loanRules?.apr != null ? formatPercent(loanRules.apr) : null;
-  const minTerm = loanRules?.minTermMonths || loanRules?.maxTermMonths || 0;
-  const maxTerm = loanRules?.maxTermMonths || loanRules?.minTermMonths || 0;
-  const termLabel = minTerm && maxTerm ? `${minTerm}–${maxTerm} мес.` : minTerm ? `${minTerm} мес.` : '—';
 
   useEffect(() => {
     const maxDraw = Math.round(Math.max(availableCredit, 0));
@@ -122,12 +119,10 @@ function Investments() {
       if (!loanRules) return null;
       const amount = Math.max(0, Math.round(principal || 0));
       if (amount <= 0) return null;
-      const term = loanRules.maxTermMonths || loanRules.minTermMonths || 12;
-      if (!term) return null;
       const apr = loanRules.apr || 0;
       const monthlyRate = Math.max(0, apr);
       if (!monthlyRate) {
-        return amount / term;
+        return 0;
       }
       return amount * monthlyRate;
     },
@@ -183,7 +178,7 @@ function Investments() {
           <h2>Кредитная линия</h2>
           <p>
             {loanRules
-              ? `Выдаётся под ${aprLabel || '—'} на срок ${termLabel}. Лимит растёт вместе с чистым капиталом.`
+              ? `Выдаётся под ${aprLabel || '—'}. Лимит растёт вместе с чистым капиталом.`
               : 'Условия выдачи подтягиваются из конфигурации.'}
           </p>
         </header>
@@ -191,10 +186,6 @@ function Investments() {
           <div>
             <span>Ставка</span>
             <strong>{aprLabel || '—'}</strong>
-          </div>
-          <div>
-            <span>Срок</span>
-            <strong>{termLabel}</strong>
           </div>
           <div>
             <span>Доступно</span>

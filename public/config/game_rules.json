@@ -15,8 +15,6 @@
   },
   "loans": {
     "apr": 0.02,
-    "maxTermMonths": 60,
-    "minTermMonths": 6,
     "creditLimit": {
       "formula": "max(creditLimitBase,0.25*netWorth+1.4*salaryMonthly)",
       "capMultiplier": 6.5,
