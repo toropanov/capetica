@@ -130,33 +130,40 @@ const buildInstrumentLookup = (configs) => {
   }, {});
 };
 
-function buildRollCard(state) {
-  if (!state?.configs) return null;
-  if (state.currentEvent) {
-    return { type: 'event', event: state.currentEvent };
-  }
-  const instruments = state.configs.instruments?.instruments || [];
-  const stockOptions = instruments.filter((item) => item.type === 'stocks').slice(0, 3);
-  const cryptoOptions = instruments.filter((item) => item.type === 'crypto').slice(0, 2);
-  const dealOptions = DEAL_TEMPLATES.filter((deal) => {
-    const window = state.dealWindows?.[deal.id];
-    return window && window.expiresIn > 0 && (window.slotsLeft ?? 0) > 0;
-  });
+const SMALL_DEAL_MAX_ENTRY = 1500;
+
+const isDealWindowOpen = (state, dealId) => {
+  const window = state.dealWindows?.[dealId];
+  return window && window.expiresIn > 0 && (window.slotsLeft ?? 0) > 0;
+};
+
+const getDealOptions = (state, predicate) =>
+  DEAL_TEMPLATES.filter((deal) => predicate(deal) && isDealWindowOpen(state, deal.id));
+
+const getMarketOptions = (state) => {
+  const instruments = state.configs?.instruments?.instruments || [];
+  const stocks = instruments.filter((item) => item.type === 'stocks').slice(0, 3);
+  const crypto = instruments.filter((item) => item.type === 'crypto').slice(0, 2);
+  const smallDeals = getDealOptions(state, (deal) => (deal.entryCost || 0) <= SMALL_DEAL_MAX_ENTRY);
+  return { stocks, crypto, smallDeals };
+};
+
+const getPrivateDeals = (state) =>
+  getDealOptions(state, (deal) => (deal.entryCost || 0) > SMALL_DEAL_MAX_ENTRY);
+
+const drawMarketCard = (state) => {
+  const { stocks, crypto, smallDeals } = getMarketOptions(state);
   const categories = [];
-  if (stockOptions.length) categories.push('stocks');
-  if (cryptoOptions.length) categories.push('crypto');
-  if (dealOptions.length) categories.push('deal');
+  if (stocks.length) categories.push('stocks');
+  if (crypto.length) categories.push('crypto');
+  if (smallDeals.length) categories.push('deal');
   if (!categories.length) return null;
   const category = pickFromList(categories, Math.random());
   if (category === 'deal') {
-    const deal = pickFromList(dealOptions, Math.random());
-    if (!deal) return null;
-    return {
-      type: 'deal',
-      dealId: deal.id,
-    };
+    const deal = pickFromList(smallDeals, Math.random());
+    return deal ? { type: 'deal', dealId: deal.id } : null;
   }
-  const list = category === 'stocks' ? stockOptions : cryptoOptions;
+  const list = category === 'stocks' ? stocks : crypto;
   const instrument = pickFromList(list, Math.random());
   if (!instrument) return null;
   const range =
@@ -169,6 +176,25 @@ function buildRollCard(state) {
     instrumentId: instrument.id,
     range,
   };
+};
+
+const drawPrivateDealCard = (state) => {
+  const deals = getPrivateDeals(state);
+  const deal = pickFromList(deals, Math.random());
+  return deal ? { type: 'deal', dealId: deal.id } : null;
+};
+
+function buildRollCard(state) {
+  if (!state?.configs) return null;
+  if (state.currentEvent) {
+    return { type: 'event', event: state.currentEvent };
+  }
+  const { stocks, crypto, smallDeals } = getMarketOptions(state);
+  const privateDeals = getPrivateDeals(state);
+  const hasMarket = Boolean(stocks.length || crypto.length || smallDeals.length);
+  const hasPrivate = Boolean(privateDeals.length);
+  if (!hasMarket && !hasPrivate) return null;
+  return { type: 'choice' };
 }
 
 function MainLayout() {
@@ -422,6 +448,15 @@ function MainLayout() {
     if (rollCard.type === 'event') {
       return { type: 'event', event: rollCard.event };
     }
+    if (rollCard.type === 'choice') {
+      const { stocks, crypto, smallDeals } = getMarketOptions(storeData);
+      const privateDeals = getPrivateDeals(storeData);
+      return {
+        type: 'choice',
+        marketAvailable: Boolean(stocks.length || crypto.length || smallDeals.length),
+        privateAvailable: Boolean(privateDeals.length),
+      };
+    }
     if (rollCard.type === 'deal') {
       const deal = DEAL_TEMPLATES.find((item) => item.id === rollCard.dealId);
       if (!deal) return null;
@@ -442,7 +477,10 @@ function MainLayout() {
     };
   }, [rollCard, storeData.configs, storeData.priceState, storeData.dealWindows, storeData.investments]);
   const rollPassiveRate =
-    !rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event'
+    !rollCardData ||
+    rollCardData.type === 'deal' ||
+    rollCardData.type === 'event' ||
+    rollCardData.type === 'choice'
       ? 0
       : getPassiveMultiplier(rollCardData.instrument.type);
   const rollHoldingValue =
@@ -459,7 +497,12 @@ function MainLayout() {
       : null;
   const rollHasPriceDelta = typeof rollPriceDeltaPercent === 'number' && Number.isFinite(rollPriceDeltaPercent);
   useEffect(() => {
-    if (!rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event') {
+    if (
+      !rollCardData ||
+      rollCardData.type === 'deal' ||
+      rollCardData.type === 'event' ||
+      rollCardData.type === 'choice'
+    ) {
       setRollTradeMode('buy');
       return;
     }
@@ -470,9 +513,34 @@ function MainLayout() {
   const showBuyControls = !canSellHolding || activeTradeMode === 'buy';
   const showSellControls = canSellHolding && activeTradeMode === 'sell';
 
+  const handleChooseMarket = () => {
+    const nextCard = drawMarketCard(useGameStore.getState());
+    if (!nextCard) {
+      setRollFeedback('Сейчас нет доступных рыночных карт.');
+      return;
+    }
+    setRollFeedback('');
+    setRollCard(nextCard);
+  };
+
+  const handleChoosePrivate = () => {
+    const nextCard = drawPrivateDealCard(useGameStore.getState());
+    if (!nextCard) {
+      setRollFeedback('Сейчас нет доступных частных сделок.');
+      return;
+    }
+    setRollFeedback('');
+    setRollCard(nextCard);
+  };
+
   useEffect(() => {
     setRollFeedback('');
-    if (!rollCardData || rollCardData.type === 'deal' || rollCardData.type === 'event') {
+    if (
+      !rollCardData ||
+      rollCardData.type === 'deal' ||
+      rollCardData.type === 'event' ||
+      rollCardData.type === 'choice'
+    ) {
       setRollBuyAmount(0);
       setRollSellAmount(0);
       return;
@@ -883,21 +951,51 @@ function MainLayout() {
                   <span className={styles.rollCardBadge}>
                   {rollCardData.type === 'event'
                     ? 'Событие'
-                    : rollCardData.type === 'deal'
-                      ? 'Сделка'
-                      : rollCardData.type === 'crypto'
-                        ? 'Криптовалюта'
-                        : 'Акции'}
+                    : rollCardData.type === 'choice'
+                      ? 'Выбор'
+                      : rollCardData.type === 'deal'
+                        ? 'Сделка'
+                        : rollCardData.type === 'crypto'
+                          ? 'Криптовалюта'
+                          : 'Акции'}
                   </span>
                   <strong className={styles.rollCardTitle}>
                   {rollCardData.type === 'event'
                     ? rollCardData.event?.title || 'Событие'
-                    : rollCardData.type === 'deal'
-                      ? rollCardData.deal.title
-                      : rollCardData.instrument.title}
+                    : rollCardData.type === 'choice'
+                      ? 'Рынок или частная сделка'
+                      : rollCardData.type === 'deal'
+                        ? rollCardData.deal.title
+                        : rollCardData.instrument.title}
                   </strong>
                 </div>
-            {rollCardData.type === 'event' ? (
+            {rollCardData.type === 'choice' ? (
+              <>
+                <p className={styles.rollCardDesc}>
+                  Перед тобой развилка. Рынок — быстрый вход, можно начать формировать капитал через акции,
+                  крипту и небольшие сделки. Частная сделка — более весомый вход и ставка на один проект.
+                </p>
+                {rollFeedback && <p className={styles.rollCardFeedback}>{rollFeedback}</p>}
+                <div className={styles.rollCardActions}>
+                  <Button
+                    variant="primary"
+                    onClick={handleChooseMarket}
+                    disabled={!rollCardData.marketAvailable}
+                    className={styles.rollCardPrimaryButton}
+                  >
+                    Рынок
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={handleChoosePrivate}
+                    disabled={!rollCardData.privateAvailable}
+                    className={styles.rollCardSecondaryButton}
+                  >
+                    Частная сделка
+                  </Button>
+                </div>
+              </>
+            ) : rollCardData.type === 'event' ? (
               (() => {
                 const message = getEventMessage(rollCardData.event);
                 const cleanedMessage = (message || rollCardData.event?.description || '')
